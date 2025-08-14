@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import Product from "./product";
 import About from "./dashboardKabeng";
+import LastUser from "@/components/lastUser";
+import TerimaLaporan from "./terimaLaporan";
 
 export default function Navbar() {
   const [active, setActive] = useState("dashboard");
@@ -78,8 +80,8 @@ export default function Navbar() {
       <main className="p-4">
         {active === "dashboard" && <About/>}
         {active === "product" && <Product />}
-        {active === "user" && <div>Konten user.tsx</div>}
-        {active === "laporan" && <div>Konten laporan.tsx</div>}
+        {active === "user" && <LastUser/>}
+        {active === "laporan" && <TerimaLaporan/>}
       </main>
     </>
   );
