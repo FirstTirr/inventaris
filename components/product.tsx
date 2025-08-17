@@ -1,25 +1,30 @@
 "use client";
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
+import AddProduct from "./addProduct";
 
-const initialData = [
-  ["Laptop ThinkPad T470p", "009"],
-  ["Laptop ThinkPad T470p", "012"],
-  ["Laptop ThinkPad T470p", "010"],
-  ["Laptop ThinkPad T470p", "010"],
-  ["Laptop ThinkPad T470p", "010"],
-  ["Laptop ThinkPad T470p", "010"],
-  ["Laptop ThinkPad T470p", "010"],
-  ["Laptop ThinkPad T470p", "010"],
-];
-
-const Product = () => {
+export const Product = () => {
   const [search, setSearch] = useState("");
-  const filteredData = initialData.filter(
-    ([, barang]) =>
-      typeof barang === "string" &&
-      barang.toLowerCase().includes(search.toLowerCase())
-  );
+  const [showAdd, setShowAdd] = useState(false);
+
+  // State produk
+  const [data, setData] = useState<[string, string, string][]>([]);
+
+  // Data hasil filter search
+  const filteredData = data.filter(([produk, labor, nomor]) => {
+    const q = search.toLowerCase();
+    return (
+      produk.toLowerCase().includes(q) ||
+      labor.toLowerCase().includes(q) ||
+      nomor.toLowerCase().includes(q)
+    );
+  });
+
+  // Handler untuk menerima produk baru dari AddProduct
+  const handleAddProduct = (produkBaru: [string, string, string]) => {
+    setData((prev) => [...prev, produkBaru]);
+    setShowAdd(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
       <div className="max-w-5xl mx-auto">
@@ -45,7 +50,10 @@ const Product = () => {
               ×
             </button>
           </div>
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all ml-auto">
+          <button
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all ml-auto"
+            onClick={() => setShowAdd(true)}
+          >
             <svg
               width="18"
               height="18"
@@ -63,21 +71,37 @@ const Product = () => {
             Add Product
           </button>
         </div>
+        {showAdd && (
+          <AddProduct
+            onAddProduct={handleAddProduct}
+            onCancel={() => setShowAdd(false)}
+          />
+        )}
         <div className="overflow-x-auto rounded-xl bg-white shadow font-sans">
-          <table className="min-w-full text-left">
+          <table className="min-w-full">
             <thead>
               <tr className="text-gray-500 text-xs font-semibold border-b">
-                <th className="py-3 px-6 font-semibold bg-white">produk</th>
-                <th className="py-3 px-6 font-semibold bg-white">nomor</th>
-                <th className="py-3 px-6 font-semibold bg-white">actions</th>
+                <th className="py-3 px-6 font-semibold bg-white text-left">
+                  produk
+                </th>
+                <th className="py-3 px-6 font-semibold bg-white text-center">
+                  labor
+                </th>
+                <th className="py-3 px-6 font-semibold bg-white text-center">
+                  nomor
+                </th>
+                <th className="py-3 px-6 font-semibold bg-white text-center">
+                  actions
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.map(([produk, nomor], idx) => (
+              {filteredData.map(([produk, labor, nomor], idx) => (
                 <tr key={idx} className="border-b last:border-b-0">
-                  <td className="py-3 px-6 font-bold">{produk}</td>
-                  <td className="py-3 px-6 font-bold">{nomor}</td>
-                  <td className="py-3 px-6">
+                  <td className="py-3 px-6 font-bold text-left">{produk}</td>
+                  <td className="py-3 px-6 font-bold text-center">{labor}</td>
+                  <td className="py-3 px-6 font-bold text-center">{nomor}</td>
+                  <td className="py-3 px-6 text-center">
                     <button className="inline-block mr-2" title="Edit">
                       {/* Ikon pensil tebal, warna hitam */}
                       <svg
@@ -115,11 +139,6 @@ const Product = () => {
                   </td>
                 </tr>
               ))}
-              <tr>
-                <td className="py-3 px-6 font-bold" colSpan={3}>
-                  seterusnya
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -128,4 +147,4 @@ const Product = () => {
   );
 };
 
-export default Product;
+// (hapus semua baris duplikat/fragment setelah penutupan Product di atas)

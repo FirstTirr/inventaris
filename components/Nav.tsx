@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import Product from "./product";
+import { Product } from "./product";
 import About from "./dashboardKabeng";
 import LastUser from "@/components/lastUser";
 import TerimaLaporan from "./terimaLaporan";

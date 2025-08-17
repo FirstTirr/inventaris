@@ -1,9 +1,9 @@
-import Nav from "@/components/Nav";
+import NavBc from "@/components/barangBc/NavBc";
 
 export default function Home() {
   return (
     <>
-    <Nav/>
+    <NavBc/>
     </>
   );
 };

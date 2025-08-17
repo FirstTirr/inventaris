@@ -1,9 +1,9 @@
-import Nav from "@/components/Nav";
+import NavDkv from "@/components/barangDkv/NavDkv";
 
 export default function Home() {
   return (
     <>
-    <Nav/>
+    <NavDkv/>
     </>
   );
 };
