@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 
 const initialData = [
-  ["XI PPLG 3", "laptop gaming 10 juta", 9],
-  ["X PPLG 20", "laptop gaming 10 juta", 30],
-  ["X TJKT 6", "laptop gaming 10 juta", 4],
-  ["XII DKV 3", "laptop gaming 10 juta", 6],
-  ["X GAIB (BC)", "laptop gaming 10 juta", 99],
-  ["X GAIB 3(BC)", "kamera mahal", 34],
-  ["XII DKV 8", "laptop gaming 10 juta", 4],
+  ["XI PPLG 3", "laptop gaming 10 juta", "12-20-2025", 9],
+  ["X PPLG 20", "laptop gaming 10 juta", "12-20-2025", 30],
+  ["X TJKT 6", "laptop gaming 10 juta", "12-20-2025", 4],
+  ["XII DKV 3", "laptop gaming 10 juta", "12-20-2025", 6],
+  ["X GAIB (BC)", "laptop gaming 10 juta", "12-20-2025", 99],
+  ["X GAIB 3(BC)", "laptop gaming 10 juta", "12-20-2025", 34],
+  ["XII DKV 8", "laptop gaming 10 juta", "12-20-2025", 4],
 ];
 
 export default function Home() {
@@ -59,11 +59,14 @@ export default function Home() {
                 <th className="py-3 px-6 font-semibold bg-white">
                   nama barang
                 </th>
+                <th className="py-3 px-6 font-semibold bg-white">
+                  tanggal pemakaian
+                </th>
                 <th className="py-3 px-6 font-semibold bg-white">jumlah</th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.map(([kelas, barang, jumlah], idx) => (
+              {filteredData.map(([kelas, barang, tanggal, jumlah], idx) => (
                 <tr key={idx} className="border-b last:border-b-0">
                   <td className="py-3 px-6 font-sans font-semibold text-black text-lg md:text-xl">
                     {kelas}
@@ -71,7 +74,10 @@ export default function Home() {
                   <td className="py-3 px-6 font-sans font-semibold text-black text-lg md:text-xl">
                     {barang}
                   </td>
-                  <td className="py-3 px-6 font-sans font-bold text-black text-lg md:text-xl text-center">
+                  <td className="py-3 px-6 font-sans font-semibold text-black text-lg md:text-xl">
+                    {tanggal}
+                  </td>
+                  <td className="py-3 px-6 font-sans font-bold text-black text-lg md:text-xl">
                     {jumlah}
                   </td>
                 </tr>
