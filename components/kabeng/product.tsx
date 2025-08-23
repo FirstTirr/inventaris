@@ -173,5 +173,3 @@ export const Product = () => {
     </div>
   );
 };
-
-// (hapus semua baris duplikat/fragment setelah penutupan Product di atas)
