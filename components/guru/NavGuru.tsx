@@ -13,7 +13,7 @@ export default function NavGuru() {
           <h1 className="text-xl font-semibold font-sans tracking-wide text-left">
             DASHBOARD GURU
           </h1>
-          <button className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all">
+          <button className="flex items-center gap-2 px-4 py-2 bg-blue-400 text-black rounded-md hover:bg-gray-500 transition-all">
             <svg
               width="20"
               height="20"

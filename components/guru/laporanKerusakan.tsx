@@ -9,11 +9,21 @@ export default function LaporanKerusakanBarang() {
           <h2 className="text-xl font-bold mb-2">Laporan Kerusakan Barang</h2>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Labor :</label>
-            <input
-              type="text"
-              placeholder="Masukkan Nama Labor"
+            <select
+              name="labor"
+              id="labor"
               className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
+            >
+              <option value="">Pilih Labor</option>
+              <option value="LABOR PK">LABOR PK</option>
+              <option value="LABOR RPL">LABOR RPL</option>
+              <option value="LABOR BC">LABOR BC</option>
+              <option value="LABOR 1 DKV">LABOR 1 DKV</option>
+              <option value="LABOR 2 DKV">LABOR 2 DKV</option>
+              <option value="LABOR 1 TKJ">LABOR 1 TKJ</option>
+              <option value="LABOR 2 TKJ">LABOR 2 TKJ</option>
+              <option value="LABOR 3 TKJ">LABOR 3 TKJ</option>
+            </select>
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Barang Yang Rusak :</label>

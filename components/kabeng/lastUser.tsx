@@ -7,7 +7,7 @@ const initialData = [
   ["XII DKV 3", "laptop gaming 10 juta", "12-20-2025", 6],
   ["X GAIB (BC)", "laptop gaming 10 juta", "12-20-2025", 99],
   ["X GAIB 3(BC)", "laptop gaming 10 juta", "12-20-2025", 34],
-  ["XII DKV 8", "laptop gaming 10 juta", "12-20-2025", 4],
+  ["XII DKV 8", "LAN", "12-20-2025", 4],
 ];
 
 export default function Home() {

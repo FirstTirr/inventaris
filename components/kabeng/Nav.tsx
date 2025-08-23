@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Product } from "./product";
 import About from "./dashboardKabeng";
-import LastUser from "@/components/lastUser";
+import LastUser from "@/components/kabeng/lastUser";
 import TerimaLaporan from "./terimaLaporan";
 
 export default function Navbar() {
@@ -22,7 +22,7 @@ export default function Navbar() {
               {active === "laporan" && "LAPORAN"}
             </h1>
           </div>
-          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all sm:ml-4 w-full sm:w-auto justify-center">
+          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-400 text-black rounded-md hover:bg-gray-500 transition-all sm:ml-4 w-full sm:w-auto justify-center">
             <svg
               width="24"
               height="24"
@@ -63,7 +63,7 @@ export default function Navbar() {
                 className="hover:underline bg-transparent border-none outline-none cursor-pointer"
                 onClick={() => handleChangePage("user")}
               >
-                user
+                User
               </button>
             </li>
             <li>
@@ -71,17 +71,17 @@ export default function Navbar() {
                 className="hover:underline bg-transparent border-none outline-none cursor-pointer"
                 onClick={() => handleChangePage("laporan")}
               >
-                laporan
+                Laporan
               </button>
             </li>
           </ul>
         </nav>
       </header>
       <main className="p-4">
-        {active === "dashboard" && <About/>}
+        {active === "dashboard" && <About />}
         {active === "product" && <Product />}
-        {active === "user" && <LastUser/>}
-        {active === "laporan" && <TerimaLaporan/>}
+        {active === "user" && <LastUser />}
+        {active === "laporan" && <TerimaLaporan />}
       </main>
     </>
   );

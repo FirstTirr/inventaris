@@ -1,9 +1,9 @@
-import Nav from "@/components/kabeng/Nav";
+import Login from "@/components/login";
 
 export default function Home() {
   return (
     <>
-      <Nav />
+      <Login />
     </>
   );
 }

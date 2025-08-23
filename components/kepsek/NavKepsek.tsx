@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import DashboardKabeng from "../dashboardKabeng";
-import LastUser from "../lastUser";
+import DashboardKabeng from "../kabeng/dashboardKabeng";
+import LastUser from "../kabeng/lastUser";
 
 export default function NavGuru() {
   const [active, setActive] = useState("dashboard");

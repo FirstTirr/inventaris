@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { postProduct } from "@/lib/api/productApi";
 
 interface AddProductProps {
   onAddProduct: (data: [string, string, string]) => void;
@@ -12,26 +13,43 @@ export default function AddProduct({
 }: AddProductProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
-    produk: "",
+    nama_produk: "",
     labor: "",
-    nomor: "",
-    category: "",
+    kategori: "",
     jumlah: "",
     jurusan: "",
+    nomor_barang: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowConfirm(true);
+    try {
+      // Pastikan jumlah dikirim sebagai number
+      const payload = { ...form, jumlah: Number(form.jumlah) };
+      const res = await postProduct(payload);
+      alert("Berhasil: " + JSON.stringify(res));
+      onAddProduct([form.nama_produk, form.labor, form.nomor_barang]);
+      onCancel();
+      setForm({
+        nama_produk: "",
+        labor: "",
+        kategori: "",
+        jumlah: "",
+        jurusan: "",
+        nomor_barang: "",
+      });
+    } catch (err: any) {
+      alert("Gagal: " + err.message);
+    }
   };
 
   const handleYakin = () => {
     // Kirim data produk baru ke parent (Product)
-    onAddProduct([form.produk, form.labor, form.nomor]);
+    onAddProduct([form.nama_produk, form.labor, form.nomor_barang]);
     setShowConfirm(false);
   };
 
@@ -60,80 +78,112 @@ export default function AddProduct({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
               <div>
                 <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                  nama product
+                  Nama Produk
                 </label>
                 <input
                   type="text"
-                  name="produk"
-                  value={form.produk}
+                  name="nama_produk"
+                  value={form.nama_produk}
                   onChange={handleChange}
-                  placeholder="inputkan nama produk wok"
+                  placeholder="inputkan nama produk"
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                  labor
+                  Labor
                 </label>
-                <input
-                  type="text"
+                <select
                   name="labor"
+                  id="labor"
                   value={form.labor}
-                  onChange={handleChange}
-                  placeholder="inputkan untuk labor  mana wok"
+                  onChange={(e) => setForm({ ...form, labor: e.target.value })}
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
-                />
+                >
+                  <option value="">Pilih Labor</option>
+                  <option value="LABOR PK">LABOR PK</option>
+                  <option value="LABOR RPL">LABOR RPL</option>
+                  <option value="LABOR BC">LABOR BC</option>
+                  <option value="LABOR 1 DKV">LABOR 1 DKV</option>
+                  <option value="LABOR 2 DKV">LABOR 2 DKV</option>
+                  <option value="LABOR 1 TKJ">LABOR 1 TKJ</option>
+                  <option value="LABOR 2 TKJ">LABOR 2 TKJ</option>
+                  <option value="LABOR 3 TKJ">LABOR 3 TKJ</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                  category
+                  Kategori
                 </label>
-                <input
-                  type="text"
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  placeholder="inputkan kategori nya wok"
+                <select
+                  name="kategori"
+                  id="kategori"
+                  value={form.kategori}
+                  onChange={(e) =>
+                    setForm({ ...form, kategori: e.target.value })
+                  }
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
-                />
+                >
+                  <option value="">Pilih Kategori</option>
+                  <option value="PC">PC</option>
+                  <option value="MONITOR">MONITOR</option>
+                  <option value="MIXER">MIXER</option>
+                  <option value="KAMERA">KAMERA</option>
+                  <option value="MICROPHONE">MICROPHONE</option>
+                  <option value="HANDYCAM">HANDYCAM</option>
+                  <option value="SPEAKER">SPEAKER</option>
+                  <option value="SARAMONIC">SARAMONIC</option>
+                  <option value="LIGHTING">LIGHTING</option>
+                  <option value="LIGHTING">LAPTOP</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                  jumlah
+                  Jumlah
                 </label>
                 <input
                   type="number"
                   name="jumlah"
                   value={form.jumlah}
                   onChange={handleChange}
-                  placeholder="inputkan jumlah nya wok"
+                  placeholder="inputkan jumlah"
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                  jurusan
+                  Jurusan
                 </label>
-                <input
-                  type="text"
+                <select
                   name="jurusan"
+                  id="jurusan"
                   value={form.jurusan}
-                  onChange={handleChange}
-                  placeholder="jurusannya wok"
+                  onChange={(e) =>
+                    setForm({ ...form, jurusan: e.target.value })
+                  }
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
-                />
+                >
+                  <option value="">Pilih Jurusan</option>
+                  <option value="RPL">RPL</option>
+                  <option value="TKJ">TKJ</option>
+                  <option value="DKV">DKV</option>
+                  <option value="BC">BC</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                  nomor barang
+                  Nomor Barang
                 </label>
                 <input
-                  type="text"
-                  name="nomor"
-                  value={form.nomor}
+                  type="number"
+                  name="nomor_barang"
+                  value={form.nomor_barang}
                   onChange={handleChange}
-                  placeholder="inputkan nomor barang nya wok"
+                  placeholder="inputkan nomor barang"
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
+                  min="0"
+                  pattern="[0-9]*"
+                  inputMode="numeric"
                 />
               </div>
             </div>

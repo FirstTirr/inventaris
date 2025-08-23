@@ -17,7 +17,7 @@ export default function NavRpl() {
             DASHBOARD KABENG/KAPROG
           </h1>
           <button
-            className="flex items-center gap-2 px-6 py-2 bg-gray-400 text-black rounded-full hover:bg-gray-500 transition-all"
+            className="flex items-center gap-2 px-6 py-2 bg-blue-400 text-black rounded-full hover:bg-gray-500 transition-all"
             style={{ height: 40 }}
             onClick={() => router.back()}
           >

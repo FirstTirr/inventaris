@@ -5,7 +5,10 @@ import AddProduct from "./addProduct";
 export const Product = () => {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
-
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+  const [editData, setEditData] = useState<[string, string, string] | null>(
+    null
+  );
   // State produk
   const [data, setData] = useState<[string, string, string][]>([]);
 
@@ -21,7 +24,17 @@ export const Product = () => {
 
   // Handler untuk menerima produk baru dari AddProduct
   const handleAddProduct = (produkBaru: [string, string, string]) => {
-    setData((prev) => [...prev, produkBaru]);
+    if (editIdx !== null) {
+      // Edit mode
+      setData((prev) =>
+        prev.map((item, idx) => (idx === editIdx ? produkBaru : item))
+      );
+      setEditIdx(null);
+      setEditData(null);
+    } else {
+      // Add mode
+      setData((prev) => [...prev, produkBaru]);
+    }
     setShowAdd(false);
   };
 
@@ -74,7 +87,12 @@ export const Product = () => {
         {showAdd && (
           <AddProduct
             onAddProduct={handleAddProduct}
-            onCancel={() => setShowAdd(false)}
+            onCancel={() => {
+              setShowAdd(false);
+              setEditIdx(null);
+              setEditData(null);
+            }}
+            {...(editData ? { defaultValue: editData } : {})}
           />
         )}
         <div className="overflow-x-auto rounded-xl bg-white shadow font-sans">
@@ -102,7 +120,15 @@ export const Product = () => {
                   <td className="py-3 px-6 font-bold text-center">{labor}</td>
                   <td className="py-3 px-6 font-bold text-center">{nomor}</td>
                   <td className="py-3 px-6 text-center">
-                    <button className="inline-block mr-2" title="Edit">
+                    <button
+                      className="inline-block mr-2"
+                      title="Edit"
+                      onClick={() => {
+                        setEditIdx(idx);
+                        setEditData([produk, labor, nomor]);
+                        setShowAdd(true);
+                      }}
+                    >
                       {/* Ikon pensil tebal, warna hitam */}
                       <svg
                         width="22"
@@ -117,7 +143,8 @@ export const Product = () => {
                         <path d="M16.474 5.474a2.121 2.121 0 1 1 3 3L8.5 19.448l-4 1 1-4 10.974-10.974z" />
                       </svg>
                     </button>
-                    <button className="inline-block" title="Delete">
+                    <button
+                    >
                       {/* Ikon trash tebal, warna hitam */}
                       <svg
                         width="22"
