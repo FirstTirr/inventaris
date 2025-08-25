@@ -1,41 +1,90 @@
-"use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AddProduct from "./addProduct";
+import {
+  getRemoteProducts,
+  deleteRemoteProduct,
+} from "@/lib/api/remoteProductApi";
+import { Trash2 } from "lucide-react";
 
 export const Product = () => {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
-  const [editData, setEditData] = useState<[string, string, string] | null>(
-    null
-  );
-  // State produk
-  const [data, setData] = useState<[string, string, string][]>([]);
+  const [editData, setEditData] = useState<
+    [string, string, string, string, number, string] | null
+  >(null);
 
-  // Data hasil filter search
-  const filteredData = data.filter(([produk, labor, nomor]) => {
-    const q = search.toLowerCase();
-    return (
-      produk.toLowerCase().includes(q) ||
-      labor.toLowerCase().includes(q) ||
-      nomor.toLowerCase().includes(q)
-    );
-  });
+  // Data structure: [id_perangkat, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]
+  const [data, setData] = useState<
+    [number, string, string, string, string, number, string][]
+  >([]);
 
-  // Handler untuk menerima produk baru dari AddProduct
-  const handleAddProduct = (produkBaru: [string, string, string]) => {
-    if (editIdx !== null) {
-      // Edit mode
-      setData((prev) =>
-        prev.map((item, idx) => (idx === editIdx ? produkBaru : item))
+  // Fetch data from API
+  useEffect(() => {
+    getRemoteProducts()
+      .then((result) => {
+        const arr = Array.isArray(result.data) ? result.data : result;
+        console.log("HASIL DARI API:", arr);
+        if (Array.isArray(arr)) {
+          setData(
+            arr.map((item: any) => [
+              Number(item.id_perangkat),
+              item.nama_perangkat,
+              item.kategori,
+              item.jurusan,
+              item.id_labor,
+              Number(item.jumlah),
+              item.status,
+            ])
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("Gagal mengambil data produk remote:", err);
+      });
+  }, []);
+
+  // Filter untuk pencarian
+  const filteredData = data.filter(
+    ([, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]) => {
+      const q = search.toLowerCase();
+      return (
+        nama_perangkat.toLowerCase().includes(q) ||
+        kategori.toLowerCase().includes(q) ||
+        jurusan.toLowerCase().includes(q) ||
+        id_labor.toLowerCase().includes(q) ||
+        String(jumlah).includes(q) ||
+        status.toLowerCase().includes(q)
       );
-      setEditIdx(null);
-      setEditData(null);
-    } else {
-      // Add mode
-      setData((prev) => [...prev, produkBaru]);
     }
+  );
+
+  // Handle penambahan produk baru
+  const handleAddProduct = async (
+    produkBaru: [string, string, string, string, number, string]
+  ) => {
     setShowAdd(false);
+    try {
+      const result = await getRemoteProducts();
+      const arr = Array.isArray(result.data) ? result.data : result;
+      if (Array.isArray(arr)) {
+        setData(
+          arr.map((item) => [
+            Number(item.id_perangkat),
+            item.nama_perangkat,
+            item.kategori,
+            item.jurusan,
+            item.id_labor,
+            Number(item.jumlah),
+            item.status,
+          ])
+        );
+      }
+    } catch (err) {
+      console.error("Gagal refresh data produk setelah tambah:", err);
+    }
+    setEditIdx(null);
+    setEditData(null);
   };
 
   return (
@@ -44,11 +93,12 @@ export const Product = () => {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Product Management</h2>
         </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
           <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
             <input
               type="text"
-              placeholder="cari nomor komputer"
+              placeholder="Cari perangkat..."
               className="flex-1 outline-none bg-transparent text-sm text-gray-500 px-2 placeholder:text-gray-400"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -84,6 +134,7 @@ export const Product = () => {
             Add Product
           </button>
         </div>
+
         {showAdd && (
           <AddProduct
             onAddProduct={handleAddProduct}
@@ -95,77 +146,77 @@ export const Product = () => {
             {...(editData ? { defaultValue: editData } : {})}
           />
         )}
+
         <div className="overflow-x-auto rounded-xl bg-white shadow font-sans">
           <table className="min-w-full">
             <thead>
               <tr className="text-gray-500 text-xs font-semibold border-b">
-                <th className="py-3 px-6 font-semibold bg-white text-left">
-                  produk
-                </th>
-                <th className="py-3 px-6 font-semibold bg-white text-center">
-                  labor
-                </th>
-                <th className="py-3 px-6 font-semibold bg-white text-center">
-                  nomor
-                </th>
-                <th className="py-3 px-6 font-semibold bg-white text-center">
-                  actions
-                </th>
+                <th className="py-3 px-6 text-left">Nama Perangkat</th>
+                <th className="py-3 px-6 text-center">Kategori</th>
+                <th className="py-3 px-6 text-center">Jurusan</th>
+                <th className="py-3 px-6 text-center">ID Labor</th>
+                <th className="py-3 px-6 text-center">Jumlah</th>
+                <th className="py-3 px-6 text-center">Status</th>
+                <th className="py-3 px-6 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.map(([produk, labor, nomor], idx) => (
-                <tr key={idx} className="border-b last:border-b-0">
-                  <td className="py-3 px-6 font-bold text-left">{produk}</td>
-                  <td className="py-3 px-6 font-bold text-center">{labor}</td>
-                  <td className="py-3 px-6 font-bold text-center">{nomor}</td>
-                  <td className="py-3 px-6 text-center">
-                    <button
-                      className="inline-block mr-2"
-                      title="Edit"
-                      onClick={() => {
-                        setEditIdx(idx);
-                        setEditData([produk, labor, nomor]);
-                        setShowAdd(true);
-                      }}
-                    >
-                      {/* Ikon pensil tebal, warna hitam */}
-                      <svg
-                        width="22"
-                        height="22"
-                        fill="none"
-                        stroke="black"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
+              {filteredData.map(
+                (
+                  [
+                    id_perangkat,
+                    nama_perangkat,
+                    kategori,
+                    jurusan,
+                    id_labor,
+                    jumlah,
+                    status,
+                  ],
+                  idx
+                ) => (
+                  <tr key={idx} className="border-b last:border-b-0">
+                    <td className="py-3 px-6 text-left">{nama_perangkat}</td>
+                    <td className="py-3 px-6 text-center">{kategori}</td>
+                    <td className="py-3 px-6 text-center">{jurusan}</td>
+                    <td className="py-3 px-6 text-center">{id_labor}</td>
+                    <td className="py-3 px-6 text-center">{jumlah}</td>
+                    <td className="py-3 px-6 text-center">{status}</td>
+                    <td className="py-3 px-6 text-center">
+                      <button
+                        title="Hapus"
+                        className="hover:text-red-600"
+                        onClick={async () => {
+                          console.log("Mau hapus ID:", id_perangkat, typeof id_perangkat);
+                          try {
+                            await deleteRemoteProduct(id_perangkat);
+                            // Refresh data
+                            const result = await getRemoteProducts();
+                            const arr = Array.isArray(result.data)
+                              ? result.data
+                              : result;
+                            setData(
+                              arr.map((item:any) => [
+                                Number(item.id_perangkat),
+                                item.nama_perangkat,
+                                item.kategori,
+                                item.jurusan,
+                                item.id_labor,
+                                Number(item.jumlah),
+                                item.status,
+                              ])
+                            );
+                            alert("Barang berhasil dihapus!");
+                          } catch (err) {
+                            alert("Gagal menghapus data: " + err);
+                          }
+                        }}
                       >
-                        <path d="M16.474 5.474a2.121 2.121 0 1 1 3 3L8.5 19.448l-4 1 1-4 10.974-10.974z" />
-                      </svg>
-                    </button>
-                    <button
-                    >
-                      {/* Ikon trash tebal, warna hitam */}
-                      <svg
-                        width="22"
-                        height="22"
-                        fill="none"
-                        stroke="black"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <polyline points="3 6 21 6" />
-                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        <rect x="5" y="6" width="14" height="14" rx="2" />
-                        <line x1="10" y1="11" x2="10" y2="17" />
-                        <line x1="14" y1="11" x2="14" y2="17" />
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                        <Trash2 size={22} />
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
         </div>

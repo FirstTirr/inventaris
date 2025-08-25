@@ -3,44 +3,64 @@ import React, { useState } from "react";
 import { postProduct } from "@/lib/api/productApi";
 
 interface AddProductProps {
-  onAddProduct: (data: [string, string, string]) => void;
+  onAddProduct: (
+    data: [string, string, string, string, number, string]
+  ) => void;
   onCancel: () => void;
+  defaultValue?: [string, string, string, string, number, string];
 }
 
 export default function AddProduct({
   onAddProduct,
   onCancel,
+  defaultValue,
 }: AddProductProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
-    nama_produk: "",
-    labor: "",
-    kategori: "",
-    jumlah: "",
-    jurusan: "",
-    nomor_barang: "",
+    nama_perangkat: defaultValue ? defaultValue[0] : "",
+    kategori: defaultValue ? defaultValue[1] : "",
+    jurusan: defaultValue ? defaultValue[2] : "",
+    id_labor: defaultValue ? defaultValue[3] : "",
+    jumlah: defaultValue ? String(defaultValue[4]) : "",
+    status: defaultValue ? defaultValue[5] : "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Pastikan jumlah dikirim sebagai number
-      const payload = { ...form, jumlah: Number(form.jumlah) };
+      // Pastikan jumlah dikirim sebagai number dan map field names ke ProductData interface
+      const payload = {
+        nama_produk: form.nama_perangkat,
+        kategori: form.kategori,
+        jurusan: form.jurusan,
+        labor: form.id_labor,
+        jumlah: Number(form.jumlah),
+        status_barang: form.status,
+      };
       const res = await postProduct(payload);
       alert("Berhasil: " + JSON.stringify(res));
-      onAddProduct([form.nama_produk, form.labor, form.nomor_barang]);
+      onAddProduct([
+        form.nama_perangkat,
+        form.kategori,
+        form.jurusan,
+        form.id_labor,
+        Number(form.jumlah),
+        form.status,
+      ]);
       onCancel();
       setForm({
-        nama_produk: "",
-        labor: "",
+        nama_perangkat: "",
         kategori: "",
-        jumlah: "",
         jurusan: "",
-        nomor_barang: "",
+        id_labor: "",
+        jumlah: "",
+        status: "",
       });
     } catch (err: any) {
       alert("Gagal: " + err.message);
@@ -49,7 +69,14 @@ export default function AddProduct({
 
   const handleYakin = () => {
     // Kirim data produk baru ke parent (Product)
-    onAddProduct([form.nama_produk, form.labor, form.nomor_barang]);
+    onAddProduct([
+      form.nama_perangkat,
+      form.kategori,
+      form.jurusan,
+      form.id_labor,
+      Number(form.jumlah),
+      form.status,
+    ]);
     setShowConfirm(false);
   };
 
@@ -82,10 +109,10 @@ export default function AddProduct({
                 </label>
                 <input
                   type="text"
-                  name="nama_produk"
-                  value={form.nama_produk}
+                  name="nama_perangkat"
+                  value={form.nama_perangkat}
                   onChange={handleChange}
-                  placeholder="inputkan nama produk"
+                  placeholder="inputkan nama perangkat"
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 />
               </div>
@@ -94,10 +121,10 @@ export default function AddProduct({
                   Labor
                 </label>
                 <select
-                  name="labor"
-                  id="labor"
-                  value={form.labor}
-                  onChange={(e) => setForm({ ...form, labor: e.target.value })}
+                  name="id_labor"
+                  id="id_labor"
+                  value={form.id_labor}
+                  onChange={handleChange}
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >
                   <option value="">Pilih Labor</option>
@@ -119,9 +146,7 @@ export default function AddProduct({
                   name="kategori"
                   id="kategori"
                   value={form.kategori}
-                  onChange={(e) =>
-                    setForm({ ...form, kategori: e.target.value })
-                  }
+                  onChange={handleChange}
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >
                   <option value="">Pilih Kategori</option>
@@ -134,7 +159,7 @@ export default function AddProduct({
                   <option value="SPEAKER">SPEAKER</option>
                   <option value="SARAMONIC">SARAMONIC</option>
                   <option value="LIGHTING">LIGHTING</option>
-                  <option value="LIGHTING">LAPTOP</option>
+                  <option value="LAPTOP">LAPTOP</option>
                 </select>
               </div>
               <div>
@@ -148,6 +173,9 @@ export default function AddProduct({
                   onChange={handleChange}
                   placeholder="inputkan jumlah"
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
+                  min={1}
+                  max={256}
+                  required
                 />
               </div>
               <div>
@@ -158,9 +186,7 @@ export default function AddProduct({
                   name="jurusan"
                   id="jurusan"
                   value={form.jurusan}
-                  onChange={(e) =>
-                    setForm({ ...form, jurusan: e.target.value })
-                  }
+                  onChange={handleChange}
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >
                   <option value="">Pilih Jurusan</option>
@@ -172,19 +198,19 @@ export default function AddProduct({
               </div>
               <div>
                 <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                  Nomor Barang
+                  Status Barang
                 </label>
-                <input
-                  type="number"
-                  name="nomor_barang"
-                  value={form.nomor_barang}
+                <select
+                  name="status"
+                  id="status"
+                  value={form.status}
                   onChange={handleChange}
-                  placeholder="inputkan nomor barang"
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
-                  min="0"
-                  pattern="[0-9]*"
-                  inputMode="numeric"
-                />
+                >
+                  <option value="">Pilih Status</option>
+                  <option value="BAIK">BAIK</option>
+                  <option value="RUSAK">RUSAK</option>
+                </select>
               </div>
             </div>
             <div className="mb-4">

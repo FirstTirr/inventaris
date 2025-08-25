@@ -1,7 +1,18 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 
 export default function LaporanKerusakanBarang() {
+  const [barang, setBarang] = useState("");
+  const [kerusakan, setKerusakan] = useState("");
+  // Hanya izinkan huruf dan angka
+  const handleBarangChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^a-zA-Z0-9 ]/g, "");
+    setBarang(value);
+  };
+  const handleKerusakanChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value.replace(/[^a-zA-Z0-9 ]/g, "");
+    setKerusakan(value);
+  };
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <main className="flex justify-center items-center min-h-[80vh] px-2">
@@ -31,6 +42,10 @@ export default function LaporanKerusakanBarang() {
               type="text"
               placeholder="Masukkan Nama Barang"
               className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              value={barang}
+              onChange={handleBarangChange}
+              pattern="[a-zA-Z0-9 ]*"
+              title="Hanya huruf dan angka"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -38,6 +53,9 @@ export default function LaporanKerusakanBarang() {
             <textarea
               placeholder="Masukkan Jenis Kerusakan"
               className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 min-h-[60px] focus:outline-none focus:ring-2 focus:ring-blue-200"
+              value={kerusakan}
+              onChange={handleKerusakanChange}
+              title="Hanya huruf dan angka"
             />
           </div>
           <button
