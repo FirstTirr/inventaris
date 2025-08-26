@@ -1,24 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const initialData = [
-  ["XI PPLG 3", "laptop gaming 10 juta", "12-20-2025", 9],
-  ["X PPLG 20", "laptop gaming 10 juta", "12-20-2025", 30],
-  ["X TJKT 6", "laptop gaming 10 juta", "12-20-2025", 4],
-  ["XII DKV 3", "laptop gaming 10 juta", "12-20-2025", 6],
-  ["X GAIB (BC)", "laptop gaming 10 juta", "12-20-2025", 99],
-  ["X GAIB 3(BC)", "laptop gaming 10 juta", "12-20-2025", 34],
-  ["XII DKV 8", "LAN", "12-20-2025", 4],
-];
-
-export default function Home() {
+export default function LastUser() {
   const [search, setSearch] = useState("");
-  const filteredData = initialData.filter(([kelas, barang]) => {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan`
+        );
+        if (!res.ok) throw new Error("Gagal mengambil data penggunaan");
+        const result = await res.json();
+        setData(result.data || []);
+      } catch (err) {
+        setError("Gagal mengambil data penggunaan");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredData = data.filter((item) => {
     const s = search.toLowerCase();
     return (
-      (typeof kelas === "string" && kelas.toLowerCase().includes(s)) ||
-      (typeof barang === "string" && barang.toLowerCase().includes(s))
+      (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
+      (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
     );
   });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
+
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
       <div className="max-w-6xl mx-auto">
@@ -32,7 +50,7 @@ export default function Home() {
           <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
             <input
               type="text"
-              placeholder="cari nomor komputer"
+              placeholder="cari labor/perangkat"
               className="flex-1 outline-none bg-transparent text-sm text-gray-500 px-2 placeholder:text-gray-400"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -55,31 +73,26 @@ export default function Home() {
           <table className="min-w-full text-left">
             <thead>
               <tr className="text-gray-500 text-sm font-semibold border-b">
-                <th className="py-3 px-6 font-semibold bg-white">kelas</th>
+                <th className="py-3 px-6 font-semibold bg-white">Kelas</th>
+                <th className="py-3 px-6 font-semibold bg-white">Labor</th>
+                <th className="py-3 px-6 font-semibold bg-white">Perangkat</th>
                 <th className="py-3 px-6 font-semibold bg-white">
-                  nama barang
+                  Jumlah Pakai
                 </th>
-                <th className="py-3 px-6 font-semibold bg-white">
-                  tanggal pemakaian
-                </th>
-                <th className="py-3 px-6 font-semibold bg-white">jumlah</th>
+                <th className="py-3 px-6 font-semibold bg-white">Tanggal</th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.map(([kelas, barang, tanggal, jumlah], idx) => (
-                <tr key={idx} className="border-b last:border-b-0">
-                  <td className="py-3 px-6 font-sans font-semibold text-black text-lg md:text-xl">
-                    {kelas}
-                  </td>
-                  <td className="py-3 px-6 font-sans font-semibold text-black text-lg md:text-xl">
-                    {barang}
-                  </td>
-                  <td className="py-3 px-6 font-sans font-semibold text-black text-lg md:text-xl">
-                    {tanggal}
-                  </td>
-                  <td className="py-3 px-6 font-sans font-bold text-black text-lg md:text-xl">
-                    {jumlah}
-                  </td>
+              {filteredData.map((item, idx) => (
+                <tr
+                  key={item.id_penggunaan || idx}
+                  className="border-b last:border-b-0"
+                >
+                  <td className="py-3 px-6">{item.nama_kelas}</td>
+                  <td className="py-3 px-6">{item.nama_labor}</td>
+                  <td className="py-3 px-6">{item.nama_perangkat}</td>
+                  <td className="py-3 px-6">{item.jumlah_pakai}</td>
+                  <td className="py-3 px-6">{item.tanggal}</td>
                 </tr>
               ))}
             </tbody>

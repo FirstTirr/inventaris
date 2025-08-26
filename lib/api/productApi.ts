@@ -1,5 +1,3 @@
-const BASE_API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://192.168.93.209:8000";
 export interface ProductData {
   nama_produk: string;
   labor: string;
@@ -10,7 +8,7 @@ export interface ProductData {
 }
 
 export async function postProduct(data: ProductData) {
-  const res = await fetch(BASE_API_URL + "/user/barang", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang`,{
     method: "POST",
     headers: {
       "Content-Type": "application/json",

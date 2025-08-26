@@ -17,7 +17,7 @@ export default function NavRpl() {
             DASHBOARD KABENG/KAPROG
           </h1>
           <button
-            className="flex items-center gap-2 px-6 py-2 bg-blue-400 text-black rounded-full hover:bg-gray-500 transition-all"
+            className="flex items-center gap-2 px-6 py-2 bg-gray-400 text-black rounded-full hover:bg-gray-500 transition-all"
             style={{ height: 40 }}
             onClick={() => router.back()}
           >
@@ -34,19 +34,39 @@ export default function NavRpl() {
           </button>
         </div>
         <div className="border-b border-black/30" />
-        <div className="flex items-center gap-8 px-8 py-1">
+        <div className="flex items-center gap-4 px-8 py-1">
           <button
-            className={`text-black font-medium text-base hover:underline ${
-              active === "barang baik" ? "border-b-2 border-black" : ""
-            }`}
+            className={`px-5 py-2 rounded-lg font-medium text-base transition border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400
+              ${
+                active === "barang baik"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-black hover:bg-blue-100"
+              }
+            `}
+            style={{
+              boxShadow:
+                active === "barang baik"
+                  ? "0 2px 8px rgba(59,130,246,0.10)"
+                  : undefined,
+            }}
             onClick={() => setActive("barang baik")}
           >
             barang baik
           </button>
           <button
-            className={`text-black font-medium text-base hover:underline ${
-              active === "barang rusak" ? "border-b-2 border-black" : ""
-            }`}
+            className={`px-5 py-2 rounded-lg font-medium text-base transition border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400
+              ${
+                active === "barang rusak"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-black hover:bg-blue-100"
+              }
+            `}
+            style={{
+              boxShadow:
+                active === "barang rusak"
+                  ? "0 2px 8px rgba(59,130,246,0.10)"
+                  : undefined,
+            }}
             onClick={() => setActive("barang rusak")}
           >
             barang rusak

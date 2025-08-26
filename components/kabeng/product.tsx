@@ -27,7 +27,15 @@ export const Product = () => {
         console.log("HASIL DARI API:", arr);
         if (Array.isArray(arr)) {
           setData(
-            arr.map((item: any) => [
+            arr.map((item: {
+              id_perangkat: string | number;
+              nama_perangkat: string;
+              kategori: string;
+              jurusan: string;
+              id_labor: string;
+              jumlah: string | number;
+              status: string;
+            }) => [
               Number(item.id_perangkat),
               item.nama_perangkat,
               item.kategori,
@@ -92,6 +100,33 @@ export const Product = () => {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Product Management</h2>
+        </div>
+
+        {/* Dashboard Statistic Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {(() => {
+            // Calculate total items per jurusan (BC, TKJ, RPL, DKV)
+            const jurusanList = [
+              { key: "BC", label: "Barang BC", color: "bg-blue-500" },
+              { key: "TKJ", label: "Barang TKJ", color: "bg-green-500" },
+              { key: "RPL", label: "Barang RPL", color: "bg-purple-500" },
+              { key: "DKV", label: "Barang DKV", color: "bg-pink-500" },
+            ];
+            return jurusanList.map(({ key, label, color }) => {
+              const total = data
+                .filter(([, , , jurusan]) => jurusan === key)
+                .reduce((sum, [, , , , , jumlah]) => sum + Number(jumlah), 0);
+              return (
+                <div
+                  key={key}
+                  className={`rounded-xl shadow flex flex-col items-center justify-center py-6 ${color} text-white`}
+                >
+                  <div className="text-lg font-semibold mb-1">{label}</div>
+                  <div className="text-3xl font-bold">{total}</div>
+                </div>
+              );
+            });
+          })()}
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
@@ -194,8 +229,17 @@ export const Product = () => {
                             const arr = Array.isArray(result.data)
                               ? result.data
                               : result;
-                            setData(
-                              arr.map((item:any) => [
+                            if (Array.isArray(arr)) {
+                              setData(
+                              arr.map((item: {
+                                id_perangkat: string | number;
+                                nama_perangkat: string;
+                                kategori: string;
+                                jurusan: string;
+                                id_labor: string;
+                                jumlah: string | number;
+                                status: string;
+                              }) => [
                                 Number(item.id_perangkat),
                                 item.nama_perangkat,
                                 item.kategori,
@@ -204,7 +248,8 @@ export const Product = () => {
                                 Number(item.jumlah),
                                 item.status,
                               ])
-                            );
+                              );
+                            }
                             alert("Barang berhasil dihapus!");
                           } catch (err) {
                             alert("Gagal menghapus data: " + err);

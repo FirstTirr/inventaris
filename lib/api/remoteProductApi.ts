@@ -1,8 +1,8 @@
-const BASE_API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://192.168.93.209:8000";
+
+  
 export async function deleteRemoteProduct(id_perangkat: number) {
   try {
-    const response = await fetch(BASE_API_URL + "/user/barang/delete", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/delete`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -10,14 +10,14 @@ export async function deleteRemoteProduct(id_perangkat: number) {
       body: JSON.stringify({ id_perangkat }),
     });
 
-    if (!response.ok) {
+    if (!res.ok) {
       throw new Error(
-        `Gagal menghapus data produk. Status: ${response.status}`
+        `Gagal menghapus data produk. Status: ${res.status}`
       );
     }
     console.log(id_perangkat);
 
-    const data = await response.json();
+    const data = await res.json();
     return data;
   } catch (error) {
     console.error("Terjadi kesalahan:", error);
@@ -28,7 +28,7 @@ export async function deleteRemoteProduct(id_perangkat: number) {
 
 // API khusus untuk ambil data dari database di laptop lain (GET)
 export async function getRemoteProducts() {
-  const res = await fetch(BASE_API_URL + "/user/barang/read", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`, {
     method: "GET",
   });
   if (!res.ok) {
