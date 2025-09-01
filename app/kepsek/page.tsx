@@ -1,9 +1,17 @@
+"use client";
+import { useEffect, useState } from "react";
 import NavKepsek from "@/components/kepsek/NavKepsek";
 
 export default function Home() {
-  return (
-    <>
-      <NavKepsek />
-    </>
-  );
+  // const [authorized, setAuthorized] = useState(false);
+  // useEffect(() => {
+  //   const user = localStorage.getItem("user");
+  //   if (!user) {
+  //     window.location.href = "/";
+  //   } else {
+  //     setAuthorized(true);
+  //   }
+  // }, []);
+  // if (!authorized) return null;
+  return <NavKepsek />;
 }

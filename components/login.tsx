@@ -16,22 +16,33 @@ export default function Login() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/login`, {
+      // Debug: print runtime env and target URL
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/login`;
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nama_user, password }),
+        credentials: "include",
       });
+
+      // Debug: log response headers to check Set-Cookie
+      for (const [k, v] of res.headers.entries())
+        console.log(`RESP HEADER: ${k}: ${v}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Login gagal");
-      // Redirect manual ke frontend route
+      // Tidak perlu set cookie di frontend, backend sudah set cookie httponly
+      // Langsung redirect ke halaman sesuai backend
+      // Setelah login sukses, set cookie di browser domain frontend
+      document.cookie = `user=${nama_user}; path=/; max-age=3600`;
+      console.log("Cookie user disimpan di domain frontend:", document.cookie);
       if (data.redirect_url) {
-        window.location.href = data.redirect_url;
-        return;
+        window.location = data.redirect_url;
+      } else {
+        window.location.href = "/";
       }
-      alert("Login berhasil!");
-      // Simpan token/user ke localStorage atau state jika perlu
     } catch (err: any) {
-      setError(err.message);
+      console.error("LOGIN failed:", err);
+      setError(err.message || String(err));
     } finally {
       setLoading(false);
     }

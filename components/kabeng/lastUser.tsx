@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Trash2 } from "lucide-react";
 
 export default function LastUser() {
   const [search, setSearch] = useState("");
@@ -33,6 +34,28 @@ export default function LastUser() {
       (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
     );
   });
+
+  // Tambahkan fungsi hapus penggunaan
+  const handleDelete = async (id_penggunaan: number) => {
+    if (!window.confirm("Yakin ingin menghapus penggunaan ini?")) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan/delete`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_penggunaan }),
+        }
+      );
+      if (!res.ok) throw new Error("Gagal menghapus penggunaan");
+      // Hapus dari state jika sukses
+      setData((prev) =>
+        prev.filter((item) => item.id_penggunaan !== id_penggunaan)
+      );
+    } catch (err) {
+      alert("Gagal menghapus penggunaan");
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-600">{error}</div>;
@@ -80,19 +103,30 @@ export default function LastUser() {
                   Jumlah Pakai
                 </th>
                 <th className="py-3 px-6 font-semibold bg-white">Tanggal</th>
+                <th className="py-3 px-6 font-semibold bg-white text-center">
+                  actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {filteredData.map((item, idx) => (
                 <tr
                   key={item.id_penggunaan || idx}
-                  className="border-b last:border-b-0"
+                  className="border-b last:border-b-0 text-gray-700"
                 >
                   <td className="py-3 px-6">{item.nama_kelas}</td>
                   <td className="py-3 px-6">{item.nama_labor}</td>
                   <td className="py-3 px-6">{item.nama_perangkat}</td>
                   <td className="py-3 px-6">{item.jumlah_pakai}</td>
                   <td className="py-3 px-6">{item.tanggal}</td>
+                  <td className="py-3 px-6 text-center">
+                    <button
+                      className="inline-flex items-center justify-center rounded-md p-2 bg-red-100 hover:bg-red-200 transition-colors"
+                      onClick={() => handleDelete(item.id_penggunaan)}
+                    >
+                      <Trash2 className="w-6 h-6 text-red-600" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from "react";
+import { CheckCheck } from "lucide-react";
 
 export default function TerimaLaporan() {
+  // Fungsi hapus laporan
+  const handleDelete = async (id_laporan: number) => {
+    if (!window.confirm("Yakin ingin menghapus laporan ini?")) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan/delete`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_laporan }),
+        }
+      );
+      if (!res.ok) throw new Error("Gagal menghapus laporan");
+      setLaporan((prev) =>
+        prev.filter((item) => item.id_laporan !== id_laporan)
+      );
+    } catch (err) {
+      alert("Gagal menghapus laporan");
+    }
+  };
   const [laporan, setLaporan] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -10,7 +31,9 @@ export default function TerimaLaporan() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`
+        );
         if (!res.ok) throw new Error("Gagal mengambil data laporan");
         const data = await res.json();
         setLaporan(data.data || []);
@@ -47,18 +70,29 @@ export default function TerimaLaporan() {
                 <th className="py-3 px-6 font-semibold bg-white">
                   Tanggal Lapor
                 </th>
+                <th className="py-3 px-6 font-semibold bg-white text-center">
+                  actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {laporan.map((item: any, idx: number) => (
                 <tr
                   key={item.id_laporan || idx}
-                  className="border-b last:border-b-0"
+                  className="border-b last:border-b-0 text-gray-700"
                 >
                   <td className="py-3 px-6">{item.nama_labor}</td>
                   <td className="py-3 px-6">{item.nama_perangkat}</td>
                   <td className="py-3 px-6">{item.jenis_kerusakan}</td>
                   <td className="py-3 px-6">{item.tanggal_lapor}</td>
+                  <td className="py-3 px-6 text-center">
+                    <button
+                      className="inline-flex items-center justify-center rounded-md p-2 bg-green-100 hover:bg-green-200 transition-colors"
+                      onClick={() => handleDelete(item.id_laporan)}
+                    >
+                      <CheckCheck className="w-6 h-6 text-green-600" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

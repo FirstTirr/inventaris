@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Binoculars, Eye, ShoppingCart } from "lucide-react";
 import CrudAKun from "./crudAkun";
 import MemantauAkun from "./memantauAkun";
 import { Product } from "../kabeng/product";
@@ -28,13 +29,13 @@ export default function NavAdmin() {
       </button>
 
       {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex w-80 bg-black text-white flex-col py-8 px-8 min-h-screen shadow-lg border-r border-gray-200">
+      <aside className="hidden md:flex w-80 bg-gray-800 text-white flex-col py-25 px-8 min-h-screen shadow-lg border-r border-gray-200">
         <div className="mb-8 px-2">
           <h1 className="text-2xl font-bold tracking-tight mb-6">
             DASHBOARD ADMIN
           </h1>
         </div>
-        <nav className="flex-1">
+        <nav>
           <ul className="flex flex-col gap-2">
             {menuItems.map((item) => (
               <li key={item.key}>
@@ -46,15 +47,19 @@ export default function NavAdmin() {
                   }`}
                   onClick={() => setActive(item.key)}
                 >
+                  {item.key === "Memantau Akun" && (
+                    <Binoculars className="w-5 h-5" />
+                  )}
+                  {item.key === "Product" && (
+                    <ShoppingCart className="w-5 h-5" />
+                  )}
                   {item.label}
                 </button>
               </li>
             ))}
           </ul>
-        </nav>
-        <div className="mt-auto">
           <button
-            className="flex items-center gap-2 px-4 py-2 bg-blue-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-[45rem]"
             onClick={() => {
               localStorage.clear();
               window.location.href = "/";
@@ -76,7 +81,7 @@ export default function NavAdmin() {
             </svg>
             Log out
           </button>
-        </div>
+        </nav>
       </aside>
 
       {/* Sidebar Drawer (mobile) */}
@@ -88,7 +93,7 @@ export default function NavAdmin() {
             onClick={() => setSidebarOpen(false)}
           />
           {/* Drawer */}
-          <aside className="relative w-72 max-w-[90vw] bg-black text-white flex flex-col py-8 px-6 min-h-screen shadow-lg animate-slideInLeft border-r border-gray-200">
+          <aside className="relative w-72 max-w-[90vw] bg-gray-800 text-white flex flex-col py-8 px-6 min-h-screen shadow-lg animate-slideInLeft border-r border-gray-200">
             <div className="flex items-center justify-between mb-8 px-2">
               <h1 className="text-2xl font-bold tracking-tight">
                 DASHBOARD ADMIN
@@ -112,7 +117,7 @@ export default function NavAdmin() {
                 </svg>
               </button>
             </div>
-            <nav className="flex-1">
+            <nav>
               <ul className="flex flex-col gap-2">
                 {menuItems.map((item) => (
                   <li key={item.key}>
@@ -127,15 +132,19 @@ export default function NavAdmin() {
                         setSidebarOpen(false);
                       }}
                     >
+                      {item.key === "Memantau Akun" && (
+                        <Binoculars className="w-5 h-5" />
+                      )}
+                      {item.key === "Product" && (
+                        <ShoppingCart className="w-5 h-5" />
+                      )}
                       {item.label}
                     </button>
                   </li>
                 ))}
               </ul>
-            </nav>
-            <div className="mt-auto pt-8">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-blue-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-90"
                 onClick={() => {
                   localStorage.clear();
                   window.location.href = "/";
@@ -157,7 +166,7 @@ export default function NavAdmin() {
                 </svg>
                 Log out
               </button>
-            </div>
+            </nav>
           </aside>
         </div>
       )}

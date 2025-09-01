@@ -12,65 +12,52 @@ export default function NavRpl() {
   return (
     <>
       <nav className="relative w-full bg-white">
-        <div className="flex items-center justify-between px-8 py-3">
-          <h1 className="text-2xl font-bold tracking-tight text-left">
-            DASHBOARD KABENG/KAPROG
-          </h1>
+        <div className="border-b border-black/30" />
+        <div className="flex flex-col gap-2 px-8 py-2 sm:flex-row sm:items-center sm:gap-4">
           <button
-            className="flex items-center gap-2 px-6 py-2 bg-gray-400 text-black rounded-full hover:bg-gray-500 transition-all"
-            style={{ height: 40 }}
-            onClick={() => router.back()}
+            onClick={() => window.history.back()}
+            className="mb-2 sm:mb-0 w-full sm:w-auto px-5 py-2 rounded-lg font-medium text-base bg-gray-100 hover:bg-gray-200 border border-gray-300 shadow-sm"
           >
-            <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-              <path
-                d="M9 18l6-6-6-6"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
             Kembali
           </button>
-        </div>
-        <div className="border-b border-black/30" />
-        <div className="flex items-center gap-4 px-8 py-1">
-          <button
-            className={`px-5 py-2 rounded-lg font-medium text-base transition border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400
-              ${
-                active === "barang baik"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-black hover:bg-blue-100"
-              }
-            `}
-            style={{
-              boxShadow:
-                active === "barang baik"
-                  ? "0 2px 8px rgba(59,130,246,0.10)"
-                  : undefined,
-            }}
-            onClick={() => setActive("barang baik")}
-          >
-            barang baik
-          </button>
-          <button
-            className={`px-5 py-2 rounded-lg font-medium text-base transition border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400
-              ${
-                active === "barang rusak"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-black hover:bg-blue-100"
-              }
-            `}
-            style={{
-              boxShadow:
-                active === "barang rusak"
-                  ? "0 2px 8px rgba(59,130,246,0.10)"
-                  : undefined,
-            }}
-            onClick={() => setActive("barang rusak")}
-          >
-            barang rusak
-          </button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              className={`flex-1 sm:flex-none px-5 py-2 rounded-lg font-medium text-base transition border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400
+                ${
+                  active === "barang baik"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-black hover:bg-blue-100"
+                }
+              `}
+              style={{
+                boxShadow:
+                  active === "barang baik"
+                    ? "0 2px 8px rgba(59,130,246,0.10)"
+                    : undefined,
+              }}
+              onClick={() => setActive("barang baik")}
+            >
+              barang baik
+            </button>
+            <button
+              className={`flex-1 sm:flex-none px-5 py-2 rounded-lg font-medium text-base transition border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400
+                ${
+                  active === "barang rusak"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-black hover:bg-blue-100"
+                }
+              `}
+              style={{
+                boxShadow:
+                  active === "barang rusak"
+                    ? "0 2px 8px rgba(59,130,246,0.10)"
+                    : undefined,
+              }}
+              onClick={() => setActive("barang rusak")}
+            >
+              barang rusak
+            </button>
+          </div>
         </div>
       </nav>
       <div className="px-8 py-4">

@@ -1,76 +1,62 @@
-"use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import type { ReactElement } from "react";
+import { getRemoteProducts } from "@/lib/api/remoteProductApi";
 
-const items = [
-  {
-    label: "total pc baik",
-    value: 15,
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="12" fill="#377DFF" />
-        <path
-          d="M6 17h12M7 7h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"
-          stroke="#222"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M9 14h6"
-          stroke="#222"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    label: "total pokonya itu baik",
-    value: 15,
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="12" fill="#00C9A7" />
-        <path
-          d="M8 17V7h8v10M8 17h8M8 7h8M12 17v-2"
-          stroke="#222"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    label: "total itulah baik",
-    value: 15,
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="12" fill="#888" />
-        <rect x="7" y="10" width="10" height="4" rx="1" fill="#fff" />
-        <rect x="9" y="12" width="2" height="1" rx="0.5" fill="#888" />
-        <rect x="13" y="12" width="2" height="1" rx="0.5" fill="#888" />
-      </svg>
-    ),
-  },
-  {
-    label: "total itu baik",
-    value: 15,
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="12" fill="#00f" />
-      </svg>
-    ),
-  },
-  {
-    label: "total semua barang baik",
-    value: 60,
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="12" fill="#00f" />
-      </svg>
-    ),
-  },
-];
+const iconMap: Record<string, ReactElement> = {
+  pc: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="12" fill="#377DFF" />
+      <path d="M6 17h12M7 7h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" stroke="#222" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M9 14h6" stroke="#222" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
+  // ...tambahkan icon lain sesuai kebutuhan
+};
 
 export default function BarangBaik() {
+  const [items, setItems] = useState<{ label: string; value: number; icon: ReactElement }[]>([]);
+
+  useEffect(() => {
+    getRemoteProducts().then((result) => {
+      const arr = Array.isArray(result.data) ? result.data : result;
+      // Filter jurusan 'tkj' dan status 'baik'
+      const filtered = arr.filter(
+        (item: any) =>
+          item.jurusan?.toLowerCase() === "tkj" &&
+          item.status?.toLowerCase() === "baik"
+      );
+      // Group by nama_perangkat
+      const grouped: Record<string, number> = {};
+      filtered.forEach((item: any) => {
+        const key = item.nama_perangkat?.toLowerCase();
+        if (!grouped[key]) grouped[key] = 0;
+        grouped[key] += Number(item.jumlah) || 0;
+      });
+      // Build items array
+      const itemsArr = Object.entries(grouped).map(([key, value]) => ({
+        label: `total ${key} baik`,
+        value,
+        icon: iconMap[key] || (
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="12" fill="#ccc" />
+          </svg>
+        ),
+      }));
+      // Total semua barang baik
+      const total = itemsArr.reduce((sum, i) => sum + i.value, 0);
+      itemsArr.push({
+        label: "total semua barang baik",
+        value: total,
+        icon: (
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="12" fill="#00f" />
+          </svg>
+        ),
+      });
+      setItems(itemsArr);
+    });
+  }, []);
+
   return (
     <div className="min-h-[60vh] bg-[#f7f7f8] px-4 pt-8 pb-4">
       <div className="max-w-7xl mx-auto">
@@ -78,7 +64,7 @@ export default function BarangBaik() {
           className="text-2xl sm:text-3xl font-bold mb-1 text-left"
           style={{ fontFamily: "Montserrat, sans-serif" }}
         >
-          Dashboard TKJ (barang rusak)
+          Dashboard TKJ (barang baik)
         </h2>
         <p className="text-gray-500 text-base font-normal mb-8 text-left">
           Monitor your labor performance

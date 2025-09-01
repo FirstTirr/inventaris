@@ -4,7 +4,7 @@ import {
   getRemoteProducts,
   deleteRemoteProduct,
 } from "@/lib/api/remoteProductApi";
-import { Trash2 } from "lucide-react";
+import { CircleArrowRight, Trash2 } from "lucide-react";
 
 export const Product = () => {
   const [search, setSearch] = useState("");
@@ -27,23 +27,25 @@ export const Product = () => {
         console.log("HASIL DARI API:", arr);
         if (Array.isArray(arr)) {
           setData(
-            arr.map((item: {
-              id_perangkat: string | number;
-              nama_perangkat: string;
-              kategori: string;
-              jurusan: string;
-              id_labor: string;
-              jumlah: string | number;
-              status: string;
-            }) => [
-              Number(item.id_perangkat),
-              item.nama_perangkat,
-              item.kategori,
-              item.jurusan,
-              item.id_labor,
-              Number(item.jumlah),
-              item.status,
-            ])
+            arr.map(
+              (item: {
+                id_perangkat: string | number;
+                nama_perangkat: string;
+                kategori: string;
+                jurusan: string;
+                id_labor: string;
+                jumlah: string | number;
+                status: string;
+              }) => [
+                Number(item.id_perangkat),
+                item.nama_perangkat,
+                item.kategori,
+                item.jurusan,
+                item.id_labor,
+                Number(item.jumlah),
+                item.status,
+              ]
+            )
           );
         }
       })
@@ -97,20 +99,20 @@ export const Product = () => {
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto w-full">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Product Management</h2>
         </div>
 
-        {/* Dashboard Statistic Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        {/* Dashboard Statistic Cards - Responsive */}
+  <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4">
           {(() => {
             // Calculate total items per jurusan (BC, TKJ, RPL, DKV)
             const jurusanList = [
-              { key: "BC", label: "Barang BC", color: "bg-blue-500" },
+              { key: "BC", label: "Barang BC", color: "bg-black" },
               { key: "TKJ", label: "Barang TKJ", color: "bg-green-500" },
-              { key: "RPL", label: "Barang RPL", color: "bg-purple-500" },
-              { key: "DKV", label: "Barang DKV", color: "bg-pink-500" },
+              { key: "RPL", label: "Barang RPL", color: "bg-red-700" },
+              { key: "DKV", label: "Barang DKV", color: "bg-gray-500" },
             ];
             return jurusanList.map(({ key, label, color }) => {
               const total = data
@@ -119,10 +121,19 @@ export const Product = () => {
               return (
                 <div
                   key={key}
-                  className={`rounded-xl shadow flex flex-col items-center justify-center py-6 ${color} text-white`}
+                  className={`rounded-xl shadow flex flex-col items-center justify-center py-7 px-3 ${color} text-white w-full`}
                 >
                   <div className="text-lg font-semibold mb-1">{label}</div>
                   <div className="text-3xl font-bold">{total}</div>
+                  <a
+                    href={`/${key.toLowerCase()}`}
+                    className="w-full flex justify-center mt-3"
+                  >
+                    <button className="bg-white text-gray-700 text-xs font-semibold rounded-full px-4 py-1 shadow hover:bg-gray-100 transition flex items-center gap-2">
+                      <CircleArrowRight className="w-4 h-4" />
+                      more info
+                    </button>
+                  </a>
                 </div>
               );
             });
@@ -182,7 +193,7 @@ export const Product = () => {
           />
         )}
 
-        <div className="overflow-x-auto rounded-xl bg-white shadow font-sans">
+  <div className="overflow-x-auto rounded-xl bg-white shadow font-sans w-full">
           <table className="min-w-full">
             <thead>
               <tr className="text-gray-500 text-xs font-semibold border-b">
@@ -209,7 +220,7 @@ export const Product = () => {
                   ],
                   idx
                 ) => (
-                  <tr key={idx} className="border-b last:border-b-0">
+                  <tr key={idx} className="text-gray-700 border-b last:border-b-0">
                     <td className="py-3 px-6 text-left">{nama_perangkat}</td>
                     <td className="py-3 px-6 text-center">{kategori}</td>
                     <td className="py-3 px-6 text-center">{jurusan}</td>
@@ -221,7 +232,11 @@ export const Product = () => {
                         title="Hapus"
                         className="hover:text-red-600"
                         onClick={async () => {
-                          console.log("Mau hapus ID:", id_perangkat, typeof id_perangkat);
+                          console.log(
+                            "Mau hapus ID:",
+                            id_perangkat,
+                            typeof id_perangkat
+                          );
                           try {
                             await deleteRemoteProduct(id_perangkat);
                             // Refresh data
@@ -231,23 +246,25 @@ export const Product = () => {
                               : result;
                             if (Array.isArray(arr)) {
                               setData(
-                              arr.map((item: {
-                                id_perangkat: string | number;
-                                nama_perangkat: string;
-                                kategori: string;
-                                jurusan: string;
-                                id_labor: string;
-                                jumlah: string | number;
-                                status: string;
-                              }) => [
-                                Number(item.id_perangkat),
-                                item.nama_perangkat,
-                                item.kategori,
-                                item.jurusan,
-                                item.id_labor,
-                                Number(item.jumlah),
-                                item.status,
-                              ])
+                                arr.map(
+                                  (item: {
+                                    id_perangkat: string | number;
+                                    nama_perangkat: string;
+                                    kategori: string;
+                                    jurusan: string;
+                                    id_labor: string;
+                                    jumlah: string | number;
+                                    status: string;
+                                  }) => [
+                                    Number(item.id_perangkat),
+                                    item.nama_perangkat,
+                                    item.kategori,
+                                    item.jurusan,
+                                    item.id_labor,
+                                    Number(item.jumlah),
+                                    item.status,
+                                  ]
+                                )
                               );
                             }
                             alert("Barang berhasil dihapus!");

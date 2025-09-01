@@ -269,7 +269,7 @@ export default function Navbar() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div className="flex-1 w-full">
         <header>
           <h1 className="text-2xl font-semibold tracking-wide text-left text-gray-800">
             {active === "dashboard" && ""}
@@ -278,7 +278,7 @@ export default function Navbar() {
             {active === "laporan" && ""}
           </h1>
         </header>
-        <main className="p-8">
+        <main className="p-2 md:p-8 overflow-x-auto">
           {active === "dashboard" && <About />}
           {active === "product" && <Product />}
           {active === "user" && <LastUser />}

@@ -1,9 +1,17 @@
+"use client";
+import { useEffect, useState } from "react";
 import NavAdmin from "@/components/admin/navAdmin";
 
 export default function Home() {
-  return (
-    <>
-    <NavAdmin/>
-    </>
-  );
-};
+  // const [authorized, setAuthorized] = useState(false);
+  // useEffect(() => {
+  //   const user = localStorage.getItem("user");
+  //   if (!user) {
+  //     window.location.href = "/";
+  //   } else {
+  //     setAuthorized(true);
+  //   }
+  // }, []);
+  // if (!authorized) return null;
+  return <NavAdmin />;
+}

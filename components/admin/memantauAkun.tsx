@@ -1,18 +1,83 @@
-import React from "react";
+import { deleteRemoteUser } from "@/lib/api/remoteProductApi";
+import React, { useEffect, useState } from "react";
 import { Trash2, UserPlus } from "lucide-react";
+import { getRemoteUsers } from "@/lib/api/remoteProductApi";
 
-const users = [
-  { nama: "kingkabeng", password: "kabeng123" },
-  { nama: "kingkabeng", password: "kabeng123" },
-];
+// Fungsi untuk membaca cookie (non-HttpOnly)
+function getAllCookiesAsObject() {
+  if (typeof document === "undefined") return {};
+  const cookies = document.cookie ? document.cookie.split("; ") : [];
+  const cookieObj: Record<string, string> = {};
+  cookies.forEach((c) => {
+    const [key, ...v] = c.split("=");
+    if (key) cookieObj[key] = v.join("=");
+  });
+  return cookieObj;
+}
 
-// Komponen ini sekarang hanya menampilkan tabel dan tombol Tambahkan Akun,
-// tombol akan memanggil fungsi prop onAddAkun jika ada
+type User = {
+  id_user: number;
+  nama: string;
+  password: string;
+  id_role: number;
+};
+
 export default function MemantauAkun({
   onAddAkun,
 }: {
   onAddAkun?: () => void;
 }) {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Fungsi hapus user
+  const handleDeleteUser = async (id_user: number) => {
+    if (!window.confirm("Yakin ingin menghapus akun ini?")) return;
+    try {
+      await deleteRemoteUser(id_user);
+      setUsers((prev) => prev.filter((u) => u.id_user !== id_user));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Gagal menghapus akun");
+    }
+  };
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const cookiesObj = getAllCookiesAsObject();
+        const headers: Record<string, string> = {};
+        if (Object.keys(cookiesObj).length > 0) {
+          headers["X-User-Cookies"] = JSON.stringify(cookiesObj);
+        }
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`,
+          {
+            method: "GET",
+            headers,
+            credentials: "include",
+          }
+        );
+        if (!res.ok) throw new Error("Gagal mengambil data user dari remote");
+        const data = await res.json();
+        setUsers(Array.isArray(data.data) ? data.data : []);
+        // cookies removed
+      } catch (err) {
+        if (err instanceof Error) setError(err.message);
+        else setError("Gagal mengambil data user");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
+
   return (
     <div className="min-h-screen bg-[#f7f7f8] px-4 py-12">
       <div className="max-w-6xl mx-auto">
@@ -38,37 +103,42 @@ export default function MemantauAkun({
           <div className="bg-blue-500 rounded-xl p-6 text-white flex flex-col justify-between shadow">
             <div className="flex justify-between items-center mb-2">
               <span className="text-lg font-semibold">Kabeng</span>
-              <span className="text-3xl font-bold">12</span>
+              <span className="text-3xl font-bold">
+                {users.filter((u) => u.id_role === 0).length}
+              </span>
             </div>
             <div className="flex items-center gap-2 mt-2">
-              
               <span className="text-sm">TOTAL KABENG/KAPROG </span>
             </div>
           </div>
           <div className="bg-green-500 rounded-xl p-6 text-white flex flex-col justify-between shadow">
             <div className="flex justify-between items-center mb-2">
               <span className="text-lg font-semibold">Waka Sarana</span>
-              <span className="text-3xl font-bold">8</span>
+              <span className="text-3xl font-bold">
+                {users.filter((u) => u.id_role === 2).length}
+              </span>
             </div>
             <div className="flex items-center gap-2 mt-2">
-              
               <span className="text-sm">TOTAL WAKA SARANA</span>
             </div>
           </div>
           <div className="bg-red-500 rounded-xl p-6 text-white flex flex-col justify-between shadow">
             <div className="flex justify-between items-center mb-2">
               <span className="text-lg font-semibold">Guru</span>
-              <span className="text-3xl font-bold">20</span>
+              <span className="text-3xl font-bold">
+                {users.filter((u) => u.id_role === 1).length}
+              </span>
             </div>
             <div className="flex items-center gap-2 mt-2">
-              
               <span className="text-sm">TOTAL GURU</span>
             </div>
           </div>
           <div className="bg-gray-400 rounded-xl p-6 text-white flex flex-col justify-between shadow">
             <div className="flex justify-between items-center mb-2">
               <span className="text-lg font-semibold">Kepala Sekolah</span>
-              <span className="text-3xl font-bold">3</span>
+              <span className="text-3xl font-bold">
+                {users.filter((u) => u.id_role === 3).length}
+              </span>
             </div>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-sm">TOTAL KEPALA SEKOLAH</span>
@@ -79,18 +149,40 @@ export default function MemantauAkun({
           <table className="min-w-full rounded-xl overflow-hidden text-xs sm:text-base">
             <thead>
               <tr>
-                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">nama</th>
-                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">password</th>
-                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">action</th>
+                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                  nama
+                </th>
+                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                  password
+                </th>
+                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                  role
+                </th>
+                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                  action
+                </th>
               </tr>
             </thead>
             <tbody>
               {users.map((user, idx) => (
                 <tr key={idx}>
-                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-2xl font-bold text-black font-[Montserrat,sans-serif] border-b border-gray-300">{user.nama}</td>
-                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-2xl font-bold text-black font-[Montserrat,sans-serif] border-b border-gray-300">{user.password}</td>
+                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-2xl font-bold text-black font-[Montserrat,sans-serif] border-b border-gray-300">
+                    {user.nama}
+                  </td>
+                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-2xl font-bold text-black font-[Montserrat,sans-serif] border-b border-gray-300">
+                    {user.password}
+                  </td>
+                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-xl font-semibold text-black font-[Montserrat,sans-serif] border-b border-gray-300">
+                    {user.id_role === 0 && "Kabeng"}
+                    {user.id_role === 1 && "Guru"}
+                    {user.id_role === 2 && "Waka Sarana"}
+                    {user.id_role === 3 && "Kepala Sekolah"}
+                  </td>
                   <td className="py-4 sm:py-8 px-2 sm:px-6 text-left border-b border-gray-300 align-middle">
-                    <button className="hover:text-red-600">
+                    <button
+                      className="hover:text-red-600"
+                      onClick={() => handleDeleteUser(user.id_user)}
+                    >
                       <Trash2 size={20} className="sm:w-7 sm:h-7" />
                     </button>
                   </td>
