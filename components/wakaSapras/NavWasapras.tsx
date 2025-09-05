@@ -27,7 +27,7 @@ export default function NavKepsek() {
       </button>
 
       {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex w-80 bg-gray-800 text-white flex-col py-8 px-8 min-h-screen shadow-lg border-r border-gray-200">
+      <aside className="hidden md:flex fixed left-0 top-0 w-80 bg-gray-800 text-white flex-col py-8 px-8 min-h-screen shadow-lg border-r border-gray-200 z-20">
         <div className="mb-8 px-2">
           <h1 className="text-2xl font-bold tracking-tight mb-6">
             DASHBOARD WAKA SARANA
@@ -45,8 +45,8 @@ export default function NavKepsek() {
                   }`}
                   onClick={() => setActive(item.key)}
                 >
-                    {item.key === "dashboard" && <House className="w-5 h-5" />}
-                    {item.key === "user" && <User className="w-5 h-5" />}
+                  {item.key === "dashboard" && <House className="w-5 h-5" />}
+                  {item.key === "user" && <User className="w-5 h-5" />}
                   {item.label}
                 </button>
               </li>
@@ -55,7 +55,7 @@ export default function NavKepsek() {
         </nav>
         <div>
           <button
-            className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-[40rem]"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-[3rem]"
             onClick={() => {
               localStorage.clear();
               window.location.href = "/";
@@ -128,8 +128,10 @@ export default function NavKepsek() {
                         setSidebarOpen(false);
                       }}
                     >
-                        {item.key === "dashboard" && <House className="w-5 h-5" />}
-                        {item.key === "user" && <User className="w-5 h-5" />}
+                      {item.key === "dashboard" && (
+                        <House className="w-5 h-5" />
+                      )}
+                      {item.key === "user" && <User className="w-5 h-5" />}
                       {item.label}
                     </button>
                   </li>
@@ -138,7 +140,7 @@ export default function NavKepsek() {
             </nav>
             <div>
               <button
-                 className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-90"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-10"
                 onClick={() => {
                   localStorage.clear();
                   window.location.href = "/";
@@ -166,7 +168,7 @@ export default function NavKepsek() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full md:pl-80">
         <header className="w-full bg-white border-b border-gray-400/70 px-4 py-3 md:px-8 md:py-4">
           <h2 className="text-lg font-semibold tracking-wide text-left text-gray-800">
             {active === "dashboard" && "DASHBOARD"}

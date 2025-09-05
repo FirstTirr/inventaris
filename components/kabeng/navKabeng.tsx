@@ -16,7 +16,7 @@ export default function Navbar() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f7f8fa]">
+    <div className="min-h-screen bg-[#f7f8fa]">
       {/* Hamburger for mobile */}
       <button
         className="fixed top-4 left-4 z-30 bg-black rounded-md p-2 flex flex-col gap-1 md:hidden"
@@ -29,7 +29,7 @@ export default function Navbar() {
       </button>
 
       {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex w-94 bg-[#181F2A] text-white flex-col py-8 px-8 min-h-screen shadow-lg">
+      <aside className="hidden md:flex fixed left-0 top-0 w-94 bg-[#181F2A] text-white flex-col py-8 px-8 min-h-screen shadow-lg z-20">
         <div className="mb-8 px-2">
           <h1 className="text-2xl font-bold tracking-tight mb-6">
             KABENG/KAPROG
@@ -269,7 +269,9 @@ export default function Navbar() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full md:pl-[23.5rem]">
+        {" "}
+        {/* 94 * 0.25rem = 23.5rem */}
         <header>
           <h1 className="text-2xl font-semibold tracking-wide text-left text-gray-800">
             {active === "dashboard" && ""}
@@ -278,7 +280,7 @@ export default function Navbar() {
             {active === "laporan" && ""}
           </h1>
         </header>
-        <main className="p-2 md:p-8 overflow-x-auto">
+        <main className="p-2 md:p-8 overflow-x-auto min-h-screen">
           {active === "dashboard" && <About />}
           {active === "product" && <Product />}
           {active === "user" && <LastUser />}

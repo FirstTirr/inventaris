@@ -12,6 +12,9 @@ export default function Home() {
   //     setAuthorized(true);
   //   }
   // }, []);
-  // if (!authorized) return null;
-  return <NavAdmin />;
+  return (
+    <>
+      <NavAdmin />
+    </>
+  );
 }

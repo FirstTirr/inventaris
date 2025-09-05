@@ -1,7 +1,6 @@
 import { deleteRemoteUser } from "@/lib/api/remoteProductApi";
 import React, { useEffect, useState } from "react";
 import { Trash2, UserPlus } from "lucide-react";
-import { getRemoteUsers } from "@/lib/api/remoteProductApi";
 
 // Fungsi untuk membaca cookie (non-HttpOnly)
 function getAllCookiesAsObject() {

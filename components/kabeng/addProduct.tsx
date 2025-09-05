@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { postProduct } from "@/lib/api/productApi";
 
 interface AddProductProps {
@@ -24,6 +24,44 @@ export default function AddProduct({
     jumlah: defaultValue ? String(defaultValue[4]) : "",
     status: defaultValue ? defaultValue[5] : "",
   });
+  const [kategoriList, setKategoriList] = useState<string[]>([]);
+  const [laborList, setLaborList] = useState<string[]>([]);
+  const [jurusanList, setJurusanList] = useState<string[]>([]);
+  useEffect(() => {
+    const fetchKategori = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`
+        );
+        const data = await res.json();
+        if (res.ok && data.data)
+          setKategoriList(data.data.map((k: any) => k.kategori));
+      } catch {}
+    };
+    const fetchLabor = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+        );
+        const data = await res.json();
+        if (res.ok && data.data)
+          setLaborList(data.data.map((l: any) => l.nama_labor));
+      } catch {}
+    };
+    const fetchJurusan = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`
+        );
+        const data = await res.json();
+        if (res.ok && data.data)
+          setJurusanList(data.data.map((j: any) => j.jurusan));
+      } catch {}
+    };
+    fetchKategori();
+    fetchLabor();
+    fetchJurusan();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -128,14 +166,15 @@ export default function AddProduct({
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >
                   <option value="">Pilih Labor</option>
-                  <option value="LABOR PK">LABOR PK</option>
-                  <option value="LABOR RPL">LABOR RPL</option>
-                  <option value="LABOR BC">LABOR BC</option>
-                  <option value="LABOR 1 DKV">LABOR 1 DKV</option>
-                  <option value="LABOR 2 DKV">LABOR 2 DKV</option>
-                  <option value="LABOR 1 TKJ">LABOR 1 TKJ</option>
-                  <option value="LABOR 2 TKJ">LABOR 2 TKJ</option>
-                  <option value="LABOR 3 TKJ">LABOR 3 TKJ</option>
+                  {laborList.length === 0 ? (
+                    <option value="">(tidak ada data labor)</option>
+                  ) : (
+                    laborList.map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div>
@@ -150,16 +189,15 @@ export default function AddProduct({
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >
                   <option value="">Pilih Kategori</option>
-                  <option value="PC">PC</option>
-                  <option value="MONITOR">MONITOR</option>
-                  <option value="MIXER">MIXER</option>
-                  <option value="KAMERA">KAMERA</option>
-                  <option value="MICROPHONE">MICROPHONE</option>
-                  <option value="HANDYCAM">HANDYCAM</option>
-                  <option value="SPEAKER">SPEAKER</option>
-                  <option value="SARAMONIC">SARAMONIC</option>
-                  <option value="LIGHTING">LIGHTING</option>
-                  <option value="LAPTOP">LAPTOP</option>
+                  {kategoriList.length === 0 ? (
+                    <option value="">(tidak ada data kategori)</option>
+                  ) : (
+                    kategoriList.map((k) => (
+                      <option key={k} value={k}>
+                        {k}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div>
@@ -190,10 +228,15 @@ export default function AddProduct({
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >
                   <option value="">Pilih Jurusan</option>
-                  <option value="RPL">RPL</option>
-                  <option value="TKJ">TKJ</option>
-                  <option value="DKV">DKV</option>
-                  <option value="BC">BC</option>
+                  {jurusanList.length === 0 ? (
+                    <option value="">(tidak ada data jurusan)</option>
+                  ) : (
+                    jurusanList.map((j) => (
+                      <option key={j} value={j}>
+                        {j}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div>

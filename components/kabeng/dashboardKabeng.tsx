@@ -1,6 +1,8 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 
 const About = () => {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-[#f7f7f8]">
       {/* Header */}
@@ -16,7 +18,7 @@ const About = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-12 max-w-md sm:max-w-3xl mx-auto mt-8 sm:mt-50">
           <button
             className="w-full h-32 bg-red-700 text-white font-medium rounded-xl px-4 py-4 shadow hover:bg-red-800 transition-all text-xs sm:text-base flex flex-col items-center justify-center"
-            onClick={() => window.location.replace("/rpl")}
+            onClick={() => router.push("/rpl")}
           >
             <span className="block leading-tight">LIHAT DAFTAR BARANG</span>
             <span className="block mt-1 text-center font-extrabold">
@@ -25,7 +27,7 @@ const About = () => {
           </button>
           <button
             className="w-full h-32 bg-gray-500 text-white font-medium rounded-xl px-4 py-4 shadow hover:bg-gray-600 transition-all text-xs sm:text-base flex flex-col items-center justify-center"
-            onClick={() => window.location.replace("/dkv")}
+            onClick={() => router.push("/dkv")}
           >
             <span className="block leading-tight">LIHAT DAFTAR BARANG</span>
             <span className="block mt-1 text-center font-extrabold">
@@ -34,7 +36,7 @@ const About = () => {
           </button>
           <button
             className="w-full h-32 bg-teal-500 text-black font-medium rounded-xl px-4 py-4 shadow hover:bg-teal-600 transition-all text-xs sm:text-base flex flex-col items-center justify-center"
-            onClick={() => window.location.replace("/tkj")}
+            onClick={() => router.push("/tkj")}
           >
             <span className="block leading-tight">LIHAT DAFTAR BARANG</span>
             <span className="block mt-1 text-center font-extrabold">
@@ -43,7 +45,7 @@ const About = () => {
           </button>
           <button
             className="w-full h-32 bg-black text-white font-medium rounded-xl px-4 py-4 shadow hover:bg-gray-800 transition-all text-xs sm:text-base flex flex-col items-center justify-center"
-            onClick={() => window.location.replace("/bc")}
+            onClick={() => router.push("/bc")}
           >
             <span className="block leading-tight">LIHAT DAFTAR BARANG</span>
             <span className="block mt-1 text-center font-extrabold">

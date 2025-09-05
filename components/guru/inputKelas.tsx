@@ -1,13 +1,44 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function InputKelas() {
   const [barang, setBarang] = useState("");
   const [jumlah, setJumlah] = useState("");
   const [labor, setLabor] = useState("");
-  const [kelas, setKelas] = useState("X TJKT 1");
+  const [kelas, setKelas] = useState("");
+  const [kelasList, setKelasList] = useState<string[]>([]);
+  const [laborList, setLaborList] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  // Fetch kelas list from backend
+  useEffect(() => {
+    const fetchKelas = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`
+        );
+        const data = await res.json();
+        if (res.ok && data.data) {
+          setKelasList(data.data.map((k: any) => k.nama_kelas));
+          if (data.data.length > 0) setKelas(data.data[0].nama_kelas);
+        }
+      } catch (err) {}
+    };
+    const fetchLabor = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+        );
+        const data = await res.json();
+        if (res.ok && data.data) {
+          setLaborList(data.data.map((l: any) => l.nama_labor));
+          if (data.data.length > 0) setLabor(data.data[0].nama_labor);
+        }
+      } catch (err) {}
+    };
+    fetchKelas();
+    fetchLabor();
+  }, []);
 
   // Hanya izinkan huruf dan angka
   const handleBarangChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,16 +56,19 @@ export default function InputKelas() {
     setLoading(true);
     setMessage("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/guru/penggunaan`,{
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nama_kelas: kelas,
-          nama_labor: labor,
-          nama_perangkat: barang,
-          jumlah_pakai: jumlah,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/guru/penggunaan`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nama_kelas: kelas,
+            nama_labor: labor,
+            nama_perangkat: barang,
+            jumlah_pakai: jumlah,
+          }),
+        }
+      );
       const data = await res.json();
       if (res.ok) {
         setMessage("✅ Laporan berhasil ditambahkan");
@@ -78,31 +112,15 @@ export default function InputKelas() {
               onChange={(e) => setKelas(e.target.value)}
               className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
-              <option value="X TJKT 1">X TJKT 1</option>
-              <option value="X TJKT 2">X TJKT 2</option>
-              <option value="X TJKT 3">X TJKT 3</option>
-              <option value="X TJKT 4">X TJKT 4</option>
-              <option value="X DKV 1">X DKV 1</option>
-              <option value="X DKV 2">X DKV 2</option>
-              <option value="X RPL 1">X RPL 1</option>
-              <option value="X RPL 2">X RPL 2</option>
-              <option value="X BC">X BC</option>
-              <option value="XI TJKT 1">XI TJKT 1</option>
-              <option value="XI TJKT 2">XI TJKT 2</option>
-              <option value="XI TJKT 3">XI TJKT 3</option>
-              <option value="XI DKV 1">XI DKV 1</option>
-              <option value="XI DKV 2">XI DKV 2</option>
-              <option value="XI RPL 1">XI RPL 1</option>
-              <option value="XI RPL 2">XI RPL 2</option>
-              <option value="XI BC">XI BC</option>
-              <option value="XII TJKT 1">XII TJKT 1</option>
-              <option value="XII TJKT 2">XII TJKT 2</option>
-              <option value="XII TJKT 3">XII TJKT 3</option>
-              <option value="XII DKV 1">XII DKV 1</option>
-              <option value="XII DKV 2">XII DKV 2</option>
-              <option value="XII RPL 1">XII RPL 1</option>
-              <option value="XII RPL 2">XII RPL 2</option>
-              <option value="XII BC">XII BC</option>
+              {kelasList.length === 0 ? (
+                <option value="">(tidak ada data kelas)</option>
+              ) : (
+                kelasList.map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
+                ))
+              )}
             </select>
           </div>
           {/* Input Labor */}
@@ -116,14 +134,15 @@ export default function InputKelas() {
               className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               <option value="">Pilih Labor</option>
-              <option value="LABOR PK">LABOR PK</option>
-              <option value="LABOR RPL">LABOR RPL</option>
-              <option value="LABOR BC">LABOR BC</option>
-              <option value="LABOR 1 DKV">LABOR 1 DKV</option>
-              <option value="LABOR 2 DKV">LABOR 2 DKV</option>
-              <option value="LABOR 1 TKJ">LABOR 1 TKJ</option>
-              <option value="LABOR 2 TKJ">LABOR 2 TKJ</option>
-              <option value="LABOR 3 TKJ">LABOR 3 TKJ</option>
+              {laborList.length === 0 ? (
+                <option value="">(tidak ada data labor)</option>
+              ) : (
+                laborList.map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))
+              )}
             </select>
           </div>
           <div className="flex flex-col gap-2">
