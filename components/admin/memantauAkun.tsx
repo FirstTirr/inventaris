@@ -78,9 +78,9 @@ export default function MemantauAkun({
   if (error) return <div style={{ color: "red" }}>{error}</div>;
 
   return (
-    <div className="min-h-screen bg-[#f7f7f8] px-4 py-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-1 mt-8">
+    <div className="min-h-screen bg-[#f7f7f8] py-12">
+      <div className="w-full mx-auto px-6 lg:px-12">
+        <div className="flex items-center justify-between mb-1 -mt-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-left font-[Montserrat,sans-serif]">
             Monitoring User
           </h1>
@@ -106,7 +106,7 @@ export default function MemantauAkun({
                 {users.filter((u) => u.id_role === 0).length}
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 h-13 mt-2">
               <span className="text-sm">TOTAL KABENG/KAPROG </span>
             </div>
           </div>
@@ -144,8 +144,8 @@ export default function MemantauAkun({
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto rounded-2xl bg-white shadow p-4 sm:p-8">
-          <table className="min-w-full rounded-xl overflow-hidden text-xs sm:text-base">
+        <div className="w-full overflow-x-auto rounded-2xl bg-white shadow p-4 sm:p-8">
+          <table className="w-full rounded-xl overflow-hidden text-xs sm:text-base">
             <thead>
               <tr>
                 <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">

@@ -133,9 +133,9 @@ export default function AddProduct({
           <div className="flex items-center justify-between bg-[#d9d9d9] px-8 py-5">
             <h2 className="text-2xl font-bold font-sans">Add Product</h2>
             <img
-              src="/iconsmk-4.png"
+              src="/tefa.jpg"
               alt="icon smk 4"
-              className="w-16 h-16 object-contain"
+              className="rounded-full w-16 h-16 object-contain"
             />
           </div>
           {/* Form */}

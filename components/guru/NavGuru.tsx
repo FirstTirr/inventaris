@@ -6,6 +6,7 @@ import LastUser from "../kabeng/lastUser";
 import LaporanKerusakanBarang from "./laporanKerusakan";
 import LaporanKerusakan from "./laporanKerusakan";
 import InputKelas from "./inputKelas";
+import Logo from "../Logo";
 
 export default function NavWasapras() {
   const [active, setActive] = useState("laporan kerusakan");
@@ -32,6 +33,9 @@ export default function NavWasapras() {
       {/* Sidebar (desktop) */}
       <aside className="hidden md:flex fixed left-0 top-0 w-80 bg-gray-800 text-white flex-col py-8 px-8 min-h-screen shadow-lg border-r border-gray-200 z-20">
         <div className="mb-8 px-2">
+          <div className="mb-8 px-2 mt-2 flex items-center gap-3">
+            <Logo size="lg" showText={true} />
+          </div>
           <h1 className="text-2xl font-bold tracking-tight mb-6">
             DASHBOARD GURU
           </h1>
@@ -96,6 +100,9 @@ export default function NavWasapras() {
           {/* Drawer */}
           <aside className="relative w-72 max-w-[90vw] bg-gray-800 text-white flex flex-col py-8 px-6 min-h-screen shadow-lg animate-slideInLeft border-r border-gray-200">
             <div className="flex items-center justify-between mb-8 px-2">
+              <div>
+                <Logo size="md" showText={false} className="px-1.5 mt-5" />
+              </div>
               <h1 className="text-2xl font-bold tracking-tight">
                 DASHBOARD GURU
               </h1>

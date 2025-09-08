@@ -99,13 +99,13 @@ export const Product = () => {
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
-      <div className="max-w-5xl mx-auto w-full">
+      <div className="w-full mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Product Management</h2>
         </div>
 
         {/* Dashboard Statistic Cards - Responsive */}
-  <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 w-full">
           {(() => {
             // Calculate total items per jurusan (BC, TKJ, RPL, DKV)
             const jurusanList = [
@@ -140,7 +140,7 @@ export const Product = () => {
           })()}
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 w-full">
           <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
             <input
               type="text"
@@ -193,7 +193,7 @@ export const Product = () => {
           />
         )}
 
-  <div className="overflow-x-auto rounded-xl bg-white shadow font-sans w-full">
+        <div className="overflow-x-auto rounded-xl bg-white shadow font-sans w-full mt-2">
           <table className="min-w-full">
             <thead>
               <tr className="text-gray-500 text-xs font-semibold border-b">
@@ -220,7 +220,10 @@ export const Product = () => {
                   ],
                   idx
                 ) => (
-                  <tr key={idx} className="text-gray-700 border-b last:border-b-0">
+                  <tr
+                    key={idx}
+                    className="text-gray-700 border-b last:border-b-0"
+                  >
                     <td className="py-3 px-6 text-left">{nama_perangkat}</td>
                     <td className="py-3 px-6 text-center">{kategori}</td>
                     <td className="py-3 px-6 text-center">{jurusan}</td>

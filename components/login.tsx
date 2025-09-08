@@ -49,10 +49,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-cover">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center overflow-hidden relative">
+      {/* background image as element so we can scale it responsively */}
+      <img
+        src="/tefa.jpg"
+        alt="background"
+        className="absolute items-center h-full object-cover z-0"
+      />
+      {/* left/right side panels (desktop) colored #0A111B */}
+      <div
+        className="hidden md:block absolute inset-y-0 left-0 w-1/4"
+        style={{ backgroundColor: "#0A111B", zIndex: 11 }}
+      />
+      <div
+        className="hidden md:block absolute inset-y-0 right-0 w-1/4"
+        style={{ backgroundColor: "#0A111B", zIndex: 11 }}
+      />
+      {/* overlay intentionally transparent so it doesn't block the background */}
+
       {/* Judul kiri atas */}
       <div
-        className="absolute left-2 top-8 text-black text-3xl md:text-4xl font-bold leading-tight font-[Montserrat,sans-serif] text-left select-none"
+        className="absolute left-2 top-8 text-white text-3xl md:text-4xl font-bold leading-tight font-[Montserrat,sans-serif] text-left select-none z-20"
         style={{ letterSpacing: 0, lineHeight: "1.1" }}
       >
         SISTEM
@@ -63,13 +80,13 @@ export default function Login() {
       </div>
       {/* Logo kanan atas */}
       <img
-        src="/iconsmk-4.png"
+        src="/tefa.jpg"
         alt="Logo SMK"
-        className="absolute right-2 top-8 w-24 h-24 object-contain z-10"
+        className="rounded-full absolute right-4 top-8 w-27 h-27 object-contain z-30 ring-2 ring-white/30"
       />
-      <div className="w-full flex flex-col items-center justify-center mt-8">
+      <div className="w-full flex flex-col items-center justify-center mt-8 relative z-20">
         <h1
-          className="text-4xl md:text-5xl font-bold leading-tight text-center mb-12 font-[Montserrat,sans-serif]"
+          className="text-4xl md:text-5xl font-bold leading-tight text-center mb-12 font-[Montserrat,sans-serif] text-gray-200"
           style={{ letterSpacing: 0 }}
         >
           LOGIN
@@ -81,7 +98,7 @@ export default function Login() {
           <input
             type="text"
             placeholder="Nama User"
-            className="w-full border border-gray-400 rounded-md px-4 py-4 mb-6 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif]"
+            className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 mb-6 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif]"
             value={nama_user}
             onChange={(e) => setNamaUser(e.target.value)}
             required
@@ -90,7 +107,7 @@ export default function Login() {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
-              className="w-full border border-gray-400 rounded-md px-4 py-4 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif] pr-12"
+              className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif] pr-12"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -106,9 +123,6 @@ export default function Login() {
             >
               {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
             </button>
-            <span className="absolute right-2 bottom-[-22px] text-xs text-gray-500 cursor-pointer select-none font-[Montserrat,sans-serif]">
-              Forgot Password ?
-            </span>
           </div>
           <button
             type="submit"
@@ -143,23 +157,24 @@ export default function Login() {
               </linearGradient>
             </defs>
           </svg>
-          <span className="absolute top-3 left-1/2 -translate-x-1/2 text-sm font-semibold text-black font-[Montserrat,sans-serif]">
-            SMK NEGERI 4<br />
-            PAYAKUMBUH
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-200 font-[Montserrat,sans-serif] text-center">
+            TEFA RPL
+            <br />
+            BINARY CODING SPACE
           </span>
         </div>
       </div>
-      {/* Wave bottom */}
-      <div className="absolute bottom-0 left-0 w-full h-52 z-0 overflow-x-hidden">
+      {/* Wave bottom - enlarged and stretched */}
+      <div className="absolute bottom-0 left-0 w-full h-[220px] md:h-[320px] z-20 overflow-x-hidden pointer-events-none">
         <svg
-          viewBox="0 0 1920 128"
+          viewBox="0 0 1920 220"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-full"
           preserveAspectRatio="none"
         >
           <path
-            d="M0 64C160 96 480 128 960 128C1440 128 1760 96 1920 64V128H0V64Z"
+            d="M0 110C160 165 480 220 960 220C1440 220 1760 165 1920 110V220H0V110Z"
             fill="#BFE2FF"
           />
         </svg>

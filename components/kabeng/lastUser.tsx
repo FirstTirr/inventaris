@@ -62,7 +62,7 @@ export default function LastUser() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full mx-auto px-6 lg:px-12">
         <div className="mb-2">
           <h2 className="text-3xl font-bold mb-0">Monitoring User</h2>
           <div className="text-gray-500 text-base font-normal">
@@ -92,8 +92,8 @@ export default function LastUser() {
             <option>All Categories</option>
           </select>
         </div>
-        <div className="overflow-x-auto rounded-xl bg-white shadow font-sans">
-          <table className="min-w-full text-left">
+        <div className="w-full overflow-x-auto rounded-xl bg-white shadow font-sans">
+          <table className="w-full text-left">
             <thead>
               <tr className="text-gray-500 text-sm font-semibold border-b">
                 <th className="py-3 px-6 font-semibold bg-white">Kelas</th>

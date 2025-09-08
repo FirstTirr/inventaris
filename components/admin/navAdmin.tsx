@@ -20,6 +20,7 @@ import TabelDropdownNav from "./TabelDropdownNav";
 import TabelLabor from "./tabelLabor";
 import TabelKelas from "./tabelKelas";
 import TabelKategory from "./tabelKategory";
+import Logo from "../Logo";
 export default function NavAdmin() {
   const [active, setActive] = useState("Memantau Akun");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -56,10 +57,8 @@ export default function NavAdmin() {
 
       {/* Sidebar (desktop) */}
       <aside className="hidden md:flex fixed left-0 top-0 w-80 bg-gray-800 text-white flex-col py-25 px-8 min-h-screen shadow-lg border-r border-gray-200 z-20">
-        <div className="mb-8 px-2">
-          <h1 className="text-2xl font-bold tracking-tight mb-6">
-            DASHBOARD ADMIN
-          </h1>
+        <div className="mb-8 px-2 -mt-17 flex items-center gap-3">
+          <Logo size="lg" showText={true} />
         </div>
         <nav>
           <ul className="flex flex-col gap-2">
@@ -151,6 +150,9 @@ export default function NavAdmin() {
           {/* Drawer */}
           <aside className="relative w-72 max-w-[90vw] bg-gray-800 text-white flex flex-col py-8 px-6 min-h-screen shadow-lg animate-slideInLeft border-r border-gray-200">
             <div className="flex items-center justify-between mb-8 px-2">
+              <div>
+                <Logo size="md" showText={false} className="px-1.5 mt-5" />
+              </div>
               <h1 className="text-2xl font-bold tracking-tight">
                 DASHBOARD ADMIN
               </h1>
