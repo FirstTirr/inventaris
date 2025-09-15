@@ -5,7 +5,7 @@ import NavRpl from "@/components/barangRpl/NavRpl";
 
 export default function Home() {
   return (
-    <AuthGuard role="rpl">
+    <AuthGuard>
       <NavRpl />
     </AuthGuard>
   );

@@ -5,7 +5,7 @@ import NavKabeng from "@/components/kabeng/navKabeng";
 
 export default function Home() {
   return (
-    <AuthGuard role="kabeng">
+    <AuthGuard>
       <NavKabeng />
     </AuthGuard>
   );

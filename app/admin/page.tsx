@@ -5,7 +5,7 @@ import NavAdmin from "@/components/admin/navAdmin";
 
 export default function Home() {
   return (
-    <AuthGuard role="admin">
+    <AuthGuard>
       <NavAdmin />
     </AuthGuard>
   );

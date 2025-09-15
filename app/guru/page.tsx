@@ -5,7 +5,7 @@ import NavGuru from "@/components/guru/NavGuru";
 
 export default function Home() {
   return (
-    <AuthGuard role="guru">
+    <AuthGuard>
       <NavGuru />
     </AuthGuard>
   );

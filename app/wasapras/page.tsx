@@ -5,7 +5,7 @@ import NavWasapras from "@/components/wakaSapras/NavWasapras";
 
 export default function Home() {
   return (
-    <AuthGuard role="wasapras">
+    <AuthGuard>
       <NavWasapras />
     </AuthGuard>
   );

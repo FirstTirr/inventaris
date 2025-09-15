@@ -5,7 +5,7 @@ import NavBc from "@/components/barangBc/NavBc";
 
 export default function Home() {
   return (
-    <AuthGuard role="bc">
+    <AuthGuard>
       <NavBc />
     </AuthGuard>
   );

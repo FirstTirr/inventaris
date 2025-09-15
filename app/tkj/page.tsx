@@ -5,7 +5,7 @@ import NavTkj from "@/components/barangTkj/NavTkj";
 
 export default function Home() {
   return (
-    <AuthGuard role="tkj">
+    <AuthGuard>
       <NavTkj />
     </AuthGuard>
   );

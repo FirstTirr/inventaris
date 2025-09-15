@@ -5,7 +5,7 @@ import NavDkv from "@/components/barangDkv/NavDkv";
 
 export default function Home() {
   return (
-    <AuthGuard role="dkv">
+    <AuthGuard>
       <NavDkv />
     </AuthGuard>
   );

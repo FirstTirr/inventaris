@@ -94,7 +94,7 @@ export default function Login() {
           LOGIN
         </h1>
         <form
-          className="w-full max-w-[380px] flex flex-col items-center"
+          className="relative w-full max-w-[380px] min-h-[320px] flex flex-col items-center rounded-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1),_inset_0_1px_0_rgba(255,255,255,0.5),_inset_0_-1px_0_rgba(255,255,255,0.1),_inset_0_0_26px_13px_rgba(255,255,255,1.3)] bg-white/15 backdrop-blur-[32px] overflow-hidden pt-6 pb-16 px-6"
           onSubmit={handleSubmit}
         >
           <input
