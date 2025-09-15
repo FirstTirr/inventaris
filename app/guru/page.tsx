@@ -1,17 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import AuthGuard from "@/components/AuthGuard";
 import NavGuru from "@/components/guru/NavGuru";
 
 export default function Home() {
-  // const [authorized, setAuthorized] = useState(false);
-  // useEffect(() => {
-  //   const user = localStorage.getItem("user");
-  //   if (!user) {
-  //     window.location.href = "/";
-  //   } else {
-  //     setAuthorized(true);
-  //   }
-  // }, []);
-  // if (!authorized) return null;
-  return <NavGuru />;
+  return (
+    <AuthGuard role="guru">
+      <NavGuru />
+    </AuthGuard>
+  );
 }

@@ -1,6 +1,12 @@
 "use client";
+
+import AuthGuard from "@/components/AuthGuard";
 import NavTkj from "@/components/barangTkj/NavTkj";
 
 export default function Home() {
-  return <NavTkj />;
+  return (
+    <AuthGuard role="tkj">
+      <NavTkj />
+    </AuthGuard>
+  );
 }

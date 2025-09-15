@@ -34,6 +34,8 @@ export default function Login() {
       // Langsung redirect ke halaman sesuai backend
       // Setelah login sukses, set cookie di browser domain frontend
       document.cookie = `user=${nama_user}; path=/; max-age=3600`;
+      // Simpan juga ke localStorage
+      localStorage.setItem("user", nama_user);
       console.log("Cookie user disimpan di domain frontend:", document.cookie);
       if (data.redirect_url) {
         window.location = data.redirect_url;
