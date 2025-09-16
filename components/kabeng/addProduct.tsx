@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { postProduct } from "@/lib/api/productApi";
+import { editRemoteProduct } from "@/lib/api/editRemoteProduct";
 
 interface AddProductProps {
   onAddProduct: (
@@ -17,10 +18,10 @@ export default function AddProduct({
 }: AddProductProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
-    nama_perangkat: defaultValue ? defaultValue[0] : "",
-    kategori: defaultValue ? defaultValue[1] : "",
-    jurusan: defaultValue ? defaultValue[2] : "",
-    id_labor: defaultValue ? defaultValue[3] : "",
+    nama_barang: defaultValue ? defaultValue[1] : "",
+    category: defaultValue ? defaultValue[2] : "",
+    jurusan: defaultValue ? defaultValue[3] : "",
+    labor: defaultValue ? String(defaultValue[4]) : "",
     jumlah: defaultValue ? String(defaultValue[4]) : "",
     status: defaultValue ? defaultValue[5] : "",
   });
@@ -72,31 +73,54 @@ export default function AddProduct({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Pastikan jumlah dikirim sebagai number dan map field names ke ProductData interface
-      const payload = {
-        nama_produk: form.nama_perangkat,
-        kategori: form.kategori,
-        jurusan: form.jurusan,
-        labor: form.id_labor,
-        jumlah: Number(form.jumlah),
-        status_barang: form.status,
-      };
-      const res = await postProduct(payload);
-      alert("Berhasil: " + JSON.stringify(res));
-      onAddProduct([
-        form.nama_perangkat,
-        form.kategori,
-        form.jurusan,
-        form.id_labor,
-        Number(form.jumlah),
-        form.status,
-      ]);
+      if (defaultValue) {
+        // Edit mode
+        const payload = {
+          id_perangkat: Number(defaultValue[0]),
+          nama_barang: form.nama_barang,
+          category: form.category,
+          jurusan: form.jurusan,
+          labor: String(form.labor),
+          jumlah: Number(form.jumlah),
+          status: form.status,
+        };
+        const res = await editRemoteProduct(payload);
+        alert("Edit berhasil: " + JSON.stringify(res));
+        onAddProduct([
+          String(payload.id_perangkat),
+          payload.nama_barang,
+          payload.category,
+          payload.jurusan,
+          Number(payload.jumlah),
+          payload.status,
+        ]);
+      } else {
+        // Add mode
+        const payload = {
+          nama_produk: form.nama_barang,
+          kategori: form.category,
+          jurusan: form.jurusan,
+          labor: String(form.labor),
+          jumlah: Number(form.jumlah),
+          status_barang: form.status,
+        };
+        const res = await postProduct(payload);
+        alert("Berhasil: " + JSON.stringify(res));
+        onAddProduct([
+          payload.nama_produk,
+          payload.kategori,
+          payload.jurusan,
+          payload.labor,
+          payload.jumlah,
+          payload.status_barang,
+        ]);
+      }
       onCancel();
       setForm({
-        nama_perangkat: "",
-        kategori: "",
+        nama_barang: "",
+        category: "",
         jurusan: "",
-        id_labor: "",
+        labor: "",
         jumlah: "",
         status: "",
       });
@@ -108,10 +132,10 @@ export default function AddProduct({
   const handleYakin = () => {
     // Kirim data produk baru ke parent (Product)
     onAddProduct([
-      form.nama_perangkat,
-      form.kategori,
+      form.nama_barang,
+      form.category,
       form.jurusan,
-      form.id_labor,
+      String(form.labor),
       Number(form.jumlah),
       form.status,
     ]);
@@ -147,10 +171,10 @@ export default function AddProduct({
                 </label>
                 <input
                   type="text"
-                  name="nama_perangkat"
-                  value={form.nama_perangkat}
+                  name="nama_barang"
+                  value={form.nama_barang}
                   onChange={handleChange}
-                  placeholder="inputkan nama perangkat"
+                  placeholder="inputkan nama barang"
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 />
               </div>
@@ -159,9 +183,9 @@ export default function AddProduct({
                   Labor
                 </label>
                 <select
-                  name="id_labor"
-                  id="id_labor"
-                  value={form.id_labor}
+                  name="labor"
+                  id="labor"
+                  value={form.labor}
                   onChange={handleChange}
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >
@@ -182,9 +206,9 @@ export default function AddProduct({
                   Kategori
                 </label>
                 <select
-                  name="kategori"
-                  id="kategori"
-                  value={form.kategori}
+                  name="category"
+                  id="category"
+                  value={form.category}
                   onChange={handleChange}
                   className="w-full rounded-md bg-[#d9d9d9] px-4 py-2 font-sans text-sm outline-none"
                 >

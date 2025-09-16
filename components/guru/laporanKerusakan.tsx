@@ -132,9 +132,9 @@ export default function LaporanKerusakanBarang() {
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
-      <main className="flex justify-center items-center min-h-[80vh] px-2">
+      <main className="flex justify-center items-center px-2">
         <form
-          className="w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-200 p-6 flex flex-col gap-6"
+          className="w-full max-w-none bg-white/30 backdrop-blur-[16px] rounded-2xl shadow-2xl p-8 md:p-12 flex flex-col gap-6 border border-white/40"
           onSubmit={handleSubmit}
         >
           <header className="flex items-start gap-4 pb-4 border-b">

@@ -4,7 +4,7 @@ import {
   getRemoteProducts,
   deleteRemoteProduct,
 } from "@/lib/api/remoteProductApi";
-import { CircleArrowRight, Trash2 } from "lucide-react";
+import { CircleArrowRight, SquarePen, Trash2 } from "lucide-react";
 
 export const Product = () => {
   const [search, setSearch] = useState("");
@@ -277,6 +277,25 @@ export const Product = () => {
                         }}
                       >
                         <Trash2 size={22} />
+                      </button>
+
+                      <button
+                        className="hover:text-green-600"
+                        title="Edit"
+                        onClick={() => {
+                          setEditIdx(idx);
+                          setEditData([
+                            String(id_perangkat),
+                            nama_perangkat,
+                            kategori,
+                            jurusan,
+                            Number(jumlah),
+                            status,
+                          ]);
+                          setShowAdd(true);
+                        }}
+                      >
+                        <SquarePen size={22} />
                       </button>
                     </td>
                   </tr>
