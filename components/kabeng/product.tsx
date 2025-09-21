@@ -6,7 +6,13 @@ import {
 } from "@/lib/api/remoteProductApi";
 import { CircleArrowRight, SquarePen, Trash2 } from "lucide-react";
 
-export const Product = () => {
+export const Product = ({
+  hideStats = false,
+  onlyStats = false,
+}: {
+  hideStats?: boolean;
+  onlyStats?: boolean;
+}) => {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
@@ -105,82 +111,85 @@ export const Product = () => {
         </div>
 
         {/* Dashboard Statistic Cards - Responsive */}
-        <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 w-full">
-          {(() => {
-            // Calculate total items per jurusan (BC, TKJ, RPL, DKV)
-            const jurusanList = [
-              { key: "BC", label: "Barang BC", color: "bg-black" },
-              { key: "TKJ", label: "Barang TKJ", color: "bg-green-500" },
-              { key: "RPL", label: "Barang RPL", color: "bg-red-700" },
-              { key: "DKV", label: "Barang DKV", color: "bg-gray-500" },
-            ];
-            return jurusanList.map(({ key, label, color }) => {
-              const total = data
-                .filter(([, , , jurusan]) => jurusan === key)
-                .reduce((sum, [, , , , , jumlah]) => sum + Number(jumlah), 0);
-              return (
-                <div
-                  key={key}
-                  className={`rounded-xl shadow flex flex-col items-center justify-center py-7 px-3 ${color} text-white w-full`}
-                >
-                  <div className="text-lg font-semibold mb-1">{label}</div>
-                  <div className="text-3xl font-bold">{total}</div>
-                  <a
-                    href={`/${key.toLowerCase()}`}
-                    className="w-full flex justify-center mt-3"
+        {!hideStats && (
+          <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 w-full">
+            {(() => {
+              // Calculate total items per jurusan (BC, TKJ, RPL, DKV)
+              const jurusanList = [
+                { key: "BC", label: "Barang BC", color: "bg-black" },
+                { key: "TKJ", label: "Barang TKJ", color: "bg-green-500" },
+                { key: "RPL", label: "Barang RPL", color: "bg-red-700" },
+                { key: "DKV", label: "Barang DKV", color: "bg-gray-500" },
+              ];
+              return jurusanList.map(({ key, label, color }) => {
+                const total = data
+                  .filter(([, , , jurusan]) => jurusan === key)
+                  .reduce((sum, [, , , , , jumlah]) => sum + Number(jumlah), 0);
+                return (
+                  <div
+                    key={key}
+                    className={`rounded-xl shadow flex flex-col items-center justify-center py-7 px-3 ${color} text-white w-full`}
                   >
-                    <button className="bg-white text-gray-700 text-xs font-semibold rounded-full px-4 py-1 shadow hover:bg-gray-100 transition flex items-center gap-2">
-                      <CircleArrowRight className="w-4 h-4" />
-                      more info
-                    </button>
-                  </a>
-                </div>
-              );
-            });
-          })()}
-        </div>
+                    <div className="text-lg font-semibold mb-1">{label}</div>
+                    <div className="text-3xl font-bold">{total}</div>
+                    <a
+                      href={`/${key.toLowerCase()}`}
+                      className="w-full flex justify-center mt-3"
+                    >
+                      <button className="bg-white text-gray-700 text-xs font-semibold rounded-full px-4 py-1 shadow hover:bg-gray-100 transition flex items-center gap-2">
+                        <CircleArrowRight className="w-4 h-4" />
+                        more info
+                      </button>
+                    </a>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        )}
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 w-full">
-          <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
-            <input
-              type="text"
-              placeholder="Cari perangkat..."
-              className="flex-1 outline-none bg-transparent text-sm text-gray-500 px-2 placeholder:text-gray-400"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        {!onlyStats && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 w-full">
+            <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+              <input
+                type="text"
+                placeholder="Cari perangkat..."
+                className="flex-1 outline-none bg-transparent text-sm text-gray-500 px-2 placeholder:text-gray-400"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <button
+                className="text-gray-400 hover:text-gray-600 text-base px-2"
+                onClick={() => setSearch("")}
+                type="button"
+                aria-label="Clear search"
+                tabIndex={-1}
+              >
+                ×
+              </button>
+            </div>
             <button
-              className="text-gray-400 hover:text-gray-600 text-base px-2"
-              onClick={() => setSearch("")}
-              type="button"
-              aria-label="Clear search"
-              tabIndex={-1}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all ml-auto"
+              onClick={() => setShowAdd(true)}
             >
-              ×
+              <svg
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="inline"
+              >
+                <circle cx="9" cy="9" r="8" />
+                <line x1="9" y1="5" x2="9" y2="13" />
+                <line x1="5" y1="9" x2="13" y2="9" />
+              </svg>
+              Add Product
             </button>
           </div>
-          <button
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all ml-auto"
-            onClick={() => setShowAdd(true)}
-          >
-            <svg
-              width="18"
-              height="18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="inline"
-            >
-              <circle cx="9" cy="9" r="8" />
-              <line x1="9" y1="5" x2="9" y2="13" />
-              <line x1="5" y1="9" x2="13" y2="9" />
-            </svg>
-            Add Product
-          </button>
-        </div>
-
+        )}
         {showAdd && (
           <AddProduct
             onAddProduct={handleAddProduct}
