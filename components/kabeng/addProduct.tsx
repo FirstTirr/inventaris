@@ -72,6 +72,18 @@ export default function AddProduct({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validasi field wajib
+    if (
+      !form.nama_barang ||
+      !form.category ||
+      !form.jurusan ||
+      !form.labor ||
+      !form.jumlah ||
+      !form.status
+    ) {
+      alert("Harus lengkapi semua field dulu");
+      return;
+    }
     try {
       if (defaultValue) {
         // Edit mode
@@ -85,7 +97,7 @@ export default function AddProduct({
           status: form.status,
         };
         const res = await editRemoteProduct(payload);
-        alert("Edit berhasil: " + JSON.stringify(res));
+        alert("Berhasil diubah");
         onAddProduct([
           String(payload.id_perangkat),
           payload.nama_barang,
@@ -97,22 +109,22 @@ export default function AddProduct({
       } else {
         // Add mode
         const payload = {
-          nama_produk: form.nama_barang,
-          kategori: form.category,
+          nama_barang: form.nama_barang,
+          category: form.category,
           jurusan: form.jurusan,
           labor: String(form.labor),
           jumlah: Number(form.jumlah),
-          status_barang: form.status,
+          status: form.status,
         };
         const res = await postProduct(payload);
-        alert("Berhasil: " + JSON.stringify(res));
+        alert("Berhasil ditambahkan");
         onAddProduct([
-          payload.nama_produk,
-          payload.kategori,
+          "new", // ID sementara untuk produk baru
+          payload.nama_barang,
+          payload.category,
           payload.jurusan,
-          payload.labor,
           payload.jumlah,
-          payload.status_barang,
+          payload.status,
         ]);
       }
       onCancel();
@@ -132,10 +144,10 @@ export default function AddProduct({
   const handleYakin = () => {
     // Kirim data produk baru ke parent (Product)
     onAddProduct([
+      "new", // ID sementara
       form.nama_barang,
       form.category,
       form.jurusan,
-      String(form.labor),
       Number(form.jumlah),
       form.status,
     ]);
@@ -280,11 +292,7 @@ export default function AddProduct({
                 </select>
               </div>
             </div>
-            <div className="mb-4">
-              <label className="block text-sm mb-2 font-sans font-normal text-gray-700">
-                tambahkan?
-              </label>
-            </div>
+            <div className="mb-4"></div>
             <div className="flex flex-col md:flex-row gap-4">
               <button
                 type="submit"
@@ -329,31 +337,6 @@ export default function AddProduct({
             </div>
           </form>
           {/* Modal konfirmasi */}
-          {showConfirm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-              <div className="bg-white rounded-lg shadow-lg px-8 py-12 max-w-md w-full flex flex-col items-center">
-                <h3 className="text-xl sm:text-2xl font-bold text-center mb-8 font-sans">
-                  Yakin Ingin Menambahkan
-                  <br />
-                  product ini?
-                </h3>
-                <div className="flex gap-6 w-full justify-center">
-                  <button
-                    className="bg-[#1877f2] hover:bg-blue-700 text-white font-bold text-lg rounded-full px-10 py-3 transition-all"
-                    onClick={handleYakin}
-                  >
-                    yakin
-                  </button>
-                  <button
-                    className="bg-[#ff1616] hover:bg-red-700 text-white font-bold text-lg rounded-full px-10 py-3 transition-all"
-                    onClick={handleCancel}
-                  >
-                    belum
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

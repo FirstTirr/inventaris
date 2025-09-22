@@ -6,7 +6,12 @@ const iconMap: Record<string, ReactElement> = {
   pc: (
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
       <rect width="24" height="24" rx="12" fill="#377DFF" />
-      <path d="M6 17h12M7 7h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" stroke="#222" strokeWidth="1.5" strokeLinejoin="round" />
+      <path
+        d="M6 17h12M7 7h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"
+        stroke="#222"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
       <path d="M9 14h6" stroke="#222" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
@@ -14,7 +19,9 @@ const iconMap: Record<string, ReactElement> = {
 };
 
 export default function BarangBaik() {
-  const [items, setItems] = useState<{ label: string; value: number; icon: ReactElement }[]>([]);
+  const [items, setItems] = useState<
+    { label: string; value: number; icon: ReactElement }[]
+  >([]);
 
   useEffect(() => {
     getRemoteProducts().then((result) => {
@@ -69,7 +76,7 @@ export default function BarangBaik() {
         <p className="text-gray-500 text-base font-normal mb-8 text-left">
           Monitor your labor performance
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-2xl mx-auto mt-8">
           {items.map((item, idx) => (
             <div
               key={idx}

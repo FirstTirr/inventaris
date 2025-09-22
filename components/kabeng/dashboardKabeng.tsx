@@ -89,14 +89,6 @@ const DashboardKabeng = () => {
             </div>
           </div>
 
-          <div className="px-4 sm:px-8 pt-8 pb-0">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-left">
-              Dashboard Overview
-            </h2>
-            <p className="text-gray-500 mb-8 text-left">
-              Monitor your labor performance
-            </p>
-          </div>
           <div className="flex flex-col lg:flex-row gap-8 w-full px-2 sm:px-8 py-8">
             {/* Left: Product Table */}
             <div className="flex-1 bg-white/90 rounded-2xl p-8 shadow-xl overflow-auto border border-gray-100">
@@ -146,7 +138,7 @@ const DashboardKabeng = () => {
                   TKJ
                 </button>
               </div>
-              <div className="bg-white/90 rounded-2xl shadow-xl p-6 min-h-[320px] max-h-[70vh] overflow-auto border border-gray-100">
+              <div className="bg-white/90 rounded-2xl shadow-xl p-6 min-h-[320px] max-h-[70vh] overflow-auto border border-gray-100 space-y-2">
                 {navComponents[selected]}
               </div>
             </div>

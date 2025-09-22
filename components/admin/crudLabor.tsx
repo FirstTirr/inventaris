@@ -363,7 +363,7 @@ export default function CrudLabor() {
               >
                 <input
                   type="text"
-                  placeholder="tambahkan jurusan"
+                  placeholder="contoh : DKV, TKJ, RPL, BC"
                   value={jurusan}
                   onChange={(e) => {
                     const value = e.target.value

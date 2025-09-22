@@ -99,11 +99,11 @@ export default function BarangBaik() {
         <p className="text-gray-500 text-base font-normal mb-8 text-left">
           Monitor your labor performance
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-2xl mx-auto mt-8">
           {items.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl shadow flex flex-col items-center py-6 px-4 min-w-[180px]"
+              className="bg-white rounded-2xl shadow flex flex-col items-center py-8 px-6 min-w-[180px]"
             >
               <div className="mb-2">{item.icon}</div>
               <div

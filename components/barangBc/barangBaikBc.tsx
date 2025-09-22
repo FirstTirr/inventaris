@@ -5,17 +5,27 @@ import { getRemoteProducts } from "@/lib/api/remoteProductApi";
 
 // Map nama perangkat ke ikon SVG
 const iconMap: Record<string, ReactElement> = {
-  "pc": (
+  pc: (
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
       <rect width="24" height="24" rx="12" fill="#377DFF" />
-      <path d="M6 17h12M7 7h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" stroke="#222" strokeWidth="1.5" strokeLinejoin="round" />
+      <path
+        d="M6 17h12M7 7h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"
+        stroke="#222"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
       <path d="M9 14h6" stroke="#222" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   "mixer audio": (
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
       <rect width="24" height="24" rx="12" fill="#00C9A7" />
-      <path d="M8 17V7h8v10M8 17h8M8 7h8M12 17v-2" stroke="#222" strokeWidth="1.5" strokeLinejoin="round" />
+      <path
+        d="M8 17V7h8v10M8 17h8M8 7h8M12 17v-2"
+        stroke="#222"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
     </svg>
   ),
   "mixer vidio": (
@@ -26,23 +36,51 @@ const iconMap: Record<string, ReactElement> = {
       <rect x="13" y="12" width="2" height="1" rx="0.5" fill="#888" />
     </svg>
   ),
-  "saramonic": <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#00f" /></svg>,
-  "kamera": <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#00f" /></svg>,
-  "handcam": <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#00f" /></svg>,
-  "lightning": <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#00f" /></svg>,
-  "speaker": <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#00f" /></svg>,
-  "microfon": <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#00f" /></svg>,
+  saramonic: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#00f" />
+    </svg>
+  ),
+  kamera: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#00f" />
+    </svg>
+  ),
+  handcam: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#00f" />
+    </svg>
+  ),
+  lightning: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#00f" />
+    </svg>
+  ),
+  speaker: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#00f" />
+    </svg>
+  ),
+  microfon: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#00f" />
+    </svg>
+  ),
 };
 
 export default function BarangBaik() {
-  const [items, setItems] = useState<{ label: string; value: number; icon: ReactElement }[]>([]);
+  const [items, setItems] = useState<
+    { label: string; value: number; icon: ReactElement }[]
+  >([]);
 
   useEffect(() => {
     getRemoteProducts().then((result) => {
       const arr = Array.isArray(result.data) ? result.data : result;
       // Filter jurusan 'bc' dan status 'baik'
-      const filtered = arr.filter((item: any) =>
-        item.jurusan?.toLowerCase() === "bc" && item.status?.toLowerCase() === "baik"
+      const filtered = arr.filter(
+        (item: any) =>
+          item.jurusan?.toLowerCase() === "bc" &&
+          item.status?.toLowerCase() === "baik"
       );
       // Group by nama_perangkat
       const grouped: Record<string, number> = {};
@@ -55,16 +93,28 @@ export default function BarangBaik() {
       const itemsArr = Object.entries(grouped).map(([key, value]) => ({
         label: `total ${key} baik`,
         value,
-        icon: iconMap[key] || <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#ccc" /></svg>,
+        icon: iconMap[key] || (
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="12" fill="#ccc" />
+          </svg>
+        ),
       }));
       // Total semua barang baik
       const total = itemsArr.reduce((sum, i) => sum + i.value, 0);
-      itemsArr.push({ label: "total semua barang baik", value: total, icon: <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#00f" /></svg> });
+      itemsArr.push({
+        label: "total semua barang baik",
+        value: total,
+        icon: (
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="12" fill="#00f" />
+          </svg>
+        ),
+      });
       setItems(itemsArr);
     });
-}, []);
+  }, []);
 
-return (  
+  return (
     <div className="min-h-[60vh] bg-[#f7f7f8] px-4 pt-8 pb-4">
       <div className="max-w-7xl mx-auto">
         <h2
@@ -76,7 +126,7 @@ return (
         <p className="text-gray-500 text-base font-normal mb-8 text-left">
           Monitor your labor performance
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-2xl mx-auto mt-8">
           {items.map((item, idx) => (
             <div
               key={idx}
