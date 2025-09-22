@@ -1,7 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 
-export default function InputKelas() {
+const InputKelas = React.memo(() => {
   const [barang, setBarang] = useState("");
   const [jumlah, setJumlah] = useState("");
   const [labor, setLabor] = useState("");
@@ -12,60 +12,166 @@ export default function InputKelas() {
   const [productsRaw, setProductsRaw] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  // Fetch kelas list from backend
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Network status detection
   useEffect(() => {
-    const fetchKelas = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`
-        );
-        const data = await res.json();
-        if (res.ok && data.data) {
-          setKelasList(data.data.map((k: any) => k.nama_kelas));
-          if (data.data.length > 0) setKelas(data.data[0].nama_kelas);
-        }
-      } catch (err) {}
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
-    const fetchLabor = async () => {
+  }, []);
+
+  // Memoized fetch functions
+  const fetchKelas = useCallback(async () => {
+    if (!isOnline) return;
+
+    // Try cache first
+    const cacheKey = "input-kelas-cache";
+    const timeKey = "input-kelas-cache-time";
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(timeKey);
+    const now = Date.now();
+    const cacheValid = cacheTime && now - parseInt(cacheTime) < 5 * 60 * 1000; // 5 minutes
+
+    if (cachedData && cacheValid) {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
-        );
-        const data = await res.json();
-        if (res.ok && data.data) {
-          setLaborList(data.data.map((l: any) => l.nama_labor));
-          if (data.data.length > 0) setLabor(data.data[0].nama_labor);
-        }
-      } catch (err) {}
-    };
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`
-        );
-        const data = await res.json();
-        if (res.ok && data.data) {
-          setProductsRaw(data.data);
-          // initial productsList: all good items
-          const good = data.data.filter(
-            (p: any) => String(p.status).toUpperCase() === "BAIK"
-          );
-          const goodNames = good.map((p: any) => p.nama_perangkat);
-          setProductsList(goodNames);
-          if (goodNames.length > 0) setBarang(goodNames[0]);
-        }
+        const data = JSON.parse(cachedData);
+        setKelasList(data.map((k: any) => k.nama_kelas));
+        if (data.length > 0) setKelas(data[0].nama_kelas);
+        return;
       } catch (err) {
-        setProductsList([]);
+        console.error("Cache parse error:", err);
       }
-    };
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`
+      );
+      const data = await res.json();
+      if (res.ok && data.data) {
+        localStorage.setItem(cacheKey, JSON.stringify(data.data));
+        localStorage.setItem(timeKey, now.toString());
+
+        setKelasList(data.data.map((k: any) => k.nama_kelas));
+        if (data.data.length > 0) setKelas(data.data[0].nama_kelas);
+      }
+    } catch (err) {
+      console.error("Fetch kelas error:", err);
+    }
+  }, [isOnline]);
+
+  const fetchLabor = useCallback(async () => {
+    if (!isOnline) return;
+
+    // Try cache first
+    const cacheKey = "input-labor-cache";
+    const timeKey = "input-labor-cache-time";
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(timeKey);
+    const now = Date.now();
+    const cacheValid = cacheTime && now - parseInt(cacheTime) < 5 * 60 * 1000; // 5 minutes
+
+    if (cachedData && cacheValid) {
+      try {
+        const data = JSON.parse(cachedData);
+        setLaborList(data.map((l: any) => l.nama_labor));
+        if (data.length > 0) setLabor(data[0].nama_labor);
+        return;
+      } catch (err) {
+        console.error("Cache parse error:", err);
+      }
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+      );
+      const data = await res.json();
+      if (res.ok && data.data) {
+        localStorage.setItem(cacheKey, JSON.stringify(data.data));
+        localStorage.setItem(timeKey, now.toString());
+
+        setLaborList(data.data.map((l: any) => l.nama_labor));
+        if (data.data.length > 0) setLabor(data.data[0].nama_labor);
+      }
+    } catch (err) {
+      console.error("Fetch labor error:", err);
+    }
+  }, [isOnline]);
+
+  const fetchProducts = useCallback(async () => {
+    if (!isOnline) return;
+
+    // Try cache first
+    const cacheKey = "input-products-cache";
+    const timeKey = "input-products-cache-time";
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(timeKey);
+    const now = Date.now();
+    const cacheValid = cacheTime && now - parseInt(cacheTime) < 3 * 60 * 1000; // 3 minutes
+
+    if (cachedData && cacheValid) {
+      try {
+        const data = JSON.parse(cachedData);
+        setProductsRaw(data);
+        // initial productsList: all good items
+        const good = data.filter(
+          (p: any) => String(p.status).toUpperCase() === "BAIK"
+        );
+        const goodNames = good.map((p: any) => p.nama_perangkat);
+        setProductsList(goodNames);
+        if (goodNames.length > 0) setBarang(goodNames[0]);
+        return;
+      } catch (err) {
+        console.error("Cache parse error:", err);
+      }
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`
+      );
+      const data = await res.json();
+      if (res.ok && data.data) {
+        localStorage.setItem(cacheKey, JSON.stringify(data.data));
+        localStorage.setItem(timeKey, now.toString());
+
+        setProductsRaw(data.data);
+        // initial productsList: all good items
+        const good = data.data.filter(
+          (p: any) => String(p.status).toUpperCase() === "BAIK"
+        );
+        const goodNames = good.map((p: any) => p.nama_perangkat);
+        setProductsList(goodNames);
+        if (goodNames.length > 0) setBarang(goodNames[0]);
+      }
+    } catch (err) {
+      console.error("Fetch products error:", err);
+      setProductsList([]);
+    }
+  }, [isOnline]);
+
+  // Fetch data on mount
+  useEffect(() => {
+    if (!isOnline) return;
+
     fetchKelas();
     fetchLabor();
     fetchProducts();
-  }, []);
+  }, [isOnline, fetchKelas, fetchLabor, fetchProducts]);
 
-  // When labor changes, filter productsRaw to only items that belong to that labor
-  useEffect(() => {
-    if (!productsRaw || productsRaw.length === 0) return;
+  // Memoized filtered products based on labor
+  const filteredProducts = useMemo(() => {
+    if (!productsRaw || productsRaw.length === 0) return [];
+
     const selected = String(labor || "").toLowerCase();
     const filtered = productsRaw.filter((p: any) => {
       // match status and labor (flexible matching)
@@ -79,20 +185,26 @@ export default function InputKelas() {
         prodLabor === selected || prodLabor === String(labor).toLowerCase()
       );
     });
+
     const names = filtered.map((p: any) => p.nama_perangkat);
     if (names.length > 0) {
-      setProductsList(names);
-      setBarang(names[0]);
+      return names;
     } else {
       // fallback to all good items
       const goodAll = productsRaw.filter(
         (p: any) => String(p.status).toUpperCase() === "BAIK"
       );
-      const goodNames = goodAll.map((p: any) => p.nama_perangkat);
-      setProductsList(goodNames);
-      if (goodNames.length > 0) setBarang(goodNames[0]);
+      return goodAll.map((p: any) => p.nama_perangkat);
     }
   }, [labor, productsRaw]);
+
+  // Update productsList when filteredProducts change
+  useEffect(() => {
+    setProductsList(filteredProducts);
+    if (filteredProducts.length > 0) {
+      setBarang(filteredProducts[0]);
+    }
+  }, [filteredProducts]);
 
   // Hanya izinkan huruf dan angka
   const handleBarangSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -106,8 +218,13 @@ export default function InputKelas() {
   // Handle submit POST
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setMessage("");
+    // Validasi field wajib
+    if (!kelas || !labor || !barang || !jumlah) {
+      setMessage("Harap lengkapi semua field!");
+      return;
+    }
+    setLoading(true);
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/guru/penggunaan`,
@@ -124,7 +241,7 @@ export default function InputKelas() {
       );
       const data = await res.json();
       if (res.ok) {
-        setMessage("✅ Laporan berhasil ditambahkan");
+        setMessage("✅ Penggunaan berhasil dicatat");
         setBarang("");
         setJumlah("");
         setLabor("");
@@ -142,7 +259,10 @@ export default function InputKelas() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <main className="flex justify-center items-center px-2">
-        <form className="w-full max-w-none bg-white/30 backdrop-blur-[16px] rounded-2xl shadow-2xl p-8 md:p-12 flex flex-col gap-6 border border-white/40">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-none bg-white/30 backdrop-blur-[16px] rounded-2xl shadow-2xl p-8 md:p-12 flex flex-col gap-6 border border-white/40"
+        >
           <header className="flex items-start gap-4 pb-4 border-b">
             <div className="flex-none w-12 h-12 rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md">
               <svg
@@ -351,4 +471,8 @@ export default function InputKelas() {
       </main>
     </div>
   );
-}
+});
+
+InputKelas.displayName = "InputKelas";
+
+export default InputKelas;

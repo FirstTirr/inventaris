@@ -1,26 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import dynamic from "next/dynamic";
-import { Product } from "@/components/kabeng/product";
 import { useRouter } from "next/navigation";
 
+const Product = dynamic(() => import("@/components/kabeng/product"), {
+  loading: () => <div className="text-center py-8">Loading data produk...</div>,
+  ssr: false,
+});
 const NavRpl = dynamic(() => import("@/components/barangRpl/NavRpl"), {
+  loading: () => <div className="text-center py-8">Loading RPL...</div>,
   ssr: false,
 });
 const NavBc = dynamic(() => import("@/components/barangBc/NavBc"), {
+  loading: () => <div className="text-center py-8">Loading BC...</div>,
   ssr: false,
 });
 const NavDkv = dynamic(() => import("@/components/barangDkv/NavDkv"), {
+  loading: () => <div className="text-center py-8">Loading DKV...</div>,
   ssr: false,
 });
 const NavTkj = dynamic(() => import("@/components/barangTkj/NavTkj"), {
+  loading: () => <div className="text-center py-8">Loading TKJ...</div>,
   ssr: false,
 });
 
 const navComponents = {
-  rpl: <NavRpl />,
-  bc: <NavBc />,
-  dkv: <NavDkv />,
-  tkj: <NavTkj />,
+  rpl: NavRpl,
+  bc: NavBc,
+  dkv: NavDkv,
+  tkj: NavTkj,
 };
 
 const DashboardKabeng = () => {
@@ -92,7 +99,13 @@ const DashboardKabeng = () => {
           <div className="flex flex-col lg:flex-row gap-8 w-full px-2 sm:px-8 py-8">
             {/* Left: Product Table */}
             <div className="flex-1 bg-white/90 rounded-2xl p-8 shadow-xl overflow-auto border border-gray-100">
-              <Product hideStats />
+              <Suspense
+                fallback={
+                  <div className="text-center py-8">Loading data produk...</div>
+                }
+              >
+                <Product hideStats />
+              </Suspense>
             </div>
             {/* Right: Tabbed Jurusan */}
             <div className="w-full max-w-lg flex flex-col gap-4">
@@ -139,7 +152,15 @@ const DashboardKabeng = () => {
                 </button>
               </div>
               <div className="bg-white/90 rounded-2xl shadow-xl p-6 min-h-[320px] max-h-[70vh] overflow-auto border border-gray-100 space-y-2">
-                {navComponents[selected]}
+                <Suspense
+                  fallback={
+                    <div className="text-center py-8">
+                      Loading data jurusan...
+                    </div>
+                  }
+                >
+                  {React.createElement(navComponents[selected])}
+                </Suspense>
               </div>
             </div>
           </div>

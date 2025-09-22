@@ -1,5 +1,5 @@
 import { deleteRemoteUser } from "@/lib/api/remoteProductApi";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Trash2, UserPlus } from "lucide-react";
 
 // Fungsi untuk membaca cookie (non-HttpOnly)
@@ -21,25 +21,48 @@ type User = {
   id_role: number;
 };
 
-export default function MemantauAkun({
-  onAddAkun,
-}: {
+interface MemantauAkunProps {
   onAddAkun?: () => void;
-}) {
+}
+
+const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Network status detection
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
   const [error, setError] = useState("");
 
   // Fungsi hapus user
-  const handleDeleteUser = async (id_user: number) => {
-    if (!window.confirm("Yakin ingin menghapus akun ini?")) return;
-    try {
-      await deleteRemoteUser(id_user);
-      setUsers((prev) => prev.filter((u) => u.id_user !== id_user));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal menghapus akun");
-    }
-  };
+  const handleDeleteUser = useCallback(
+    async (id_user: number) => {
+      if (!isOnline) {
+        alert("Tidak ada koneksi internet");
+        return;
+      }
+
+      if (!window.confirm("Yakin ingin menghapus akun ini?")) return;
+      try {
+        await deleteRemoteUser(id_user);
+        setUsers((prev) => prev.filter((u) => u.id_user !== id_user));
+      } catch (err) {
+        alert(err instanceof Error ? err.message : "Gagal menghapus akun");
+      }
+    },
+    [isOnline]
+  );
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -193,4 +216,8 @@ export default function MemantauAkun({
       </div>
     </div>
   );
-}
+});
+
+MemantauAkun.displayName = "MemantauAkun";
+
+export default MemantauAkun;

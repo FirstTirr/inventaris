@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import {
   Binoculars,
   Eye,
@@ -9,18 +9,27 @@ import {
   ChevronDown,
   Table as TableIcon,
 } from "lucide-react";
-import CrudAKun from "./crudAkun";
-import MemantauAkun from "./memantauAkun";
-import { Product } from "../kabeng/product";
-import CrudLabor from "./crudLabor";
 import { Trash2 } from "lucide-react";
-import TabelJurusan from "./tabelJurusan";
-
 import TabelDropdownNav from "./TabelDropdownNav";
-import TabelLabor from "./tabelLabor";
-import TabelKelas from "./tabelKelas";
-import TabelKategory from "./tabelKategory";
 import Logo from "../Logo";
+
+// Lazy load heavy components
+const CrudAKun = lazy(() => import("./crudAkun"));
+const MemantauAkun = lazy(() => import("./memantauAkun"));
+const Product = lazy(() => import("../kabeng/product"));
+const CrudLabor = lazy(() => import("./crudLabor"));
+const TabelJurusan = lazy(() => import("./tabelJurusan"));
+const TabelLabor = lazy(() => import("./tabelLabor"));
+const TabelKelas = lazy(() => import("./tabelKelas"));
+const TabelKategory = lazy(() => import("./tabelKategory"));
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <span className="ml-2 text-gray-600">Loading...</span>
+  </div>
+);
 export default function NavAdmin() {
   const [active, setActive] = useState("Memantau Akun");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -268,24 +277,26 @@ export default function NavAdmin() {
           </h2>
         </header>
         <main className="p-2 md:p-8 overflow-x-auto">
-          {active === "Memantau Akun" && (
-            <MemantauAkun onAddAkun={() => setActive("Crud Akun")} />
-          )}
-          {active === "Crud Akun" && (
-            <CrudAKun onCancel={() => setActive("Memantau Akun")} />
-          )}
-          {active === "Product" && <Product />}
-          {active === "Crud Labor" && <CrudLabor />}
-          {active === "Tabel" &&
-            (tabelSelected === "Tabel Labor" ? (
-              <TabelLabor />
-            ) : tabelSelected === "Tabel Kelas" ? (
-              <TabelKelas />
-            ) : tabelSelected === "Tabel Kategory" ? (
-              <TabelKategory />
-            ) : tabelSelected === "Tabel Jurusan" ? (
-              <TabelJurusan />
-            ) : null)}
+          <Suspense fallback={<LoadingFallback />}>
+            {active === "Memantau Akun" && (
+              <MemantauAkun onAddAkun={() => setActive("Crud Akun")} />
+            )}
+            {active === "Crud Akun" && (
+              <CrudAKun onCancel={() => setActive("Memantau Akun")} />
+            )}
+            {active === "Product" && <Product />}
+            {active === "Crud Labor" && <CrudLabor />}
+            {active === "Tabel" &&
+              (tabelSelected === "Tabel Labor" ? (
+                <TabelLabor />
+              ) : tabelSelected === "Tabel Kelas" ? (
+                <TabelKelas />
+              ) : tabelSelected === "Tabel Kategory" ? (
+                <TabelKategory />
+              ) : tabelSelected === "Tabel Jurusan" ? (
+                <TabelJurusan />
+              ) : null)}
+          </Suspense>
         </main>
       </div>
     </div>

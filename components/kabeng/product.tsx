@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import AddProduct from "./addProduct";
 import {
   getRemoteProducts,
@@ -6,7 +6,24 @@ import {
 } from "@/lib/api/remoteProductApi";
 import { CircleArrowRight, SquarePen, Trash2 } from "lucide-react";
 
-export const Product = ({
+// Custom hook for debouncing
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+const Product = ({
   hideStats = false,
   onlyStats = false,
 }: {
@@ -14,35 +31,71 @@ export const Product = ({
   onlyStats?: boolean;
 }) => {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300); // 300ms debounce
   const [showAdd, setShowAdd] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editData, setEditData] = useState<
     [string, string, string, string, number, string] | null
   >(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // Data structure: [id_perangkat, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]
   const [data, setData] = useState<
     [number, string, string, string, string, number, string][]
   >([]);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage] = useState(50); // Pagination untuk mengurangi DOM nodes
 
-  // Fetch data from API
+  // Check network status
   useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Fetch data from API only when online dengan caching
+  useEffect(() => {
+    if (!isOnline) return;
+
+    // Try to load from cache first
+    const cachedData = localStorage.getItem("product-cache");
+    const cacheTime = localStorage.getItem("product-cache-time");
+    const now = Date.now();
+    const cacheValid = cacheTime && now - parseInt(cacheTime) < 5 * 60 * 1000; // 5 minutes
+
+    if (cachedData && cacheValid) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        setData(parsed);
+        return;
+      } catch (err) {
+        console.error("Cache parse error:", err);
+      }
+    }
+
     getRemoteProducts()
       .then((result) => {
         const arr = Array.isArray(result.data) ? result.data : result;
         console.log("HASIL DARI API:", arr);
         if (Array.isArray(arr)) {
-          setData(
-            arr.map(
-              (item: {
-                id_perangkat: string | number;
-                nama_perangkat: string;
-                kategori: string;
-                jurusan: string;
-                id_labor: string;
-                jumlah: string | number;
-                status: string;
-              }) => [
+          const mappedData = arr.map(
+            (item: {
+              id_perangkat: string | number;
+              nama_perangkat: string;
+              kategori: string;
+              jurusan: string;
+              id_labor: string;
+              jumlah: string | number;
+              status: string;
+            }) =>
+              [
                 Number(item.id_perangkat),
                 item.nama_perangkat,
                 item.kategori,
@@ -50,58 +103,76 @@ export const Product = ({
                 item.id_labor,
                 Number(item.jumlah),
                 item.status,
-              ]
-            )
+              ] as [number, string, string, string, string, number, string]
           );
+
+          // Cache the data
+          localStorage.setItem("product-cache", JSON.stringify(mappedData));
+          localStorage.setItem("product-cache-time", Date.now().toString());
+          setData(mappedData);
         }
       })
       .catch((err) => {
         console.error("Gagal mengambil data produk remote:", err);
       });
-  }, []);
+  }, [isOnline]);
 
-  // Filter untuk pencarian
-  const filteredData = data.filter(
-    ([, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]) => {
-      const q = search.toLowerCase();
-      return (
-        nama_perangkat.toLowerCase().includes(q) ||
-        kategori.toLowerCase().includes(q) ||
-        jurusan.toLowerCase().includes(q) ||
-        id_labor.toLowerCase().includes(q) ||
-        String(jumlah).includes(q) ||
-        status.toLowerCase().includes(q)
+  // Filter dan pagination untuk mengurangi DOM nodes
+  const { paginatedData, totalPages } = useMemo(() => {
+    let filtered = data;
+
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
+      filtered = data.filter(
+        ([, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]) => {
+          return (
+            nama_perangkat.toLowerCase().includes(q) ||
+            kategori.toLowerCase().includes(q) ||
+            jurusan.toLowerCase().includes(q) ||
+            id_labor.toLowerCase().includes(q) ||
+            String(jumlah).includes(q) ||
+            status.toLowerCase().includes(q)
+          );
+        }
       );
     }
-  );
 
-  // Handle penambahan produk baru
-  const handleAddProduct = async (
-    produkBaru: [string, string, string, string, number, string]
-  ) => {
-    setShowAdd(false);
-    try {
-      const result = await getRemoteProducts();
-      const arr = Array.isArray(result.data) ? result.data : result;
-      if (Array.isArray(arr)) {
-        setData(
-          arr.map((item) => [
-            Number(item.id_perangkat),
-            item.nama_perangkat,
-            item.kategori,
-            item.jurusan,
-            item.id_labor,
-            Number(item.jumlah),
-            item.status,
-          ])
-        );
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginated = filtered.slice(startIndex, endIndex);
+    const pages = Math.ceil(filtered.length / itemsPerPage);
+
+    return { paginatedData: paginated, totalPages: pages };
+  }, [data, debouncedSearch, page, itemsPerPage]);
+
+  // Handle penambahan produk baru dengan useCallback
+  const handleAddProduct = useCallback(
+    async (produkBaru: [string, string, string, string, number, string]) => {
+      setShowAdd(false);
+      try {
+        const result = await getRemoteProducts();
+        const arr = Array.isArray(result.data) ? result.data : result;
+        if (Array.isArray(arr)) {
+          setData(
+            arr.map((item) => [
+              Number(item.id_perangkat),
+              item.nama_perangkat,
+              item.kategori,
+              item.jurusan,
+              item.id_labor,
+              Number(item.jumlah),
+              item.status,
+            ])
+          );
+        }
+      } catch (err) {
+        console.error("Gagal refresh data produk setelah tambah:", err);
       }
-    } catch (err) {
-      console.error("Gagal refresh data produk setelah tambah:", err);
-    }
-    setEditIdx(null);
-    setEditData(null);
-  };
+      setEditIdx(null);
+      setEditData(null);
+    },
+    []
+  );
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
@@ -148,7 +219,13 @@ export const Product = ({
           </div>
         )}
 
-        {!onlyStats && (
+        {!isOnline && (
+          <div className="text-center py-8 text-gray-500">
+            <p>Tidak ada koneksi internet. Data tidak dapat dimuat.</p>
+          </div>
+        )}
+
+        {isOnline && !onlyStats && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 w-full">
             <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
               <input
@@ -202,118 +279,145 @@ export const Product = ({
           />
         )}
 
-        <div className="overflow-x-auto rounded-xl bg-white shadow font-sans w-full mt-2">
-          <table className="min-w-full">
-            <thead>
-              <tr className="text-gray-500 text-xs font-semibold border-b">
-                <th className="py-3 px-6 text-left">Nama Perangkat</th>
-                <th className="py-3 px-6 text-center">Kategori</th>
-                <th className="py-3 px-6 text-center">Jurusan</th>
-                <th className="py-3 px-6 text-center">ID Labor</th>
-                <th className="py-3 px-6 text-center">Jumlah</th>
-                <th className="py-3 px-6 text-center">Status</th>
-                <th className="py-3 px-6 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map(
-                (
-                  [
-                    id_perangkat,
-                    nama_perangkat,
-                    kategori,
-                    jurusan,
-                    id_labor,
-                    jumlah,
-                    status,
-                  ],
-                  idx
-                ) => (
-                  <tr
-                    key={idx}
-                    className="text-gray-700 border-b last:border-b-0"
-                  >
-                    <td className="py-3 px-6 text-left">{nama_perangkat}</td>
-                    <td className="py-3 px-6 text-center">{kategori}</td>
-                    <td className="py-3 px-6 text-center">{jurusan}</td>
-                    <td className="py-3 px-6 text-center">{id_labor}</td>
-                    <td className="py-3 px-6 text-center">{jumlah}</td>
-                    <td className="py-3 px-6 text-center">{status}</td>
-                    <td className="py-3 px-6 text-center">
-                      <button
-                        title="Hapus"
-                        className="hover:text-red-600"
-                        onClick={async () => {
-                          console.log(
-                            "Mau hapus ID:",
-                            id_perangkat,
-                            typeof id_perangkat
-                          );
-                          try {
-                            await deleteRemoteProduct(id_perangkat);
-                            // Refresh data
-                            const result = await getRemoteProducts();
-                            const arr = Array.isArray(result.data)
-                              ? result.data
-                              : result;
-                            if (Array.isArray(arr)) {
-                              setData(
-                                arr.map(
-                                  (item: {
-                                    id_perangkat: string | number;
-                                    nama_perangkat: string;
-                                    kategori: string;
-                                    jurusan: string;
-                                    id_labor: string;
-                                    jumlah: string | number;
-                                    status: string;
-                                  }) => [
-                                    Number(item.id_perangkat),
-                                    item.nama_perangkat,
-                                    item.kategori,
-                                    item.jurusan,
-                                    item.id_labor,
-                                    Number(item.jumlah),
-                                    item.status,
-                                  ]
-                                )
-                              );
+        {isOnline && (
+          <div className="overflow-x-auto rounded-xl bg-white shadow font-sans w-full mt-2">
+            <table className="min-w-full">
+              <thead>
+                <tr className="text-gray-500 text-xs font-semibold border-b">
+                  <th className="py-3 px-6 text-left">Nama Perangkat</th>
+                  <th className="py-3 px-6 text-center">Kategori</th>
+                  <th className="py-3 px-6 text-center">Jurusan</th>
+                  <th className="py-3 px-6 text-center">ID Labor</th>
+                  <th className="py-3 px-6 text-center">Jumlah</th>
+                  <th className="py-3 px-6 text-center">Status</th>
+                  <th className="py-3 px-6 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedData.map(
+                  (
+                    [
+                      id_perangkat,
+                      nama_perangkat,
+                      kategori,
+                      jurusan,
+                      id_labor,
+                      jumlah,
+                      status,
+                    ]: [number, string, string, string, string, number, string],
+                    idx: number
+                  ) => (
+                    <tr
+                      key={idx}
+                      className="text-gray-700 border-b last:border-b-0"
+                    >
+                      <td className="py-3 px-6 text-left">{nama_perangkat}</td>
+                      <td className="py-3 px-6 text-center">{kategori}</td>
+                      <td className="py-3 px-6 text-center">{jurusan}</td>
+                      <td className="py-3 px-6 text-center">{id_labor}</td>
+                      <td className="py-3 px-6 text-center">{jumlah}</td>
+                      <td className="py-3 px-6 text-center">{status}</td>
+                      <td className="py-3 px-6 text-center">
+                        <button
+                          title="Hapus"
+                          className="hover:text-red-600"
+                          onClick={async () => {
+                            console.log(
+                              "Mau hapus ID:",
+                              id_perangkat,
+                              typeof id_perangkat
+                            );
+                            try {
+                              await deleteRemoteProduct(id_perangkat);
+                              // Refresh data
+                              const result = await getRemoteProducts();
+                              const arr = Array.isArray(result.data)
+                                ? result.data
+                                : result;
+                              if (Array.isArray(arr)) {
+                                setData(
+                                  arr.map(
+                                    (item: {
+                                      id_perangkat: string | number;
+                                      nama_perangkat: string;
+                                      kategori: string;
+                                      jurusan: string;
+                                      id_labor: string;
+                                      jumlah: string | number;
+                                      status: string;
+                                    }) => [
+                                      Number(item.id_perangkat),
+                                      item.nama_perangkat,
+                                      item.kategori,
+                                      item.jurusan,
+                                      item.id_labor,
+                                      Number(item.jumlah),
+                                      item.status,
+                                    ]
+                                  )
+                                );
+                              }
+                              alert("Barang berhasil dihapus!");
+                            } catch (err) {
+                              alert("Gagal menghapus data: " + err);
                             }
-                            alert("Barang berhasil dihapus!");
-                          } catch (err) {
-                            alert("Gagal menghapus data: " + err);
-                          }
-                        }}
-                      >
-                        <Trash2 size={22} />
-                      </button>
+                          }}
+                        >
+                          <Trash2 size={22} />
+                        </button>
 
-                      <button
-                        className="hover:text-green-600"
-                        title="Edit"
-                        onClick={() => {
-                          setEditIdx(idx);
-                          setEditData([
-                            String(id_perangkat),
-                            nama_perangkat,
-                            kategori,
-                            jurusan,
-                            Number(jumlah),
-                            status,
-                          ]);
-                          setShowAdd(true);
-                        }}
-                      >
-                        <SquarePen size={22} />
-                      </button>
-                    </td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
-        </div>
+                        <button
+                          className="hover:text-green-600"
+                          title="Edit"
+                          onClick={() => {
+                            setEditIdx(idx);
+                            setEditData([
+                              String(id_perangkat),
+                              nama_perangkat,
+                              kategori,
+                              jurusan,
+                              Number(jumlah),
+                              status,
+                            ]);
+                            setShowAdd(true);
+                          }}
+                        >
+                          <SquarePen size={22} />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {isOnline && totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300"
+            >
+              Previous
+            </button>
+            <span className="text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
+export default Product;

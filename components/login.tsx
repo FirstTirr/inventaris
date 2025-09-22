@@ -56,7 +56,7 @@ export default function Login() {
       <img
         src="/tefa.jpg"
         alt="background"
-        className="absolute items-center h-full object-cover z-0"
+        className="absolute h-full items-center object-cover z-0"
       />
       {/* left/right side panels (desktop) colored #0A111B */}
       <div
@@ -93,77 +93,80 @@ export default function Login() {
         >
           LOGIN
         </h1>
-        <form
-          className="relative w-full max-w-[380px] min-h-[320px] flex flex-col items-center rounded-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1),_inset_0_1px_0_rgba(255,255,255,0.5),_inset_0_-1px_0_rgba(255,255,255,0.1),_inset_0_0_26px_13px_rgba(255,255,255,1.3)] bg-white/15 backdrop-blur-[32px] overflow-hidden pt-6 pb-16 px-6"
-          onSubmit={handleSubmit}
-        >
-          <input
-            type="text"
-            placeholder="Nama User"
-            className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 mb-6 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif]"
-            value={nama_user}
-            onChange={(e) => setNamaUser(e.target.value)}
-            required
-          />
-          <div className="w-full relative mb-6">
+        <div className="relative w-full max-w-[380px] flex flex-col items-center rounded-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1),_inset_0_1px_0_rgba(255,255,255,0.5),_inset_0_-1px_0_rgba(255,255,255,0.1),_inset_0_0_26px_13px_rgba(255,255,255,1.3)] bg-white/15 backdrop-blur-[32px] overflow-hidden pt-6 pb-4 px-6">
+          <form
+            className="w-full flex flex-col items-center"
+            onSubmit={handleSubmit}
+          >
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif] pr-12"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              type="text"
+              placeholder="Nama User"
+              className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 mb-6 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif]"
+              value={nama_user}
+              onChange={(e) => setNamaUser(e.target.value)}
               required
             />
-            <button
-              type="button"
-              aria-label={
-                showPassword ? "Sembunyikan password" : "Lihat password"
-              }
-              onClick={togglePassword}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-              tabIndex={-1}
-            >
-              {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
-            </button>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-[#1877f2] hover:bg-blue-700 text-white font-bold text-lg rounded-md py-3 mt-2 mb-2 transition-all font-[Montserrat,sans-serif]"
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Login"}
-          </button>
-          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-        </form>
-        {/* Segitiga dan label bawah tombol */}
-        <div className="relative w-full flex flex-col items-center mt-4">
-          <svg
-            width="220"
-            height="40"
-            viewBox="0 0 220 40"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M0 0H220V40L110 20L0 40V0Z" fill="url(#paint0_linear)" />
-            <defs>
-              <linearGradient
-                id="paint0_linear"
-                x1="110"
-                y1="0"
-                x2="110"
-                y2="70"
-                gradientUnits="userSpaceOnUse"
+            <div className="w-full relative mb-6">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif] pr-12"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                aria-label={
+                  showPassword ? "Sembunyikan password" : "Lihat password"
+                }
+                onClick={togglePassword}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                tabIndex={-1}
               >
-                <stop stopColor="#1877f2" />
-                <stop offset="1" stopColor="#fff" stopOpacity="0.1" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <span className="absolute top-3 left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-200 font-[Montserrat,sans-serif] text-center">
-            TEFA RPL
-            <br />
-            BINARY CODING SPACE
-          </span>
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </button>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-[#1877f2] hover:bg-blue-700 text-white font-bold text-lg rounded-md py-3 mt-2 mb-6 transition-all font-[Montserrat,sans-serif]"
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Login"}
+            </button>
+            {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+          </form>
+
+          {/* Segitiga dan label bawah tombol - sekarang di dalam glassmorphism */}
+          <div className="relative w-full flex flex-col items-center">
+            <svg
+              width="220"
+              height="40"
+              viewBox="0 0 220 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M0 0H220V40L110 20L0 40V0Z" fill="url(#paint0_linear)" />
+              <defs>
+                <linearGradient
+                  id="paint0_linear"
+                  x1="110"
+                  y1="0"
+                  x2="110"
+                  y2="70"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stopColor="#1877f2" />
+                  <stop offset="1" stopColor="#fff" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span className="absolute top-3 left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-200 font-[Montserrat,sans-serif] text-center">
+              TEFA RPL
+              <br />
+              BINARY CODING SPACE
+            </span>
+          </div>
         </div>
       </div>
       {/* Wave bottom - enlarged and stretched */}

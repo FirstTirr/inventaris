@@ -1,7 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 
-export default function LaporanKerusakanBarang() {
+const LaporanKerusakanBarang = React.memo(() => {
   const [barang, setBarang] = useState("");
   const [kerusakan, setKerusakan] = useState("");
   const [labor, setLabor] = useState("");
@@ -11,42 +11,119 @@ export default function LaporanKerusakanBarang() {
   const [jumlah, setJumlah] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
+  // Network status detection
   useEffect(() => {
-    const fetchLabor = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
-        );
-        const data = await res.json();
-        if (res.ok && data.data) {
-          setLaborList(data.data.map((l: any) => l.nama_labor));
-          if (data.data.length > 0) setLabor(data.data[0].nama_labor);
-        }
-      } catch (err) {}
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
-    const fetchProducts = async () => {
+  }, []);
+
+  // Memoized fetch functions with caching
+  const fetchLabor = useCallback(async () => {
+    if (!isOnline) return;
+
+    // Try cache first
+    const cacheKey = "laporan-labor-cache";
+    const timeKey = "laporan-labor-cache-time";
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(timeKey);
+    const now = Date.now();
+    const cacheValid = cacheTime && now - parseInt(cacheTime) < 5 * 60 * 1000; // 5 minutes
+
+    if (cachedData && cacheValid) {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`
-        );
-        const data = await res.json();
-        if (res.ok && data.data) {
-          setProductsRaw(data.data);
-          const good = data.data.filter(
-            (p: any) => String(p.status).toUpperCase() === "BAIK"
-          );
-          const goodNames = good.map((p: any) => p.nama_perangkat);
-          setProductsList(goodNames);
-          if (goodNames.length > 0) setBarang(goodNames[0]);
-        }
+        const data = JSON.parse(cachedData);
+        setLaborList(data.map((l: any) => l.nama_labor));
+        if (data.length > 0) setLabor(data[0].nama_labor);
+        return;
       } catch (err) {
-        setProductsList([]);
+        console.error("Cache parse error:", err);
       }
-    };
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+      );
+      const data = await res.json();
+      if (res.ok && data.data) {
+        localStorage.setItem(cacheKey, JSON.stringify(data.data));
+        localStorage.setItem(timeKey, now.toString());
+
+        setLaborList(data.data.map((l: any) => l.nama_labor));
+        if (data.data.length > 0) setLabor(data.data[0].nama_labor);
+      }
+    } catch (err) {
+      console.error("Fetch labor error:", err);
+    }
+  }, [isOnline]);
+
+  const fetchProducts = useCallback(async () => {
+    if (!isOnline) return;
+
+    // Try cache first
+    const cacheKey = "laporan-products-cache";
+    const timeKey = "laporan-products-cache-time";
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(timeKey);
+    const now = Date.now();
+    const cacheValid = cacheTime && now - parseInt(cacheTime) < 3 * 60 * 1000; // 3 minutes
+
+    if (cachedData && cacheValid) {
+      try {
+        const data = JSON.parse(cachedData);
+        setProductsRaw(data);
+        const good = data.filter(
+          (p: any) => String(p.status).toUpperCase() === "BAIK"
+        );
+        const goodNames = good.map((p: any) => p.nama_perangkat);
+        setProductsList(goodNames);
+        if (goodNames.length > 0) setBarang(goodNames[0]);
+        return;
+      } catch (err) {
+        console.error("Cache parse error:", err);
+      }
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`
+      );
+      const data = await res.json();
+      if (res.ok && data.data) {
+        localStorage.setItem(cacheKey, JSON.stringify(data.data));
+        localStorage.setItem(timeKey, now.toString());
+
+        setProductsRaw(data.data);
+        const good = data.data.filter(
+          (p: any) => String(p.status).toUpperCase() === "BAIK"
+        );
+        const goodNames = good.map((p: any) => p.nama_perangkat);
+        setProductsList(goodNames);
+        if (goodNames.length > 0) setBarang(goodNames[0]);
+      }
+    } catch (err) {
+      console.error("Fetch products error:", err);
+      setProductsList([]);
+    }
+  }, [isOnline]);
+
+  // Fetch data on mount
+  useEffect(() => {
+    if (!isOnline) return;
+
     fetchLabor();
     fetchProducts();
-  }, []);
+  }, [isOnline, fetchLabor, fetchProducts]);
 
   // Hanya izinkan huruf dan angka
   const handleBarangSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -258,4 +335,8 @@ export default function LaporanKerusakanBarang() {
       </main>
     </div>
   );
-}
+});
+
+LaporanKerusakanBarang.displayName = "LaporanKerusakanBarang";
+
+export default LaporanKerusakanBarang;

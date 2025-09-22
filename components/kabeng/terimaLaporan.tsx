@@ -2,8 +2,32 @@ import React, { useState, useEffect } from "react";
 import { CheckCheck } from "lucide-react";
 
 export default function TerimaLaporan() {
+  const [laporan, setLaporan] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Check network status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   // Fungsi hapus laporan
   const handleDelete = async (id_laporan: number) => {
+    if (!isOnline) {
+      alert("Tidak ada koneksi internet");
+      return;
+    }
+
     if (!window.confirm("Yakin ingin menghapus laporan ini?")) return;
     try {
       const res = await fetch(
@@ -22,11 +46,15 @@ export default function TerimaLaporan() {
       alert("Gagal menghapus laporan");
     }
   };
-  const [laporan, setLaporan] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!isOnline) {
+      setLoading(false);
+      setError("");
+      setLaporan([]);
+      return;
+    }
+
     const fetchLaporan = async () => {
       setLoading(true);
       setError("");
@@ -44,12 +72,12 @@ export default function TerimaLaporan() {
       }
     };
     fetchLaporan();
-  }, []);
+  }, [isOnline]);
 
-  if (loading) return <div className="p-6 text-center">Loading...</div>;
+  if (loading) return <div className="text-center py-8">Loading...</div>;
   if (error)
     return (
-      <div className="p-6 text-center text-red-600">
+      <div className="text-center py-8 text-red-600">
         {error}
         <div className="mt-3">
           <button
@@ -59,6 +87,12 @@ export default function TerimaLaporan() {
             Coba lagi
           </button>
         </div>
+      </div>
+    );
+  if (!isOnline)
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p>Tidak ada koneksi internet. Data tidak dapat dimuat.</p>
       </div>
     );
 

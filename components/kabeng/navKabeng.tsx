@@ -1,20 +1,44 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, Suspense, memo, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { ShoppingCart, User, Flag } from "lucide-react";
-import { Product } from "./product";
-import About from "./dashboardKabeng";
-import LastUser from "@/components/kabeng/lastUser";
-import TerimaLaporan from "./terimaLaporan";
 import Logo from "../Logo";
+import DashboardKabeng from "./dashboardKabeng";
 
-export default function Navbar() {
+// Lazy load ALL heavy components
+const Product = dynamic(() => import("./product"), {
+  loading: () => <div className="text-center py-8">Loading produk...</div>,
+  ssr: false,
+});
+const About = dynamic(() => import("./dashboardKabeng"), {
+  loading: () => <div className="text-center py-8">Loading dashboard...</div>,
+  ssr: false,
+});
+const LastUser = dynamic(() => import("@/components/kabeng/lastUser"), {
+  loading: () => <div className="text-center py-8">Loading user data...</div>,
+  ssr: false,
+});
+const TerimaLaporan = dynamic(() => import("./terimaLaporan"), {
+  loading: () => <div className="text-center py-8">Loading laporan...</div>,
+  ssr: false,
+});
+
+// Memoized components for better performance
+const MemoizedLogo = memo(Logo);
+
+const Navbar = memo(() => {
   const [active, setActive] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  function handleChangePage(page: string) {
+  const handleChangePage = useCallback((page: string) => {
     setActive(page);
     setSidebarOpen(false);
-  }
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    localStorage.clear();
+    window.location.href = "/";
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
@@ -33,7 +57,7 @@ export default function Navbar() {
       <aside className="hidden md:flex fixed left-0 top-0 w-94 bg-[#181F2A] text-white flex-col py-8 px-8 min-h-screen shadow-lg z-20">
         <div className="mb-8 px-2">
           <div className="mb-8 px-2 mt-2 flex items-center gap-3">
-            <Logo size="lg" showText={true} />
+            <MemoizedLogo size="lg" showText={true} />
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-6">
             KABENG/KAPROG
@@ -249,10 +273,7 @@ export default function Navbar() {
             <div className="mt-auto pt-8">
               <button
                 className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center"
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.href = "/";
-                }}
+                onClick={handleLogout}
               >
                 <svg
                   width="24"
@@ -288,12 +309,46 @@ export default function Navbar() {
           </h1>
         </header>
         <main className="p-2 md:p-8 overflow-x-auto min-h-screen">
-          {active === "dashboard" && <About />}
-          {active === "product" && <Product />}
-          {active === "user" && <LastUser />}
-          {active === "laporan" && <TerimaLaporan />}
+          {active === "dashboard" && (
+            <Suspense
+              fallback={
+                <div className="text-center py-8">Loading dashboard...</div>
+              }
+            >
+              <DashboardKabeng />
+            </Suspense>
+          )}
+          {active === "product" && (
+            <Suspense
+              fallback={
+                <div className="text-center py-8">Loading produk...</div>
+              }
+            >
+              <Product />
+            </Suspense>
+          )}
+          {active === "user" && (
+            <Suspense
+              fallback={
+                <div className="text-center py-8">Loading user data...</div>
+              }
+            >
+              <LastUser />
+            </Suspense>
+          )}
+          {active === "laporan" && (
+            <Suspense
+              fallback={
+                <div className="text-center py-8">Loading laporan...</div>
+              }
+            >
+              <TerimaLaporan />
+            </Suspense>
+          )}
         </main>
       </div>
     </div>
   );
-}
+});
+
+export default Navbar;

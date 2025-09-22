@@ -1,14 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import { Flag, FolderInput } from "lucide-react";
-import DashboardKabeng from "../kabeng/dashboardKabeng";
-import LastUser from "../kabeng/lastUser";
-import LaporanKerusakanBarang from "./laporanKerusakan";
-import LaporanKerusakan from "./laporanKerusakan";
-import InputKelas from "./inputKelas";
 import Logo from "../Logo";
 
-export default function NavWasapras() {
+// Lazy load heavy components
+const LaporanKerusakan = lazy(() => import("./laporanKerusakan"));
+const InputKelas = lazy(() => import("./inputKelas"));
+
+// Optimized loading component
+const LoadingFallback = React.memo(() => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <span className="ml-2 text-gray-600">Loading...</span>
+  </div>
+));
+
+LoadingFallback.displayName = "LoadingFallback";
+
+const NavWasapras = React.memo(() => {
   const [active, setActive] = useState("laporan kerusakan");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -189,10 +198,16 @@ export default function NavWasapras() {
           </h2>
         </header>
         <main className="p-2 md:p-8 overflow-x-auto">
-          {active === "laporan kerusakan" && <LaporanKerusakan />}
-          {active === "input kelas" && <InputKelas />}
+          <Suspense fallback={<LoadingFallback />}>
+            {active === "laporan kerusakan" && <LaporanKerusakan />}
+            {active === "input kelas" && <InputKelas />}
+          </Suspense>
         </main>
       </div>
     </div>
   );
-}
+});
+
+NavWasapras.displayName = "NavWasapras";
+
+export default NavWasapras;

@@ -18,13 +18,15 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-export default function LastUser() {
+const LastUser = React.memo(() => {
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300); // 300ms debounce
+  const debouncedSearch = useDebounce(search, 300);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage] = useState(20);
 
   // Check network status
   useEffect(() => {
@@ -48,6 +50,22 @@ export default function LastUser() {
       return;
     }
 
+    // Try cache first
+    const cachedData = localStorage.getItem("lastuser-cache");
+    const cacheTime = localStorage.getItem("lastuser-cache-time");
+    const now = Date.now();
+    const cacheValid = cacheTime && now - parseInt(cacheTime) < 2 * 60 * 1000;
+
+    if (cachedData && cacheValid) {
+      try {
+        setData(JSON.parse(cachedData));
+        setLoading(false);
+        return;
+      } catch (err) {
+        console.error("Cache parse error:", err);
+      }
+    }
+
     const fetchData = async () => {
       setLoading(true);
       setError("");
@@ -57,7 +75,11 @@ export default function LastUser() {
         );
         if (!res.ok) throw new Error("Gagal mengambil data penggunaan");
         const result = await res.json();
-        setData(result.data || []);
+        const resultData = result.data || [];
+
+        localStorage.setItem("lastuser-cache", JSON.stringify(resultData));
+        localStorage.setItem("lastuser-cache-time", Date.now().toString());
+        setData(resultData);
       } catch (err) {
         setError("Gagal mengambil data penggunaan");
       } finally {
@@ -67,19 +89,29 @@ export default function LastUser() {
     fetchData();
   }, [isOnline]);
 
-  // Memoized filtered data untuk performa lebih baik
-  const filteredData = useMemo(() => {
-    if (!debouncedSearch) return data;
+  // Memoized filtered and paginated data
+  const { paginatedData, totalPages } = useMemo(() => {
+    let filtered = data;
 
-    const s = debouncedSearch.toLowerCase();
-    return data.filter(
-      (item) =>
-        (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
-        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
-    );
-  }, [data, debouncedSearch]);
+    if (debouncedSearch) {
+      const s = debouncedSearch.toLowerCase();
+      filtered = data.filter((item) => {
+        return (
+          (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
+          (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
+        );
+      });
+    }
 
-  // Tambahkan fungsi hapus penggunaan dengan useCallback
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginated = filtered.slice(startIndex, endIndex);
+    const pages = Math.ceil(filtered.length / itemsPerPage);
+
+    return { paginatedData: paginated, totalPages: pages };
+  }, [data, debouncedSearch, page, itemsPerPage]);
+
+  // Handle delete with useCallback
   const handleDelete = useCallback(
     async (id_penggunaan: number) => {
       if (!isOnline) {
@@ -98,7 +130,6 @@ export default function LastUser() {
           }
         );
         if (!res.ok) throw new Error("Gagal menghapus penggunaan");
-        // Hapus dari state jika sukses
         setData((prev) =>
           prev.filter((item) => item.id_penggunaan !== id_penggunaan)
         );
@@ -168,7 +199,7 @@ export default function LastUser() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((item, idx) => (
+              {paginatedData.map((item, idx) => (
                 <tr
                   key={item.id_penggunaan || idx}
                   className="border-b last:border-b-0 text-gray-700"
@@ -191,7 +222,32 @@ export default function LastUser() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300"
+            >
+              Previous
+            </button>
+            <span className="text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+});
+
+export default LastUser;
