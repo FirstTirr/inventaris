@@ -3,17 +3,15 @@
 import React, { useState, Suspense, lazy } from "react";
 import {
   Binoculars,
-  Eye,
   ShoppingCart,
   CirclePlus,
   ChevronDown,
   Table as TableIcon,
 } from "lucide-react";
-import { Trash2 } from "lucide-react";
 import TabelDropdownNav from "./TabelDropdownNav";
 import Logo from "../Logo";
 
-// Lazy load heavy components
+// Lazy load only when needed
 const CrudAKun = lazy(() => import("./crudAkun"));
 const MemantauAkun = lazy(() => import("./memantauAkun"));
 const Product = lazy(() => import("../kabeng/product"));
@@ -31,6 +29,7 @@ const LoadingFallback = () => (
   </div>
 );
 export default function NavAdmin() {
+  // Default ke menu paling ringan
   const [active, setActive] = useState("Memantau Akun");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tabelSelected, setTabelSelected] = useState("Tabel Labor");
@@ -57,7 +56,9 @@ export default function NavAdmin() {
       <button
         className="fixed top-4 left-4 z-30 bg-blue-600 rounded-md p-2 flex flex-col gap-1 md:hidden"
         onClick={() => setSidebarOpen(true)}
-        aria-label="Open sidebar"
+        aria-label="Buka menu navigasi"
+        tabIndex={0}
+        role="button"
       >
         <span className="block w-6 h-0.5 bg-white"></span>
         <span className="block w-6 h-0.5 bg-white"></span>
@@ -65,7 +66,11 @@ export default function NavAdmin() {
       </button>
 
       {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex fixed left-0 top-0 w-80 bg-gray-800 text-white flex-col py-25 px-8 min-h-screen shadow-lg border-r border-gray-200 z-20">
+      <aside
+        className="hidden md:flex fixed left-0 top-0 w-80 bg-gray-800 text-white flex-col py-25 px-8 min-h-screen shadow-lg border-r border-gray-200 z-20"
+        role="navigation"
+        aria-label="Sidebar admin"
+      >
         <div className="mb-8 px-2 -mt-17 flex items-center gap-3">
           <Logo size="lg" showText={true} />
         </div>
@@ -88,6 +93,9 @@ export default function NavAdmin() {
                       setTabelDropdownOpen(false);
                     }
                   }}
+                  aria-label={item.label}
+                  tabIndex={0}
+                  role="menuitem"
                 >
                   {item.key === "Memantau Akun" && (
                     <Binoculars className="w-5 h-5" />
@@ -278,13 +286,13 @@ export default function NavAdmin() {
         </header>
         <main className="p-2 md:p-8 overflow-x-auto">
           <Suspense fallback={<LoadingFallback />}>
+            {active === "Product" && <Product />}
             {active === "Memantau Akun" && (
               <MemantauAkun onAddAkun={() => setActive("Crud Akun")} />
             )}
             {active === "Crud Akun" && (
               <CrudAKun onCancel={() => setActive("Memantau Akun")} />
             )}
-            {active === "Product" && <Product />}
             {active === "Crud Labor" && <CrudLabor />}
             {active === "Tabel" &&
               (tabelSelected === "Tabel Labor" ? (

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
+
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import ResourcePreloader from "@/components/ResourcePreloader";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -54,9 +54,8 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#377DFF" />
       </head>
       <body className="antialiased font-sans">
-        <ServiceWorkerRegistration />
-        <ResourcePreloader />
         {children}
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

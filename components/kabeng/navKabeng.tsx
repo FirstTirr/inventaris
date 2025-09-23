@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { ShoppingCart, User, Flag } from "lucide-react";
 import Logo from "../Logo";
 import DashboardKabeng from "./dashboardKabeng";
+import LastUser_optimized from "./lastUser_optimized";
 
 // Lazy load ALL heavy components
 const Product = dynamic(() => import("./product"), {
@@ -333,7 +334,7 @@ const Navbar = memo(() => {
                 <div className="text-center py-8">Loading user data...</div>
               }
             >
-              <LastUser />
+              <LastUser_optimized />
             </Suspense>
           )}
           {active === "laporan" && (

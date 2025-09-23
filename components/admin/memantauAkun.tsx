@@ -104,17 +104,21 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
     <div className="min-h-screen bg-[#f7f7f8] py-12">
       <div className="w-full mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between mb-1 -mt-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-left font-[Montserrat,sans-serif]">
+          <h1
+            className="text-2xl sm:text-3xl font-bold text-left font-[Montserrat,sans-serif]"
+            id="monitoring-user-heading"
+          >
             Monitoring User
           </h1>
           <div className="flex flex-col items-end gap-2">
             <button
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold shadow"
               onClick={onAddAkun}
+              aria-label="Tambah akun baru"
+              type="button"
             >
-              <UserPlus size={20} /> Tambahkan Akun
+              <UserPlus size={20} aria-hidden="true" /> Tambahkan Akun
             </button>
-            {/* Tombol tutup tidak diperlukan di sini, karena tab akan berpindah */}
           </div>
         </div>
         <p className="text-gray-500 text-base font-normal mb-8 text-left font-[Montserrat,sans-serif]">
@@ -168,19 +172,35 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
           </div>
         </div>
         <div className="w-full overflow-x-auto rounded-2xl bg-white shadow p-4 sm:p-8">
-          <table className="w-full rounded-xl overflow-hidden text-xs sm:text-base">
+          <table
+            className="w-full rounded-xl overflow-hidden text-sm md:text-base"
+            aria-labelledby="monitoring-user-heading"
+            role="table"
+          >
             <thead>
               <tr>
-                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                <th
+                  scope="col"
+                  className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-sm md:text-base font-[Montserrat,sans-serif]"
+                >
                   nama
                 </th>
-                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                <th
+                  scope="col"
+                  className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-sm md:text-base font-[Montserrat,sans-serif]"
+                >
                   password
                 </th>
-                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                <th
+                  scope="col"
+                  className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-sm md:text-base font-[Montserrat,sans-serif]"
+                >
                   role
                 </th>
-                <th className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-xs sm:text-sm font-[Montserrat,sans-serif]">
+                <th
+                  scope="col"
+                  className="py-2 px-2 sm:px-6 text-left font-normal text-gray-400 text-sm md:text-base font-[Montserrat,sans-serif]"
+                >
                   action
                 </th>
               </tr>
@@ -188,13 +208,13 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
             <tbody>
               {users.map((user, idx) => (
                 <tr key={idx}>
-                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-2xl font-bold text-black font-[Montserrat,sans-serif] border-b border-gray-300">
+                  <td className="py-2 md:py-3 px-2 sm:px-6 text-left text-sm md:text-base font-normal text-black font-[Montserrat,sans-serif] border-b border-gray-300">
                     {user.nama}
                   </td>
-                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-2xl font-bold text-black font-[Montserrat,sans-serif] border-b border-gray-300">
+                  <td className="py-2 md:py-3 px-2 sm:px-6 text-left text-sm md:text-base font-normal text-black font-[Montserrat,sans-serif] border-b border-gray-300">
                     {user.password}
                   </td>
-                  <td className="py-4 sm:py-8 px-2 sm:px-6 text-left text-base sm:text-xl font-semibold text-black font-[Montserrat,sans-serif] border-b border-gray-300">
+                  <td className="py-2 md:py-3 px-2 sm:px-6 text-left text-sm md:text-base font-normal text-black font-[Montserrat,sans-serif] border-b border-gray-300">
                     {user.id_role === 0 && "Kabeng"}
                     {user.id_role === 1 && "Guru"}
                     {user.id_role === 2 && "Waka Sarana"}
@@ -204,8 +224,14 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
                     <button
                       className="hover:text-red-600"
                       onClick={() => handleDeleteUser(user.id_user)}
+                      aria-label={`Hapus akun ${user.nama}`}
+                      type="button"
                     >
-                      <Trash2 size={20} className="sm:w-7 sm:h-7" />
+                      <Trash2
+                        size={20}
+                        className="sm:w-7 sm:h-7"
+                        aria-hidden="true"
+                      />
                     </button>
                   </td>
                 </tr>

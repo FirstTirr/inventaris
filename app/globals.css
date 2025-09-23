@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 /* Critical CSS optimizations */
 * {
@@ -22,24 +21,6 @@ img {
   max-width: 100%;
   height: auto;
   display: block;
-}
-
-/* Performance optimizations for animations */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Optimize transforms */
-.transform-gpu {
-  transform: translateZ(0);
-  will-change: transform;
 }
 
 @custom-variant dark (&:is(.dark *));

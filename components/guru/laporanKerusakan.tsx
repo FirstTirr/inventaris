@@ -302,18 +302,7 @@ const LaporanKerusakanBarang = React.memo(() => {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Jenis Kerusakan</label>
-            <textarea
-              placeholder="Masukkan Jenis Kerusakan"
-              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 min-h-[60px] focus:outline-none focus:ring-2 focus:ring-blue-200"
-              value={kerusakan}
-              onChange={handleKerusakanChange}
-              title="Hanya huruf dan angka"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Jumlah (opsional)</label>
+            <label className="text-sm font-medium">Jumlah</label>
             <input
               type="number"
               min={0}
@@ -322,6 +311,17 @@ const LaporanKerusakanBarang = React.memo(() => {
               value={jumlah}
               onChange={handleJumlahChange}
               title="Hanya angka"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Jenis Kerusakan</label>
+            <textarea
+              placeholder="Masukkan Jenis Kerusakan"
+              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 min-h-[60px] focus:outline-none focus:ring-2 focus:ring-blue-200"
+              value={kerusakan}
+              onChange={handleKerusakanChange}
+              title="Hanya huruf dan angka"
+              required
             />
           </div>
           <button
