@@ -30,15 +30,22 @@ export default function Login() {
         console.log(`RESP HEADER: ${k}: ${v}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Login gagal");
-      // Tidak perlu set cookie di frontend, backend sudah set cookie httponly
-      // Langsung redirect ke halaman sesuai backend
-      // Setelah login sukses, set cookie di browser domain frontend
-      document.cookie = `user=${nama_user}; path=/; max-age=3600`;
-      // Simpan juga ke localStorage
-      localStorage.setItem("user", nama_user);
-      console.log("Cookie user disimpan di domain frontend:", document.cookie);
+
+      // Set cookie dan localStorage setelah login sukses
+      try {
+        document.cookie = `user=${nama_user}; path=/; max-age=3600`;
+        localStorage.setItem("user", nama_user);
+        console.log(
+          "Cookie user disimpan di domain frontend:",
+          document.cookie
+        );
+      } catch (errSet) {
+        console.error("Gagal set cookie/localStorage:", errSet);
+      }
+
+      // Redirect setelah penyimpanan
       if (data.redirect_url) {
-        window.location = data.redirect_url;
+        window.location.href = data.redirect_url;
       } else {
         window.location.href = "/";
       }
@@ -51,137 +58,209 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center overflow-hidden relative">
-      {/* background image as element so we can scale it responsively */}
-      <img
-        src="/tefa.jpg"
-        alt="background"
-        className="absolute h-full items-center object-cover z-0"
-      />
-      {/* left/right side panels (desktop) colored #0A111B */}
-      <div
-        className="hidden md:block absolute inset-y-0 left-0 w-1/4"
-        style={{ backgroundColor: "#0A111B", zIndex: 11 }}
-      />
-      <div
-        className="hidden md:block absolute inset-y-0 right-0 w-1/4"
-        style={{ backgroundColor: "#0A111B", zIndex: 11 }}
-      />
-      {/* overlay intentionally transparent so it doesn't block the background */}
-
-      {/* Judul kiri atas */}
-      <div
-        className="absolute left-2 top-8 text-white text-3xl md:text-4xl font-bold leading-tight font-[Montserrat,sans-serif] text-left select-none z-20"
-        style={{ letterSpacing: 0, lineHeight: "1.1" }}
-      >
-        SISTEM
-        <br />
-        PEMANTAUAN
-        <br />
-        LABOR
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-indigo-50/20"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05)_0%,transparent_50%)]"></div>
       </div>
-      {/* Logo kanan atas */}
-      <img
-        src="/tefa.jpg"
-        alt="Logo SMK"
-        className="rounded-full absolute right-4 top-8 w-27 h-27 object-contain z-30 ring-2 ring-white/30"
-      />
-      <div className="w-full flex flex-col items-center justify-center mt-8 relative z-20">
-        <h1
-          className="text-4xl md:text-5xl font-bold leading-tight text-center mb-12 font-[Montserrat,sans-serif] text-gray-200"
-          style={{ letterSpacing: 0 }}
-        >
-          LOGIN
-        </h1>
-        <div className="relative w-full max-w-[380px] flex flex-col items-center rounded-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1),_inset_0_1px_0_rgba(255,255,255,0.5),_inset_0_-1px_0_rgba(255,255,255,0.1),_inset_0_0_26px_13px_rgba(255,255,255,1.3)] bg-white/15 backdrop-blur-[32px] overflow-hidden pt-6 pb-4 px-6">
-          <form
-            className="w-full flex flex-col items-center"
-            onSubmit={handleSubmit}
-          >
-            <input
-              type="text"
-              placeholder="Nama User"
-              className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 mb-6 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif]"
-              value={nama_user}
-              onChange={(e) => setNamaUser(e.target.value)}
-              required
-            />
-            <div className="w-full relative mb-6">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                className="w-full border border-gray-400 text-gray-200 rounded-md px-4 py-4 text-base font-normal focus:outline-none focus:ring-2 focus:ring-blue-300 font-[Montserrat,sans-serif] pr-12"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                aria-label={
-                  showPassword ? "Sembunyikan password" : "Lihat password"
-                }
-                onClick={togglePassword}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
-              </button>
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-[#1877f2] hover:bg-blue-700 text-white font-bold text-lg rounded-md py-3 mt-2 mb-6 transition-all font-[Montserrat,sans-serif]"
-              disabled={loading}
-            >
-              {loading ? "Loading..." : "Login"}
-            </button>
-            {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
-          </form>
 
-          {/* Segitiga dan label bawah tombol - sekarang di dalam glassmorphism */}
-          <div className="relative w-full flex flex-col items-center">
-            <svg
-              width="220"
-              height="40"
-              viewBox="0 0 220 40"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M0 0H220V40L110 20L0 40V0Z" fill="url(#paint0_linear)" />
-              <defs>
-                <linearGradient
-                  id="paint0_linear"
-                  x1="110"
-                  y1="0"
-                  x2="110"
-                  y2="70"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stopColor="#1877f2" />
-                  <stop offset="1" stopColor="#fff" stopOpacity="0.1" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <span className="absolute top-3 left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-200 font-[Montserrat,sans-serif] text-center">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-3 sm:p-6 md:p-8 z-20">
+        <div className="text-gray-900 font-bold text-base sm:text-xl md:text-3xl tracking-tight leading-tight">
+          <span className="text-blue-600">SISTEM</span>
+          <span className="block sm:inline"> PEMANTAUAN LABOR</span>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <img
+            src="/tefa.jpg"
+            alt="Logo SMK"
+            className="w-16 h-16 sm:w-32 sm:h-32 md:w-20 md:h-20 rounded-full object-cover border-2 md:border-3 border-blue-200 shadow-lg ring-1 md:ring-2 ring-blue-100"
+          />
+          <div className="hidden sm:block text-right">
+            <div className="text-xs sm:text-base md:text-lg font-bold text-gray-900">
               TEFA RPL
-              <br />
-              BINARY CODING SPACE
-            </span>
+            </div>
+            <div className="text-xs sm:text-sm md:text-base text-blue-600 font-semibold">
+              Binary Coding Space
+            </div>
           </div>
         </div>
       </div>
-      {/* Wave bottom - enlarged and stretched */}
-      <div className="absolute bottom-0 left-0 w-full h-[220px] md:h-[320px] z-20 overflow-x-hidden pointer-events-none">
+      {/* Main Login Container */}
+      <div className="relative z-10 w-full max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl mx-auto px-2 sm:px-4 md:px-6 mt-20 sm:mt-12 md:mt-0">
+        {/* Login Card */}
+        <div className="bg-white/90 backdrop-blur-xl border border-white/30 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xl p-3 sm:p-8 md:p-10 relative overflow-hidden">
+          {/* Card Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-xl sm:rounded-2xl md:rounded-3xl blur-xl -z-10"></div>
+
+          {/* Header */}
+          <div className="text-center mb-4 sm:mb-8 md:mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-r rounded-xl sm:rounded-2xl md:rounded-3xl mb-2 sm:mb-6 md:mb-8 shadow-lg">
+              <img
+                src="/tefa.jpg"
+                alt="Logo SMK"
+                className="w-30 h-30 rounded-full object-cover border-2 border-blue-200 shadow-lg ring-1 md:ring-2 ring-blue-100"
+              />
+            </div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 md:mb-3">
+              Welcome
+            </h1>
+            <p className="text-gray-600 text-xs sm:text-base md:text-lg">
+              Sign in to your account
+            </p>
+          </div>
+
+          {/* Form */}
+          <form className="space-y-4 sm:space-y-7" onSubmit={handleSubmit}>
+            {/* Username Field */}
+            <div className="space-y-2">
+              <label className="text-xs sm:text-sm font-bold text-gray-700 block uppercase tracking-wide">
+                Username
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  className="w-full bg-gray-50/50 border border-gray-200 rounded-lg sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-5 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-gray-50 text-base sm:text-lg"
+                  value={nama_user}
+                  onChange={(e) => setNamaUser(e.target.value)}
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-6">
+                  <svg
+                    className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-2">
+              <label className="text-xs sm:text-sm font-bold text-gray-700 block uppercase tracking-wide">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="w-full bg-gray-50/50 border border-gray-200 rounded-lg sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-5 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-gray-50 pr-8 sm:pr-16 text-base sm:text-lg"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={togglePassword}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-6 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-2 flex items-center text-xs sm:text-sm mt-1">
+                <svg
+                  className="w-5 h-5 text-red-400 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                <span className="text-red-700 font-medium">{error}</span>
+              </div>
+            )}
+
+            {/* Login Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 sm:py-5 rounded-lg sm:rounded-2xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl text-base sm:text-lg"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-5 w-5 sm:h-6 sm:w-6 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Signing in...
+                </div>
+              ) : (
+                "Sign In"
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-10 pt-8 border-t border-gray-200">
+            <div className="text-center">
+              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl">
+                <span className="text-sm font-bold text-blue-700 tracking-wide">
+                  TEFA RPL • Binary Coding Space
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Decorative Elements */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-blue-100 rounded-full blur-xl opacity-70"></div>
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-indigo-100 rounded-full blur-xl opacity-70"></div>
+      <div className="absolute top-1/2 left-0 w-16 h-16 bg-purple-100 rounded-full blur-xl opacity-50"></div>
+
+      {/* Bottom Wave */}
+      <div className="absolute bottom-0 left-0 w-full h-40 z-0">
         <svg
-          viewBox="0 0 1920 220"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1440 320"
           className="w-full h-full"
           preserveAspectRatio="none"
         >
+          <defs>
+            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#dbeafe" />
+              <stop offset="50%" stopColor="#bfdbfe" />
+              <stop offset="100%" stopColor="#93c5fd" />
+            </linearGradient>
+          </defs>
           <path
-            d="M0 110C160 165 480 220 960 220C1440 220 1760 165 1920 110V220H0V110Z"
-            fill="#BFE2FF"
-          />
+            fill="url(#waveGradient)"
+            d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,106.7C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          ></path>
         </svg>
       </div>
     </div>

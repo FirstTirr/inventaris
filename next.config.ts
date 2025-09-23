@@ -21,12 +21,14 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ["lucide-react", "react", "react-dom"],
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
+  },
+
+  // Turbopack configuration (stable)
+  turbo: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
       },
     },
   },
@@ -90,7 +92,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/_next/static/(.*)",
+        source: "/_next/static/:path*",
         headers: [
           {
             key: "Cache-Control",
@@ -99,7 +101,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/(.*\\.(js|css|svg|png|jpg|jpeg|gif|ico|woff|woff2))",
+        source: "/static/:path*",
         headers: [
           {
             key: "Cache-Control",
