@@ -1,11 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { CheckCheck } from "lucide-react";
 
 export default function TerimaLaporan() {
   const [laporan, setLaporan] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  // Filter laporan by labor and perangkat
+  const filteredLaporan = useMemo(() => {
+    if (!search) return laporan;
+    const s = search.toLowerCase();
+    return laporan.filter(
+      (item) =>
+        (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
+        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
+    );
+  }, [laporan, search]);
+  const paginatedLaporan = filteredLaporan.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+  const totalPages = Math.ceil(filteredLaporan.length / itemsPerPage);
 
   // Check network status
   useEffect(() => {
@@ -106,14 +124,52 @@ export default function TerimaLaporan() {
           </div>
         </div>
         <div className="w-full overflow-x-auto rounded-xl bg-white shadow font-sans mt-6">
-          <div className="flex items-center justify-between p-4 border-b">
-            <div>
-              <h3 className="text-sm font-semibold">Daftar Laporan</h3>
-              <p className="text-xs text-gray-500">
-                Semua laporan yang masuk ke kabeng
-              </p>
-            </div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-4 border-b">
             <div className="flex items-center gap-2">
+              <label
+                htmlFor="itemsPerPage"
+                className="text-gray-600 text-sm font-medium"
+              >
+                Show{" "}
+              </label>
+              <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                {[10, 20, 30, 40, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+              <span className="text-gray-600 text-sm font-medium">
+                {" "}
+                entries
+              </span>
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
+              <input
+                type="text"
+                placeholder="Cari labor/perangkat..."
+                className="w-48 outline-none bg-white border rounded px-3 py-2 text-sm text-gray-500 placeholder:text-gray-400 shadow"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search labor/perangkat"
+              />
+              <button
+                className="text-gray-400 hover:text-gray-600 text-base px-2"
+                onClick={() => setSearch("")}
+                type="button"
+                aria-label="Clear search"
+                tabIndex={-1}
+              >
+                ×
+              </button>
               <button
                 onClick={async () => {
                   setLoading(true);
@@ -137,8 +193,11 @@ export default function TerimaLaporan() {
                 Refresh
               </button>
             </div>
+            <div className="text-gray-500 text-xs md:text-sm w-full text-center md:w-auto md:text-right">
+              Showing {paginatedLaporan.length} of {filteredLaporan.length}{" "}
+              entries
+            </div>
           </div>
-
           <table className="w-full text-left">
             <thead>
               <tr className="text-gray-500 text-sm font-semibold border-b">
@@ -157,14 +216,14 @@ export default function TerimaLaporan() {
               </tr>
             </thead>
             <tbody>
-              {laporan.length === 0 ? (
+              {paginatedLaporan.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-gray-500">
                     Tidak ada laporan.
                   </td>
                 </tr>
               ) : (
-                laporan.map((item: any, idx: number) => (
+                paginatedLaporan.map((item: any, idx: number) => (
                   <tr
                     key={item.id_laporan || idx}
                     className="border-b last:border-b-0 text-gray-700"
@@ -189,6 +248,38 @@ export default function TerimaLaporan() {
               )}
             </tbody>
           </table>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex flex-wrap justify-center items-center gap-2 mt-6">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1 bg-white border rounded text-sm text-gray-700 disabled:bg-gray-200"
+              >
+                &lt;
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`px-3 py-1 border rounded text-sm ${
+                    page === p
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-3 py-1 bg-white border rounded text-sm text-gray-700 disabled:bg-gray-200"
+              >
+                &gt;
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

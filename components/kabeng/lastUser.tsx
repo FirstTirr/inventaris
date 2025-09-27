@@ -25,6 +25,26 @@ export default function LastUser() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Memoized filtered data untuk performa lebih baik
+  const filteredData = useMemo(() => {
+    if (!debouncedSearch) return data;
+    const s = debouncedSearch.toLowerCase();
+    return data.filter(
+      (item) =>
+        (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
+        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
+    );
+  }, [data, debouncedSearch]);
+
+  const paginatedData = useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredData.slice(start, end);
+  }, [filteredData, page, itemsPerPage]);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   // Check network status
   useEffect(() => {
@@ -66,18 +86,6 @@ export default function LastUser() {
     };
     fetchData();
   }, [isOnline]);
-
-  // Memoized filtered data untuk performa lebih baik
-  const filteredData = useMemo(() => {
-    if (!debouncedSearch) return data;
-
-    const s = debouncedSearch.toLowerCase();
-    return data.filter(
-      (item) =>
-        (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
-        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
-    );
-  }, [data, debouncedSearch]);
 
   // Tambahkan fungsi hapus penggunaan dengan useCallback
   const handleDelete = useCallback(
@@ -147,11 +155,38 @@ export default function LastUser() {
               ×
             </button>
           </div>
-          <select className="bg-white rounded-md border border-gray-200 px-4 py-2 shadow-sm text-base">
-            <option>All Categories</option>
-          </select>
         </div>
         <div className="w-full overflow-x-auto rounded-xl bg-white shadow font-sans">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-4">
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="itemsPerPage"
+                className="text-gray-600 text-sm font-medium"
+              >
+                Show
+              </label>
+              <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Select number of entries per page"
+              >
+                {[10, 20, 30, 40, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+              <span className="text-gray-600 text-sm font-medium">entries</span>
+            </div>
+            <div className="text-gray-500 text-xs md:text-sm">
+              Showing {paginatedData.length} of {filteredData.length} entries
+            </div>
+          </div>
           <table className="w-full text-left">
             <thead>
               <tr className="text-gray-500 text-sm font-semibold border-b">
@@ -168,7 +203,7 @@ export default function LastUser() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((item, idx) => (
+              {paginatedData.map((item, idx) => (
                 <tr
                   key={item.id_penggunaan || idx}
                   className="border-b last:border-b-0 text-gray-700"
@@ -190,6 +225,41 @@ export default function LastUser() {
               ))}
             </tbody>
           </table>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1 border rounded text-sm text-gray-700 bg-white disabled:bg-gray-200 disabled:text-gray-400"
+                aria-label="Previous page"
+              >
+                &lt;
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`px-3 py-1 border rounded text-sm font-semibold transition-colors duration-150 ${
+                    page === p
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
+                  }`}
+                  aria-label={`Go to page ${p}`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-3 py-1 border rounded text-sm text-gray-700 bg-white disabled:bg-gray-200 disabled:text-gray-400"
+                aria-label="Next page"
+              >
+                &gt;
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -38,13 +38,15 @@ const Product = ({
     [string, string, string, string, number, string] | null
   >(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [jurusanList, setJurusanList] = useState<string[]>([]);
+  const [selectedJurusan, setSelectedJurusan] = useState<string>("");
 
   // Data structure: [id_perangkat, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]
   const [data, setData] = useState<
     [number, string, string, string, string, number, string][]
   >([]);
   const [page, setPage] = useState(1);
-  const [itemsPerPage] = useState(50); // Pagination untuk mengurangi DOM nodes
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Dropdown page size
 
   // Check network status
   useEffect(() => {
@@ -60,16 +62,27 @@ const Product = ({
     };
   }, []);
 
+  // Fetch jurusan list from API
+  useEffect(() => {
+    if (!isOnline) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.data)) {
+          setJurusanList(data.data.map((j: { jurusan: string }) => j.jurusan));
+        }
+      })
+      .catch(() => setJurusanList([]));
+  }, [isOnline]);
+
   // Fetch data from API only when online dengan caching
   useEffect(() => {
     if (!isOnline) return;
-
     // Try to load from cache first
     const cachedData = localStorage.getItem("product-cache");
     const cacheTime = localStorage.getItem("product-cache-time");
     const now = Date.now();
     const cacheValid = cacheTime && now - parseInt(cacheTime) < 5 * 60 * 1000; // 5 minutes
-
     if (cachedData && cacheValid) {
       try {
         const parsed = JSON.parse(cachedData);
@@ -79,11 +92,9 @@ const Product = ({
         console.error("Cache parse error:", err);
       }
     }
-
     getRemoteProducts()
       .then((result) => {
         const arr = Array.isArray(result.data) ? result.data : result;
-        console.log("HASIL DARI API:", arr);
         if (Array.isArray(arr)) {
           const mappedData = arr.map(
             (item: {
@@ -105,8 +116,6 @@ const Product = ({
                 item.status,
               ] as [number, string, string, string, string, number, string]
           );
-
-          // Cache the data
           localStorage.setItem("product-cache", JSON.stringify(mappedData));
           localStorage.setItem("product-cache-time", Date.now().toString());
           setData(mappedData);
@@ -118,12 +127,11 @@ const Product = ({
   }, [isOnline]);
 
   // Filter dan pagination untuk mengurangi DOM nodes
-  const { paginatedData, totalPages } = useMemo(() => {
+  const { paginatedData, totalPages, filteredLength } = useMemo(() => {
     let filtered = data;
-
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
-      filtered = data.filter(
+      filtered = filtered.filter(
         ([, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]) => {
           return (
             nama_perangkat.toLowerCase().includes(q) ||
@@ -136,14 +144,21 @@ const Product = ({
         }
       );
     }
-
+    if (selectedJurusan) {
+      filtered = filtered.filter(
+        ([, , , jurusan]) => jurusan === selectedJurusan
+      );
+    }
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginated = filtered.slice(startIndex, endIndex);
     const pages = Math.ceil(filtered.length / itemsPerPage);
-
-    return { paginatedData: paginated, totalPages: pages };
-  }, [data, debouncedSearch, page, itemsPerPage]);
+    return {
+      paginatedData: paginated,
+      totalPages: pages,
+      filteredLength: filtered.length,
+    };
+  }, [data, debouncedSearch, page, itemsPerPage, selectedJurusan]);
 
   // Handle penambahan produk baru dengan useCallback
   const handleAddProduct = useCallback(
@@ -245,6 +260,22 @@ const Product = ({
                 ×
               </button>
             </div>
+            <div className="flex items-center">
+              <select
+                value={selectedJurusan}
+                onChange={(e) => setSelectedJurusan(e.target.value)}
+                className="border rounded-lg px-4 py-2 text-base font-medium bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ minWidth: 180 }}
+                aria-label="Filter by jurusan"
+              >
+                <option value="">All Jurusan</option>
+                {jurusanList.map((j) => (
+                  <option key={j} value={j}>
+                    {j}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all ml-auto"
               onClick={() => setShowAdd(true)}
@@ -281,6 +312,77 @@ const Product = ({
 
         {isOnline && (
           <div className="overflow-x-auto rounded-xl bg-white shadow font-sans w-full mt-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-4">
+              {/* Dropdown and info left */}
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="itemsPerPage"
+                  className="text-gray-600 text-sm font-medium"
+                >
+                  Show
+                </label>
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Select number of entries per page"
+                >
+                  {[10, 20, 30, 40, 50, 100].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-gray-600 text-sm font-medium">
+                  entries
+                </span>
+              </div>
+              {/* Info center */}
+              <div className="text-gray-500 text-xs md:text-sm">
+                Showing {paginatedData.length} of {filteredLength} entries
+              </div>
+              {/* Pagination right */}
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-2 py-1 border rounded text-sm text-gray-700 bg-white disabled:bg-gray-200 disabled:text-gray-400"
+                    aria-label="Previous page"
+                  >
+                    &lt;
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`px-2 py-1 border rounded text-sm font-semibold transition-colors duration-150 ${
+                          page === p
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
+                        }`}
+                        aria-label={`Go to page ${p}`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="px-2 py-1 border rounded text-sm text-gray-700 bg-white disabled:bg-gray-200 disabled:text-gray-400"
+                    aria-label="Next page"
+                  >
+                    &gt;
+                  </button>
+                </div>
+              )}
+            </div>
             <table className="min-w-full">
               <thead>
                 <tr className="text-gray-500 text-xs font-semibold border-b">
@@ -316,7 +418,7 @@ const Product = ({
                       <td className="py-3 px-6 text-center">{jumlah}</td>
                       <td className="py-3 px-6 text-center">{status}</td>
                       <td className="py-3 px-6 text-center">
-                        <button
+                       <button
                           title="Hapus"
                           className="hover:text-red-600"
                           onClick={async () => {
