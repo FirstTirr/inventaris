@@ -147,28 +147,16 @@ const LaporanKerusakanBarang = React.memo(() => {
   // Update productsList when labor changes to show only BAIK items in that labor
   useEffect(() => {
     if (!productsRaw || productsRaw.length === 0) return;
-    const selected = String(labor || "").toLowerCase();
+    const selectedLabor = String(labor || "").toLowerCase();
+    // Filter barang: status BAIK dan labor persis sama dengan labor yang dipilih
     const filtered = productsRaw.filter((p: any) => {
       if (String(p.status).toUpperCase() !== "BAIK") return false;
-      const prodLabor =
-        p.id_labor !== undefined && p.id_labor !== null
-          ? String(p.id_labor).toLowerCase()
-          : "";
-      return prodLabor === selected;
+      const prodLaborName = p.labor ? String(p.labor).toLowerCase() : "";
+      return prodLaborName === selectedLabor;
     });
     const names = filtered.map((p: any) => p.nama_perangkat);
-    if (names.length > 0) {
-      setProductsList(names);
-      setBarang(names[0]);
-    } else {
-      // fallback to all good items
-      const goodAll = productsRaw.filter(
-        (p: any) => String(p.status).toUpperCase() === "BAIK"
-      );
-      const goodNames = goodAll.map((p: any) => p.nama_perangkat);
-      setProductsList(goodNames);
-      if (goodNames.length > 0) setBarang(goodNames[0]);
-    }
+    setProductsList(names);
+    if (names.length > 0) setBarang(names[0]);
   }, [labor, productsRaw]);
 
   // Handle submit POST
@@ -272,8 +260,8 @@ const LaporanKerusakanBarang = React.memo(() => {
               {laborList.length === 0 ? (
                 <option value="">(tidak ada data labor)</option>
               ) : (
-                laborList.map((l) => (
-                  <option key={l} value={l}>
+                laborList.map((l, idx) => (
+                  <option key={l + "-" + idx} value={l}>
                     {l}
                   </option>
                 ))
@@ -293,8 +281,8 @@ const LaporanKerusakanBarang = React.memo(() => {
               {productsList.length === 0 ? (
                 <option value="">(tidak ada data barang baik)</option>
               ) : (
-                productsList.map((p) => (
-                  <option key={p} value={p}>
+                productsList.map((p, idx) => (
+                  <option key={p + "-" + idx} value={p}>
                     {p}
                   </option>
                 ))

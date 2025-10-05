@@ -35,7 +35,7 @@ const Product = ({
   const [showAdd, setShowAdd] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editData, setEditData] = useState<
-    [string, string, string, string, number, string] | null
+    [string, string, string, string, string, number, string] | null
   >(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [jurusanList, setJurusanList] = useState<string[]>([]);
@@ -77,53 +77,62 @@ const Product = ({
 
   // Fetch data from API only when online dengan caching
   useEffect(() => {
-    if (!isOnline) return;
-    // Try to load from cache first
+    // Always try to load from cache first
     const cachedData = localStorage.getItem("product-cache");
-    const cacheTime = localStorage.getItem("product-cache-time");
-    const now = Date.now();
-    const cacheValid = cacheTime && now - parseInt(cacheTime) < 5 * 60 * 1000; // 5 minutes
-    if (cachedData && cacheValid) {
+    let cacheLoaded = false;
+    if (cachedData) {
       try {
         const parsed = JSON.parse(cachedData);
         setData(parsed);
-        return;
+        cacheLoaded = true;
       } catch (err) {
         console.error("Cache parse error:", err);
       }
     }
-    getRemoteProducts()
-      .then((result) => {
-        const arr = Array.isArray(result.data) ? result.data : result;
-        if (Array.isArray(arr)) {
-          const mappedData = arr.map(
-            (item: {
-              id_perangkat: string | number;
-              nama_perangkat: string;
-              kategori: string;
-              jurusan: string;
-              id_labor: string;
-              jumlah: string | number;
-              status: string;
-            }) =>
-              [
-                Number(item.id_perangkat),
-                item.nama_perangkat,
-                item.kategori,
-                item.jurusan,
-                item.id_labor,
-                Number(item.jumlah),
-                item.status,
-              ] as [number, string, string, string, string, number, string]
-          );
-          localStorage.setItem("product-cache", JSON.stringify(mappedData));
-          localStorage.setItem("product-cache-time", Date.now().toString());
-          setData(mappedData);
-        }
-      })
-      .catch((err) => {
-        console.error("Gagal mengambil data produk remote:", err);
-      });
+    if (isOnline) {
+      getRemoteProducts()
+        .then((result) => {
+          const arr = Array.isArray(result.data) ? result.data : result;
+          if (Array.isArray(arr)) {
+            const mappedData: [
+              number,
+              string,
+              string,
+              string,
+              string,
+              number,
+              string
+            ][] = arr.map((item: any) => [
+              Number(item.id_perangkat ?? 0),
+              String(item.nama_perangkat ?? ""),
+              String(item.kategori ?? ""),
+              String(item.jurusan ?? ""),
+              item.labor !== undefined &&
+              item.labor !== null &&
+              String(item.labor).trim() !== ""
+                ? String(item.labor)
+                : "-",
+              Number(item.jumlah ?? 0),
+              String(item.status ?? ""),
+            ]);
+            localStorage.setItem("product-cache", JSON.stringify(mappedData));
+            localStorage.setItem("product-cache-time", Date.now().toString());
+            setData(mappedData);
+          }
+        })
+        .catch((err) => {
+          console.error("Gagal mengambil data produk remote:", err);
+          // If API fails, keep showing cache
+          if (cachedData && !cacheLoaded) {
+            try {
+              const parsed = JSON.parse(cachedData);
+              setData(parsed);
+            } catch (err2) {
+              setData([]);
+            }
+          }
+        });
+    }
   }, [isOnline]);
 
   // Filter dan pagination untuk mengurangi DOM nodes
@@ -132,12 +141,12 @@ const Product = ({
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
       filtered = filtered.filter(
-        ([, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]) => {
+        ([, nama_perangkat, kategori, jurusan, labor, jumlah, status]) => {
           return (
             nama_perangkat.toLowerCase().includes(q) ||
             kategori.toLowerCase().includes(q) ||
             jurusan.toLowerCase().includes(q) ||
-            id_labor.toLowerCase().includes(q) ||
+            labor.toLowerCase().includes(q) ||
             String(jumlah).includes(q) ||
             status.toLowerCase().includes(q)
           );
@@ -162,26 +171,62 @@ const Product = ({
 
   // Handle penambahan produk baru dengan useCallback
   const handleAddProduct = useCallback(
-    async (produkBaru: [string, string, string, string, number, string]) => {
+    async (
+      produkBaru: [string, string, string, string, string, number, string]
+    ) => {
       setShowAdd(false);
       try {
         const result = await getRemoteProducts();
         const arr = Array.isArray(result.data) ? result.data : result;
         if (Array.isArray(arr)) {
-          setData(
-            arr.map((item) => [
-              Number(item.id_perangkat),
-              item.nama_perangkat,
-              item.kategori,
-              item.jurusan,
-              item.id_labor,
-              Number(item.jumlah),
-              item.status,
-            ])
-          );
+          const mappedData: [
+            number,
+            string,
+            string,
+            string,
+            string,
+            number,
+            string
+          ][] = arr.map((item: any) => [
+            Number(item.id_perangkat ?? 0),
+            String(item.nama_perangkat ?? ""),
+            String(item.kategori ?? ""),
+            String(item.jurusan ?? ""),
+            item.labor !== undefined &&
+            item.labor !== null &&
+            String(item.labor).trim() !== ""
+              ? String(item.labor)
+              : "-",
+            Number(item.jumlah ?? 0),
+            String(item.status ?? ""),
+          ]);
+          localStorage.setItem("product-cache", JSON.stringify(mappedData));
+          localStorage.setItem("product-cache-time", Date.now().toString());
+          setData(mappedData);
+        } else {
+          // If API fails, keep showing cache
+          const cachedData = localStorage.getItem("product-cache");
+          if (cachedData) {
+            try {
+              const parsed = JSON.parse(cachedData);
+              setData(parsed);
+            } catch (err2) {
+              setData([]);
+            }
+          }
         }
       } catch (err) {
         console.error("Gagal refresh data produk setelah tambah:", err);
+        // If API fails, keep showing cache
+        const cachedData = localStorage.getItem("product-cache");
+        if (cachedData) {
+          try {
+            const parsed = JSON.parse(cachedData);
+            setData(parsed);
+          } catch (err2) {
+            setData([]);
+          }
+        }
       }
       setEditIdx(null);
       setEditData(null);
@@ -210,7 +255,11 @@ const Product = ({
               return jurusanList.map(({ key, label, color }) => {
                 const total = data
                   .filter(([, , , jurusan]) => jurusan === key)
-                  .reduce((sum, [, , , , , jumlah]) => sum + Number(jumlah), 0);
+                  .reduce((sum, [, , , , , jumlah]) => {
+                    const num =
+                      typeof jumlah === "number" ? jumlah : Number(jumlah);
+                    return sum + (isNaN(num) ? 0 : num);
+                  }, 0);
                 return (
                   <div
                     key={key}
@@ -245,7 +294,7 @@ const Product = ({
             <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
               <input
                 type="text"
-                placeholder="Cari perangkat..."
+                placeholder="Cari perangkat atau labor..."
                 className="flex-1 outline-none bg-transparent text-sm text-gray-500 px-2 placeholder:text-gray-400"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -389,6 +438,7 @@ const Product = ({
                   <th className="py-3 px-6 text-left">Nama Perangkat</th>
                   <th className="py-3 px-6 text-center">Kategori</th>
                   <th className="py-3 px-6 text-center">Jurusan</th>
+                  <th className="py-3 px-6 text-center">Labor</th>
                   <th className="py-3 px-6 text-center">Jumlah</th>
                   <th className="py-3 px-6 text-center">Status</th>
                   <th className="py-3 px-6 text-center">Actions</th>
@@ -402,7 +452,7 @@ const Product = ({
                       nama_perangkat,
                       kategori,
                       jurusan,
-                      id_labor,
+                      labor,
                       jumlah,
                       status,
                     ]: [number, string, string, string, string, number, string],
@@ -415,10 +465,15 @@ const Product = ({
                       <td className="py-3 px-6 text-left">{nama_perangkat}</td>
                       <td className="py-3 px-6 text-center">{kategori}</td>
                       <td className="py-3 px-6 text-center">{jurusan}</td>
+                      <td className="py-3 px-6 text-center">
+                        {typeof labor === "string" && labor.trim() !== ""
+                          ? labor
+                          : "-"}
+                      </td>
                       <td className="py-3 px-6 text-center">{jumlah}</td>
                       <td className="py-3 px-6 text-center">{status}</td>
                       <td className="py-3 px-6 text-center">
-                       <button
+                        <button
                           title="Hapus"
                           className="hover:text-red-600"
                           onClick={async () => {
@@ -435,31 +490,63 @@ const Product = ({
                                 ? result.data
                                 : result;
                               if (Array.isArray(arr)) {
-                                setData(
-                                  arr.map(
-                                    (item: {
-                                      id_perangkat: string | number;
-                                      nama_perangkat: string;
-                                      kategori: string;
-                                      jurusan: string;
-                                      id_labor: string;
-                                      jumlah: string | number;
-                                      status: string;
-                                    }) => [
-                                      Number(item.id_perangkat),
-                                      item.nama_perangkat,
-                                      item.kategori,
-                                      item.jurusan,
-                                      item.id_labor,
-                                      Number(item.jumlah),
-                                      item.status,
-                                    ]
-                                  )
+                                const mappedData: [
+                                  number,
+                                  string,
+                                  string,
+                                  string,
+                                  string,
+                                  number,
+                                  string
+                                ][] = arr.map((item: any) => [
+                                  Number(item.id_perangkat ?? 0),
+                                  String(item.nama_perangkat ?? ""),
+                                  String(item.kategori ?? ""),
+                                  String(item.jurusan ?? ""),
+                                  item.labor !== undefined &&
+                                  item.labor !== null &&
+                                  String(item.labor).trim() !== ""
+                                    ? String(item.labor)
+                                    : "-",
+                                  Number(item.jumlah ?? 0),
+                                  String(item.status ?? ""),
+                                ]);
+                                localStorage.setItem(
+                                  "product-cache",
+                                  JSON.stringify(mappedData)
                                 );
+                                localStorage.setItem(
+                                  "product-cache-time",
+                                  Date.now().toString()
+                                );
+                                setData(mappedData);
+                              } else {
+                                // If API fails, keep showing cache
+                                const cachedData =
+                                  localStorage.getItem("product-cache");
+                                if (cachedData) {
+                                  try {
+                                    const parsed = JSON.parse(cachedData);
+                                    setData(parsed);
+                                  } catch (err2) {
+                                    setData([]);
+                                  }
+                                }
                               }
                               alert("Barang berhasil dihapus!");
                             } catch (err) {
                               alert("Gagal menghapus data: " + err);
+                              // If API fails, keep showing cache
+                              const cachedData =
+                                localStorage.getItem("product-cache");
+                              if (cachedData) {
+                                try {
+                                  const parsed = JSON.parse(cachedData);
+                                  setData(parsed);
+                                } catch (err2) {
+                                  setData([]);
+                                }
+                              }
                             }
                           }}
                         >
@@ -476,6 +563,7 @@ const Product = ({
                               nama_perangkat,
                               kategori,
                               jurusan,
+                              labor ?? "",
                               Number(jumlah),
                               status,
                             ]);

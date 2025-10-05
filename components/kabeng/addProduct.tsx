@@ -5,10 +5,10 @@ import { editRemoteProduct } from "@/lib/api/editRemoteProduct";
 
 interface AddProductProps {
   onAddProduct: (
-    data: [string, string, string, string, number, string]
+    data: [string, string, string, string, string, number, string]
   ) => void;
   onCancel: () => void;
-  defaultValue?: [string, string, string, string, number, string];
+  defaultValue?: [string, string, string, string, string, number, string];
 }
 
 export default function AddProduct({
@@ -22,8 +22,8 @@ export default function AddProduct({
     category: defaultValue ? defaultValue[2] : "",
     jurusan: defaultValue ? defaultValue[3] : "",
     labor: defaultValue ? String(defaultValue[4]) : "",
-    jumlah: defaultValue ? String(defaultValue[4]) : "",
-    status: defaultValue ? defaultValue[5] : "",
+    jumlah: defaultValue ? String(defaultValue[5]) : "",
+    status: defaultValue ? defaultValue[6] : "",
   });
   const [kategoriList, setKategoriList] = useState<string[]>([]);
   const [laborList, setLaborList] = useState<string[]>([]);
@@ -103,6 +103,7 @@ export default function AddProduct({
           payload.nama_barang,
           payload.category,
           payload.jurusan,
+          payload.labor,
           Number(payload.jumlah),
           payload.status,
         ]);
@@ -123,6 +124,7 @@ export default function AddProduct({
           payload.nama_barang,
           payload.category,
           payload.jurusan,
+          payload.labor,
           payload.jumlah,
           payload.status,
         ]);
@@ -148,6 +150,7 @@ export default function AddProduct({
       form.nama_barang,
       form.category,
       form.jurusan,
+      form.labor,
       Number(form.jumlah),
       form.status,
     ]);

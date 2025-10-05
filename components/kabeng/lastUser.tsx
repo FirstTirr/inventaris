@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Trash2 } from "lucide-react";
+import { CheckCheck, Trash2 } from "lucide-react";
 
 // Custom hook for debouncing
 function useDebounce(value: string, delay: number) {
@@ -218,7 +218,7 @@ export default function LastUser() {
                       className="inline-flex items-center justify-center rounded-md p-2 bg-red-100 hover:bg-red-200 transition-colors"
                       onClick={() => handleDelete(item.id_penggunaan)}
                     >
-                      <Trash2 className="w-6 h-6 text-red-600" />
+                      <CheckCheck className="w-6 h-6 text-green-600" />
                     </button>
                   </td>
                 </tr>

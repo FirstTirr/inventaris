@@ -46,7 +46,7 @@ export default function TerimaLaporan() {
       return;
     }
 
-    if (!window.confirm("Yakin ingin menghapus laporan ini?")) return;
+    if (!window.confirm("Yakin ingin menyetujui laporan ini? jika sudah setuju, mohon edit jumlah dan status barang di tabel product")) return;
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan/delete`,

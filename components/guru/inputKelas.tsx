@@ -172,30 +172,16 @@ const InputKelas = React.memo(() => {
   const filteredProducts = useMemo(() => {
     if (!productsRaw || productsRaw.length === 0) return [];
 
-    const selected = String(labor || "").toLowerCase();
+    const selectedLabor = String(labor || "").toLowerCase();
+    // Filter barang: status BAIK dan labor persis sama dengan labor yang dipilih
     const filtered = productsRaw.filter((p: any) => {
-      // match status and labor (flexible matching)
       if (String(p.status).toUpperCase() !== "BAIK") return false;
-      const prodLabor =
-        p.id_labor !== undefined && p.id_labor !== null
-          ? String(p.id_labor).toLowerCase()
-          : "";
-      // match by name or id string
-      return (
-        prodLabor === selected || prodLabor === String(labor).toLowerCase()
-      );
+      const prodLaborName = p.labor ? String(p.labor).toLowerCase() : "";
+      return prodLaborName === selectedLabor;
     });
 
-    const names = filtered.map((p: any) => p.nama_perangkat);
-    if (names.length > 0) {
-      return names;
-    } else {
-      // fallback to all good items
-      const goodAll = productsRaw.filter(
-        (p: any) => String(p.status).toUpperCase() === "BAIK"
-      );
-      return goodAll.map((p: any) => p.nama_perangkat);
-    }
+    // Jika tidak ada barang di labor tsb, dropdown kosong
+    return filtered.map((p: any) => p.nama_perangkat);
   }, [labor, productsRaw]);
 
   // Update productsList when filteredProducts change
@@ -246,6 +232,13 @@ const InputKelas = React.memo(() => {
         setJumlah("");
         setLabor("");
         setKelas("");
+        // Hapus cache agar data di-refresh
+        localStorage.removeItem("input-kelas-cache");
+        localStorage.removeItem("input-kelas-cache-time");
+        localStorage.removeItem("input-labor-cache");
+        localStorage.removeItem("input-labor-cache-time");
+        localStorage.removeItem("input-products-cache");
+        localStorage.removeItem("input-products-cache-time");
       } else {
         setMessage(data.detail || "Gagal mengirim data");
       }
@@ -337,8 +330,8 @@ const InputKelas = React.memo(() => {
                 {kelasList.length === 0 ? (
                   <option value="">(tidak ada data kelas)</option>
                 ) : (
-                  kelasList.map((k) => (
-                    <option key={k} value={k}>
+                  kelasList.map((k, idx) => (
+                    <option key={k + "-" + idx} value={k}>
                       {k}
                     </option>
                   ))
@@ -385,8 +378,8 @@ const InputKelas = React.memo(() => {
                 {laborList.length === 0 ? (
                   <option value="">(tidak ada data labor)</option>
                 ) : (
-                  laborList.map((l) => (
-                    <option key={l} value={l}>
+                  laborList.map((l, idx) => (
+                    <option key={l + "-" + idx} value={l}>
                       {l}
                     </option>
                   ))
@@ -434,8 +427,8 @@ const InputKelas = React.memo(() => {
                 {productsList.length === 0 ? (
                   <option value="">(tidak ada data barang baik)</option>
                 ) : (
-                  productsList.map((p) => (
-                    <option key={p} value={p}>
+                  productsList.map((p, idx) => (
+                    <option key={p + "-" + idx} value={p}>
                       {p}
                     </option>
                   ))
