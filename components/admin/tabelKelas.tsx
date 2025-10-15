@@ -23,12 +23,14 @@ export default function TabelKelas() {
         );
         const json = await res.json();
         if (res.ok && json.data) {
-          const mapped = json.data.map((k: any) => ({ kelas: k.nama_kelas }));
+          const mapped = json.data.map((k: { nama_kelas: string }) => ({
+            kelas: k.nama_kelas,
+          }));
           setData(mapped);
         } else {
           setError(json.detail || "Gagal mengambil data kelas");
         }
-      } catch (err) {
+      } catch {
         setError("Gagal mengambil data kelas");
       }
       setLoading(false);
@@ -53,11 +55,9 @@ export default function TabelKelas() {
         setData((prev) => prev.filter((k) => k.kelas !== nama_kelas));
         alert(json.message || "Kelas berhasil dihapus");
       } else {
-        console.log(json.nama_kelas);
         alert(json.detail || "Gagal menghapus kelas");
-        console.log(json.nama_kelas);
       }
-    } catch (err) {
+    } catch {
       alert("Gagal menghapus kelas");
     }
   };

@@ -1,5 +1,10 @@
 "use client";
+
+type Kategori = { kategori: string };
+type Labor = { nama_labor: string };
+type Jurusan = { jurusan: string };
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { postProduct } from "@/lib/api/productApi";
 import { editRemoteProduct } from "@/lib/api/editRemoteProduct";
 
@@ -36,7 +41,7 @@ export default function AddProduct({
         );
         const data = await res.json();
         if (res.ok && data.data)
-          setKategoriList(data.data.map((k: any) => k.kategori));
+          setKategoriList(data.data.map((k: Kategori) => k.kategori));
       } catch {}
     };
     const fetchLabor = async () => {
@@ -46,7 +51,7 @@ export default function AddProduct({
         );
         const data = await res.json();
         if (res.ok && data.data)
-          setLaborList(data.data.map((l: any) => l.nama_labor));
+          setLaborList(data.data.map((l: Labor) => l.nama_labor));
       } catch {}
     };
     const fetchJurusan = async () => {
@@ -56,7 +61,7 @@ export default function AddProduct({
         );
         const data = await res.json();
         if (res.ok && data.data)
-          setJurusanList(data.data.map((j: any) => j.jurusan));
+          setJurusanList(data.data.map((j: Jurusan) => j.jurusan));
       } catch {}
     };
     fetchKategori();
@@ -96,7 +101,7 @@ export default function AddProduct({
           jumlah: Number(form.jumlah),
           status: form.status,
         };
-        const res = await editRemoteProduct(payload);
+        await editRemoteProduct(payload);
         alert("Berhasil diubah");
         onAddProduct([
           String(payload.id_perangkat),
@@ -117,7 +122,7 @@ export default function AddProduct({
           jumlah: Number(form.jumlah),
           status: form.status,
         };
-        const res = await postProduct(payload);
+        await postProduct(payload);
         alert("Berhasil ditambahkan");
         onAddProduct([
           "new", // ID sementara untuk produk baru
@@ -138,24 +143,28 @@ export default function AddProduct({
         jumlah: "",
         status: "",
       });
-    } catch (err: any) {
-      alert("Gagal: " + err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        alert("Gagal: " + err.message);
+      } else {
+        alert("Gagal: " + String(err));
+      }
     }
   };
 
-  const handleYakin = () => {
-    // Kirim data produk baru ke parent (Product)
-    onAddProduct([
-      "new", // ID sementara
-      form.nama_barang,
-      form.category,
-      form.jurusan,
-      form.labor,
-      Number(form.jumlah),
-      form.status,
-    ]);
-    setShowConfirm(false);
-  };
+  // const handleYakin = () => {
+  //   // Kirim data produk baru ke parent (Product)
+  //   onAddProduct([
+  //     "new", // ID sementara
+  //     form.nama_barang,
+  //     form.category,
+  //     form.jurusan,
+  //     form.labor,
+  //     Number(form.jumlah),
+  //     form.status,
+  //   ]);
+  //   setShowConfirm(false);
+  // };
 
   const handleCancel = () => {
     if (showConfirm) {
@@ -171,10 +180,13 @@ export default function AddProduct({
           {/* Header */}
           <div className="flex items-center justify-between bg-[#d9d9d9] px-8 py-5">
             <h2 className="text-2xl font-bold font-sans">Add Product</h2>
-            <img
+            <Image
               src="/tefa.jpg"
               alt="icon smk 4"
-              className="rounded-full w-16 h-16 object-contain"
+              width={64}
+              height={64}
+              className="rounded-full object-contain"
+              priority
             />
           </div>
           {/* Form */}

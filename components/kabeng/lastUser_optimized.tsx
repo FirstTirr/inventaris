@@ -18,10 +18,19 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
+type Penggunaan = {
+  id_penggunaan: number;
+  nama_kelas: string;
+  nama_labor: string;
+  nama_perangkat: string;
+  jumlah_pakai: number;
+  tanggal: string;
+};
+
 const LastUser = React.memo(() => {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Penggunaan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -61,8 +70,8 @@ const LastUser = React.memo(() => {
         setData(JSON.parse(cachedData));
         setLoading(false);
         return;
-      } catch (err) {
-        console.error("Cache parse error:", err);
+      } catch {
+        // ignore cache parse error
       }
     }
 
@@ -80,7 +89,7 @@ const LastUser = React.memo(() => {
         localStorage.setItem("lastuser-cache", JSON.stringify(resultData));
         localStorage.setItem("lastuser-cache-time", Date.now().toString());
         setData(resultData);
-      } catch (err) {
+      } catch {
         setError("Gagal mengambil data penggunaan");
       } finally {
         setLoading(false);
@@ -133,7 +142,7 @@ const LastUser = React.memo(() => {
         setData((prev) =>
           prev.filter((item) => item.id_penggunaan !== id_penggunaan)
         );
-      } catch (err) {
+      } catch {
         alert("Gagal menghapus penggunaan");
       }
     },
@@ -248,6 +257,8 @@ const LastUser = React.memo(() => {
       </div>
     </div>
   );
+
+  LastUser.displayName = "LastUser";
 });
 
 export default LastUser;

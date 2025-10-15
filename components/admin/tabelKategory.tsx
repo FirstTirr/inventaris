@@ -40,8 +40,12 @@ export default function TabelKategory() {
       if (!res.ok) throw new Error(data.detail || "Gagal menghapus kategori");
       setKategoriList((prev) => prev.filter((k) => k.kategori !== kategori));
       alert("Kategori berhasil dihapus!");
-    } catch (err: any) {
-      alert(err.message || "Gagal menghapus kategori");
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message || "Gagal menghapus kategori");
+      } else {
+        alert("Gagal menghapus kategori");
+      }
     }
   };
 
@@ -97,7 +101,7 @@ export default function TabelKategory() {
               </tr>
             </thead>
             <tbody>
-              {paginatedKategori.map((row, idx) => (
+              {paginatedKategori.map((row) => (
                 <tr
                   key={row.kategori}
                   className="border-b last:border-b-0 hover:bg-blue-50 transition"

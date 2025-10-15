@@ -2,7 +2,15 @@ import React, { useState, useEffect, useMemo } from "react";
 import { CheckCheck } from "lucide-react";
 
 export default function TerimaLaporan() {
-  const [laporan, setLaporan] = useState<any[]>([]);
+  interface LaporanItem {
+    id_laporan: number;
+    nama_labor?: string;
+    nama_perangkat?: string;
+    jumlah?: number;
+    jenis_kerusakan?: string;
+    tanggal_lapor?: string;
+  }
+  const [laporan, setLaporan] = useState<LaporanItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -14,7 +22,7 @@ export default function TerimaLaporan() {
     if (!search) return laporan;
     const s = search.toLowerCase();
     return laporan.filter(
-      (item) =>
+      (item: LaporanItem) =>
         (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
         (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
     );
@@ -46,7 +54,12 @@ export default function TerimaLaporan() {
       return;
     }
 
-    if (!window.confirm("Yakin ingin menyetujui laporan ini? jika sudah setuju, mohon edit jumlah dan status barang di tabel product")) return;
+    if (
+      !window.confirm(
+        "Yakin ingin menyetujui laporan ini? jika sudah setuju, mohon edit jumlah dan status barang di tabel product"
+      )
+    )
+      return;
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan/delete`,
@@ -60,7 +73,7 @@ export default function TerimaLaporan() {
       setLaporan((prev) =>
         prev.filter((item) => item.id_laporan !== id_laporan)
       );
-    } catch (err) {
+    } catch {
       alert("Gagal menghapus laporan");
     }
   };
@@ -83,7 +96,7 @@ export default function TerimaLaporan() {
         if (!res.ok) throw new Error("Gagal mengambil data laporan");
         const data = await res.json();
         setLaporan(data.data || []);
-      } catch (err) {
+      } catch {
         setError("Gagal mengambil data laporan");
       } finally {
         setLoading(false);
@@ -182,7 +195,7 @@ export default function TerimaLaporan() {
                       throw new Error("Gagal mengambil data laporan");
                     const data = await res.json();
                     setLaporan(data.data || []);
-                  } catch (err) {
+                  } catch {
                     setError("Gagal mengambil data laporan");
                   } finally {
                     setLoading(false);
@@ -223,7 +236,7 @@ export default function TerimaLaporan() {
                   </td>
                 </tr>
               ) : (
-                paginatedLaporan.map((item: any, idx: number) => (
+                paginatedLaporan.map((item: LaporanItem, idx: number) => (
                   <tr
                     key={item.id_laporan || idx}
                     className="border-b last:border-b-0 text-gray-700"

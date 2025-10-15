@@ -91,8 +91,15 @@ const StatCard = React.memo(
 
 StatCard.displayName = "StatCard";
 
+type RemoteProduct = {
+  jurusan?: string;
+  status?: string;
+  nama_perangkat?: string;
+  jumlah?: number | string;
+};
+
 const BarangBaik = React.memo(() => {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<RemoteProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -165,15 +172,16 @@ const BarangBaik = React.memo(() => {
 
     // Filter jurusan 'rpl' dan status 'baik'
     const filtered = data.filter(
-      (item: any) =>
+      (item: RemoteProduct) =>
         item.jurusan?.toLowerCase() === "rpl" &&
         item.status?.toLowerCase() === "baik"
     );
 
     // Group by nama_perangkat
     const grouped: Record<string, number> = {};
-    filtered.forEach((item: any) => {
+    filtered.forEach((item: RemoteProduct) => {
       const key = item.nama_perangkat?.toLowerCase();
+      if (!key) return; // Skip if nama_perangkat is undefined
       if (!grouped[key]) grouped[key] = 0;
       grouped[key] += Number(item.jumlah) || 0;
     });

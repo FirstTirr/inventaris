@@ -11,14 +11,14 @@ const Product = dynamic(() => import("./product"), {
   loading: () => <div className="text-center py-8">Loading produk...</div>,
   ssr: false,
 });
-const About = dynamic(() => import("./dashboardKabeng"), {
-  loading: () => <div className="text-center py-8">Loading dashboard...</div>,
-  ssr: false,
-});
-const LastUser = dynamic(() => import("@/components/kabeng/lastUser"), {
-  loading: () => <div className="text-center py-8">Loading user data...</div>,
-  ssr: false,
-});
+// const About = dynamic(() => import("./dashboardKabeng"), {
+//   loading: () => <div className="text-center py-8">Loading dashboard...</div>,
+//   ssr: false,
+// });
+// const LastUser = dynamic(() => import("@/components/kabeng/lastUser"), {
+//   loading: () => <div className="text-center py-8">Loading user data...</div>,
+//   ssr: false,
+// });
 const TerimaLaporan = dynamic(() => import("./terimaLaporan"), {
   loading: () => <div className="text-center py-8">Loading laporan...</div>,
   ssr: false,
@@ -351,5 +351,6 @@ const Navbar = memo(() => {
     </div>
   );
 });
+Navbar.displayName = "Navbar";
 
 export default Navbar;

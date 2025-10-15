@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { CheckCheck, Trash2 } from "lucide-react";
+import { CheckCheck } from "lucide-react";
 
 // Custom hook for debouncing
 function useDebounce(value: string, delay: number) {
@@ -21,7 +21,15 @@ function useDebounce(value: string, delay: number) {
 export default function LastUser() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300); // 300ms debounce
-  const [data, setData] = useState<any[]>([]);
+  type Penggunaan = {
+    id_penggunaan: number;
+    nama_kelas: string;
+    nama_labor: string;
+    nama_perangkat: string;
+    jumlah_pakai: number;
+    tanggal: string;
+  };
+  const [data, setData] = useState<Penggunaan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -78,7 +86,7 @@ export default function LastUser() {
         if (!res.ok) throw new Error("Gagal mengambil data penggunaan");
         const result = await res.json();
         setData(result.data || []);
-      } catch (err) {
+      } catch {
         setError("Gagal mengambil data penggunaan");
       } finally {
         setLoading(false);
@@ -110,7 +118,7 @@ export default function LastUser() {
         setData((prev) =>
           prev.filter((item) => item.id_penggunaan !== id_penggunaan)
         );
-      } catch (err) {
+      } catch {
         alert("Gagal menghapus penggunaan");
       }
     },

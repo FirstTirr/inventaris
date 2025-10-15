@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
@@ -49,9 +50,13 @@ export default function Login() {
       } else {
         window.location.href = "/";
       }
-    } catch (err: any) {
-      console.error("LOGIN failed:", err);
-      setError(err.message || String(err));
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("LOGIN failed:", err);
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -72,10 +77,13 @@ export default function Login() {
           <span className="block sm:inline"> PEMANTAUAN LABOR</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          <img
+          <Image
             src="/tefa.jpg"
             alt="Logo SMK"
+            width={80}
+            height={80}
             className="w-16 h-16 sm:w-32 sm:h-32 md:w-20 md:h-20 rounded-full object-cover border-2 md:border-3 border-blue-200 shadow-lg ring-1 md:ring-2 ring-blue-100"
+            priority
           />
           <div className="hidden sm:block text-right">
             <div className="text-xs sm:text-base md:text-lg font-bold text-gray-900">
@@ -97,10 +105,13 @@ export default function Login() {
           {/* Header */}
           <div className="text-center mb-4 sm:mb-8 md:mb-10">
             <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-r rounded-xl sm:rounded-2xl md:rounded-3xl mb-2 sm:mb-6 md:mb-8 shadow-lg">
-              <img
+              <Image
                 src="/tefa.jpg"
                 alt="Logo SMK"
-                className="w-30 h-30 rounded-full object-cover border-2 border-blue-200 shadow-lg ring-1 md:ring-2 ring-blue-100"
+                width={80}
+                height={80}
+                className="w-20 h-20 rounded-full object-cover border-2 border-blue-200 shadow-lg ring-1 md:ring-2 ring-blue-100"
+                priority
               />
             </div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 md:mb-3">

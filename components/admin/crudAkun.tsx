@@ -1,7 +1,13 @@
 "use client";
 import React, { useState } from "react";
+
+interface User {
+  nama: string;
+  password: string;
+  // Tambahkan field lain sesuai kebutuhan, misal:
+  id_role?: number;
+}
 import { useEffect } from "react";
-import MemantauAkun from "./memantauAkun";
 import { createUser } from "@/lib/api/userApi";
 
 export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
@@ -9,14 +15,14 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   // Hanya izinkan huruf dan angka
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const fetchUsers = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`, {
       method: "GET",
       credentials: "include",
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: { data: User[] }) => {
         if (Array.isArray(data.data)) setUsers(data.data);
       });
   };
@@ -68,8 +74,12 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
       setPassword("");
       setRole("");
       fetchUsers(); // refetch users agar validasi up-to-date
-    } catch (err: any) {
-      setError(err.message || "Gagal menambah user");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Gagal menambah user");
+      } else {
+        setError("Gagal menambah user");
+      }
     } finally {
       setLoading(false);
     }

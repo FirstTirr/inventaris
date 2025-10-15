@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 const LaporanKerusakanBarang = React.memo(() => {
   const [barang, setBarang] = useState("");
@@ -7,7 +7,14 @@ const LaporanKerusakanBarang = React.memo(() => {
   const [labor, setLabor] = useState("");
   const [laborList, setLaborList] = useState<string[]>([]);
   const [productsList, setProductsList] = useState<string[]>([]);
-  const [productsRaw, setProductsRaw] = useState<any[]>([]);
+  type Product = {
+    nama_perangkat: string;
+    status: string;
+    labor?: string;
+    [key: string]: unknown;
+  };
+  type Labor = { nama_labor: string };
+  const [productsRaw, setProductsRaw] = useState<Product[]>([]);
   const [jumlah, setJumlah] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -42,7 +49,7 @@ const LaporanKerusakanBarang = React.memo(() => {
     if (cachedData && cacheValid) {
       try {
         const data = JSON.parse(cachedData);
-        setLaborList(data.map((l: any) => l.nama_labor));
+        setLaborList(data.map((l: Labor) => l.nama_labor));
         if (data.length > 0) setLabor(data[0].nama_labor);
         return;
       } catch (err) {
@@ -59,7 +66,7 @@ const LaporanKerusakanBarang = React.memo(() => {
         localStorage.setItem(cacheKey, JSON.stringify(data.data));
         localStorage.setItem(timeKey, now.toString());
 
-        setLaborList(data.data.map((l: any) => l.nama_labor));
+        setLaborList(data.data.map((l: Labor) => l.nama_labor));
         if (data.data.length > 0) setLabor(data.data[0].nama_labor);
       }
     } catch (err) {
@@ -83,9 +90,9 @@ const LaporanKerusakanBarang = React.memo(() => {
         const data = JSON.parse(cachedData);
         setProductsRaw(data);
         const good = data.filter(
-          (p: any) => String(p.status).toUpperCase() === "BAIK"
+          (p: Product) => String(p.status).toUpperCase() === "BAIK"
         );
-        const goodNames = good.map((p: any) => p.nama_perangkat);
+        const goodNames = good.map((p: Product) => p.nama_perangkat);
         setProductsList(goodNames);
         if (goodNames.length > 0) setBarang(goodNames[0]);
         return;
@@ -105,9 +112,9 @@ const LaporanKerusakanBarang = React.memo(() => {
 
         setProductsRaw(data.data);
         const good = data.data.filter(
-          (p: any) => String(p.status).toUpperCase() === "BAIK"
+          (p: Product) => String(p.status).toUpperCase() === "BAIK"
         );
-        const goodNames = good.map((p: any) => p.nama_perangkat);
+        const goodNames = good.map((p: Product) => p.nama_perangkat);
         setProductsList(goodNames);
         if (goodNames.length > 0) setBarang(goodNames[0]);
       }
@@ -149,12 +156,12 @@ const LaporanKerusakanBarang = React.memo(() => {
     if (!productsRaw || productsRaw.length === 0) return;
     const selectedLabor = String(labor || "").toLowerCase();
     // Filter barang: status BAIK dan labor persis sama dengan labor yang dipilih
-    const filtered = productsRaw.filter((p: any) => {
+    const filtered = productsRaw.filter((p: Product) => {
       if (String(p.status).toUpperCase() !== "BAIK") return false;
       const prodLaborName = p.labor ? String(p.labor).toLowerCase() : "";
       return prodLaborName === selectedLabor;
     });
-    const names = filtered.map((p: any) => p.nama_perangkat);
+    const names = filtered.map((p: Product) => p.nama_perangkat);
     setProductsList(names);
     if (names.length > 0) setBarang(names[0]);
   }, [labor, productsRaw]);
@@ -188,7 +195,7 @@ const LaporanKerusakanBarang = React.memo(() => {
       } else {
         setMessage(data.detail || "Gagal mengirim data");
       }
-    } catch (err) {
+    } catch {
       setMessage("Terjadi kesalahan pada server");
     } finally {
       setLoading(false);

@@ -33,7 +33,7 @@ const Product = ({
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300); // 300ms debounce
   const [showAdd, setShowAdd] = useState(false);
-  const [editIdx, setEditIdx] = useState<number | null>(null);
+  // Removed unused editIdx per lint warning
   const [editData, setEditData] = useState<
     [string, string, string, string, string, number, string] | null
   >(null);
@@ -102,19 +102,29 @@ const Product = ({
               string,
               number,
               string
-            ][] = arr.map((item: any) => [
-              Number(item.id_perangkat ?? 0),
-              String(item.nama_perangkat ?? ""),
-              String(item.kategori ?? ""),
-              String(item.jurusan ?? ""),
-              item.labor !== undefined &&
-              item.labor !== null &&
-              String(item.labor).trim() !== ""
-                ? String(item.labor)
-                : "-",
-              Number(item.jumlah ?? 0),
-              String(item.status ?? ""),
-            ]);
+            ][] = arr.map(
+              (item: {
+                id_perangkat?: number;
+                nama_perangkat?: string;
+                kategori?: string;
+                jurusan?: string;
+                labor?: string | null;
+                jumlah?: number;
+                status?: string;
+              }) => [
+                Number(item.id_perangkat ?? 0),
+                String(item.nama_perangkat ?? ""),
+                String(item.kategori ?? ""),
+                String(item.jurusan ?? ""),
+                item.labor !== undefined &&
+                item.labor !== null &&
+                String(item.labor).trim() !== ""
+                  ? String(item.labor)
+                  : "-",
+                Number(item.jumlah ?? 0),
+                String(item.status ?? ""),
+              ]
+            );
             localStorage.setItem("product-cache", JSON.stringify(mappedData));
             localStorage.setItem("product-cache-time", Date.now().toString());
             setData(mappedData);
@@ -127,7 +137,7 @@ const Product = ({
             try {
               const parsed = JSON.parse(cachedData);
               setData(parsed);
-            } catch (err2) {
+            } catch {
               setData([]);
             }
           }
@@ -170,24 +180,30 @@ const Product = ({
   }, [data, debouncedSearch, page, itemsPerPage, selectedJurusan]);
 
   // Handle penambahan produk baru dengan useCallback
-  const handleAddProduct = useCallback(
-    async (
-      produkBaru: [string, string, string, string, string, number, string]
-    ) => {
-      setShowAdd(false);
-      try {
-        const result = await getRemoteProducts();
-        const arr = Array.isArray(result.data) ? result.data : result;
-        if (Array.isArray(arr)) {
-          const mappedData: [
-            number,
-            string,
-            string,
-            string,
-            string,
-            number,
-            string
-          ][] = arr.map((item: any) => [
+  const handleAddProduct = useCallback(async () => {
+    setShowAdd(false);
+    try {
+      const result = await getRemoteProducts();
+      const arr = Array.isArray(result.data) ? result.data : result;
+      if (Array.isArray(arr)) {
+        const mappedData: [
+          number,
+          string,
+          string,
+          string,
+          string,
+          number,
+          string
+        ][] = arr.map(
+          (item: {
+            id_perangkat?: number;
+            nama_perangkat?: string;
+            kategori?: string;
+            jurusan?: string;
+            labor?: string | null;
+            jumlah?: number;
+            status?: string;
+          }) => [
             Number(item.id_perangkat ?? 0),
             String(item.nama_perangkat ?? ""),
             String(item.kategori ?? ""),
@@ -199,40 +215,39 @@ const Product = ({
               : "-",
             Number(item.jumlah ?? 0),
             String(item.status ?? ""),
-          ]);
-          localStorage.setItem("product-cache", JSON.stringify(mappedData));
-          localStorage.setItem("product-cache-time", Date.now().toString());
-          setData(mappedData);
-        } else {
-          // If API fails, keep showing cache
-          const cachedData = localStorage.getItem("product-cache");
-          if (cachedData) {
-            try {
-              const parsed = JSON.parse(cachedData);
-              setData(parsed);
-            } catch (err2) {
-              setData([]);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Gagal refresh data produk setelah tambah:", err);
+          ]
+        );
+        localStorage.setItem("product-cache", JSON.stringify(mappedData));
+        localStorage.setItem("product-cache-time", Date.now().toString());
+        setData(mappedData);
+      } else {
         // If API fails, keep showing cache
         const cachedData = localStorage.getItem("product-cache");
         if (cachedData) {
           try {
             const parsed = JSON.parse(cachedData);
             setData(parsed);
-          } catch (err2) {
+          } catch {
             setData([]);
           }
         }
       }
-      setEditIdx(null);
-      setEditData(null);
-    },
-    []
-  );
+    } catch (err) {
+      console.error("Gagal refresh data produk setelah tambah:", err);
+      // If API fails, keep showing cache
+      const cachedData = localStorage.getItem("product-cache");
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          setData(parsed);
+        } catch {
+          setData([]);
+        }
+      }
+    }
+    // Removed setEditIdx (no longer used)
+    setEditData(null);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
@@ -352,7 +367,6 @@ const Product = ({
             onAddProduct={handleAddProduct}
             onCancel={() => {
               setShowAdd(false);
-              setEditIdx(null);
               setEditData(null);
             }}
             {...(editData ? { defaultValue: editData } : {})}
@@ -498,19 +512,29 @@ const Product = ({
                                   string,
                                   number,
                                   string
-                                ][] = arr.map((item: any) => [
-                                  Number(item.id_perangkat ?? 0),
-                                  String(item.nama_perangkat ?? ""),
-                                  String(item.kategori ?? ""),
-                                  String(item.jurusan ?? ""),
-                                  item.labor !== undefined &&
-                                  item.labor !== null &&
-                                  String(item.labor).trim() !== ""
-                                    ? String(item.labor)
-                                    : "-",
-                                  Number(item.jumlah ?? 0),
-                                  String(item.status ?? ""),
-                                ]);
+                                ][] = arr.map(
+                                  (item: {
+                                    id_perangkat?: number;
+                                    nama_perangkat?: string;
+                                    kategori?: string;
+                                    jurusan?: string;
+                                    labor?: string | null;
+                                    jumlah?: number;
+                                    status?: string;
+                                  }) => [
+                                    Number(item.id_perangkat ?? 0),
+                                    String(item.nama_perangkat ?? ""),
+                                    String(item.kategori ?? ""),
+                                    String(item.jurusan ?? ""),
+                                    item.labor !== undefined &&
+                                    item.labor !== null &&
+                                    String(item.labor).trim() !== ""
+                                      ? String(item.labor)
+                                      : "-",
+                                    Number(item.jumlah ?? 0),
+                                    String(item.status ?? ""),
+                                  ]
+                                );
                                 localStorage.setItem(
                                   "product-cache",
                                   JSON.stringify(mappedData)
@@ -528,7 +552,7 @@ const Product = ({
                                   try {
                                     const parsed = JSON.parse(cachedData);
                                     setData(parsed);
-                                  } catch (err2) {
+                                  } catch {
                                     setData([]);
                                   }
                                 }
@@ -543,7 +567,7 @@ const Product = ({
                                 try {
                                   const parsed = JSON.parse(cachedData);
                                   setData(parsed);
-                                } catch (err2) {
+                                } catch {
                                   setData([]);
                                 }
                               }
@@ -557,7 +581,6 @@ const Product = ({
                           className="hover:text-green-600"
                           title="Edit"
                           onClick={() => {
-                            setEditIdx(idx);
                             setEditData([
                               String(id_perangkat),
                               nama_perangkat,

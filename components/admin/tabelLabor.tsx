@@ -41,8 +41,12 @@ export default function TabelLabor() {
       if (!res.ok) throw new Error(data.detail || "Gagal menghapus labor");
       setLaborList((prev) => prev.filter((l) => l.nama_labor !== nama_labor));
       alert("Labor berhasil dihapus!");
-    } catch (err: any) {
-      alert(err.message || "Gagal menghapus labor");
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message || "Gagal menghapus labor");
+      } else {
+        alert("Gagal menghapus labor");
+      }
     }
   };
   return (

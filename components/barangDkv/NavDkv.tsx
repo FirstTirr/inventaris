@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import BarangBaikDkv from "./barangBaikDkv";
 import BarangRusakDkv from "./barangRusakDkv";
 
 export default function NavDkv() {
-  const router = useRouter();
+  // const router = useRouter(); // Removed unused variable
   const [active, setActive] = useState("barang baik");
 
   return (

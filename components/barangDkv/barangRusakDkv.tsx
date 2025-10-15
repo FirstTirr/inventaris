@@ -33,6 +33,13 @@ const iconMap: Record<string, ReactElement> = {
   ),
 };
 
+type RemoteProduct = {
+  jurusan?: string;
+  status?: string;
+  nama_perangkat?: string;
+  jumlah?: number | string;
+};
+
 export default function BarangRusak() {
   const [items, setItems] = useState<
     { label: string; value: number; icon: ReactElement }[]
@@ -43,14 +50,15 @@ export default function BarangRusak() {
       const arr = Array.isArray(result.data) ? result.data : result;
       // Filter jurusan 'dkv' dan status 'rusak'
       const filtered = arr.filter(
-        (item: any) =>
+        (item: RemoteProduct) =>
           item.jurusan?.toLowerCase() === "dkv" &&
           item.status?.toLowerCase() === "rusak"
       );
       // Group by nama_perangkat
       const grouped: Record<string, number> = {};
-      filtered.forEach((item: any) => {
+      filtered.forEach((item: RemoteProduct) => {
         const key = item.nama_perangkat?.toLowerCase();
+        if (!key) return; // Skip if nama_perangkat is undefined
         if (!grouped[key]) grouped[key] = 0;
         grouped[key] += Number(item.jumlah) || 0;
       });

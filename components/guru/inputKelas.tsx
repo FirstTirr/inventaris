@@ -9,7 +9,14 @@ const InputKelas = React.memo(() => {
   const [kelasList, setKelasList] = useState<string[]>([]);
   const [laborList, setLaborList] = useState<string[]>([]);
   const [productsList, setProductsList] = useState<string[]>([]);
-  const [productsRaw, setProductsRaw] = useState<any[]>([]);
+  type ProductRaw = {
+    nama_kelas?: string;
+    nama_labor?: string;
+    nama_perangkat?: string;
+    status?: string;
+    labor?: string;
+  };
+  const [productsRaw, setProductsRaw] = useState<ProductRaw[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -43,7 +50,7 @@ const InputKelas = React.memo(() => {
     if (cachedData && cacheValid) {
       try {
         const data = JSON.parse(cachedData);
-        setKelasList(data.map((k: any) => k.nama_kelas));
+        setKelasList(data.map((k: { nama_kelas: string }) => k.nama_kelas));
         if (data.length > 0) setKelas(data[0].nama_kelas);
         return;
       } catch (err) {
@@ -60,7 +67,9 @@ const InputKelas = React.memo(() => {
         localStorage.setItem(cacheKey, JSON.stringify(data.data));
         localStorage.setItem(timeKey, now.toString());
 
-        setKelasList(data.data.map((k: any) => k.nama_kelas));
+        setKelasList(
+          data.data.map((k: { nama_kelas: string }) => k.nama_kelas)
+        );
         if (data.data.length > 0) setKelas(data.data[0].nama_kelas);
       }
     } catch (err) {
@@ -82,7 +91,7 @@ const InputKelas = React.memo(() => {
     if (cachedData && cacheValid) {
       try {
         const data = JSON.parse(cachedData);
-        setLaborList(data.map((l: any) => l.nama_labor));
+        setLaborList(data.map((l: { nama_labor: string }) => l.nama_labor));
         if (data.length > 0) setLabor(data[0].nama_labor);
         return;
       } catch (err) {
@@ -99,7 +108,9 @@ const InputKelas = React.memo(() => {
         localStorage.setItem(cacheKey, JSON.stringify(data.data));
         localStorage.setItem(timeKey, now.toString());
 
-        setLaborList(data.data.map((l: any) => l.nama_labor));
+        setLaborList(
+          data.data.map((l: { nama_labor: string }) => l.nama_labor)
+        );
         if (data.data.length > 0) setLabor(data.data[0].nama_labor);
       }
     } catch (err) {
@@ -124,9 +135,9 @@ const InputKelas = React.memo(() => {
         setProductsRaw(data);
         // initial productsList: all good items
         const good = data.filter(
-          (p: any) => String(p.status).toUpperCase() === "BAIK"
+          (p: ProductRaw) => String(p.status).toUpperCase() === "BAIK"
         );
-        const goodNames = good.map((p: any) => p.nama_perangkat);
+        const goodNames = good.map((p: ProductRaw) => p.nama_perangkat ?? "");
         setProductsList(goodNames);
         if (goodNames.length > 0) setBarang(goodNames[0]);
         return;
@@ -147,9 +158,9 @@ const InputKelas = React.memo(() => {
         setProductsRaw(data.data);
         // initial productsList: all good items
         const good = data.data.filter(
-          (p: any) => String(p.status).toUpperCase() === "BAIK"
+          (p: ProductRaw) => String(p.status).toUpperCase() === "BAIK"
         );
-        const goodNames = good.map((p: any) => p.nama_perangkat);
+        const goodNames = good.map((p: ProductRaw) => p.nama_perangkat ?? "");
         setProductsList(goodNames);
         if (goodNames.length > 0) setBarang(goodNames[0]);
       }
@@ -174,14 +185,14 @@ const InputKelas = React.memo(() => {
 
     const selectedLabor = String(labor || "").toLowerCase();
     // Filter barang: status BAIK dan labor persis sama dengan labor yang dipilih
-    const filtered = productsRaw.filter((p: any) => {
+    const filtered = productsRaw.filter((p: ProductRaw) => {
       if (String(p.status).toUpperCase() !== "BAIK") return false;
       const prodLaborName = p.labor ? String(p.labor).toLowerCase() : "";
       return prodLaborName === selectedLabor;
     });
 
     // Jika tidak ada barang di labor tsb, dropdown kosong
-    return filtered.map((p: any) => p.nama_perangkat);
+    return filtered.map((p: ProductRaw) => p.nama_perangkat ?? "");
   }, [labor, productsRaw]);
 
   // Update productsList when filteredProducts change
@@ -242,7 +253,7 @@ const InputKelas = React.memo(() => {
       } else {
         setMessage(data.detail || "Gagal mengirim data");
       }
-    } catch (err) {
+    } catch {
       setMessage("Terjadi kesalahan pada server");
     } finally {
       setLoading(false);

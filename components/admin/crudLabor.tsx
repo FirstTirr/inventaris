@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { Trash2 } from "lucide-react";
-import TabelJurusan from "./tabelJurusan";
+// Trash2 import removed (unused)
+// import TabelJurusan from "./tabelJurusan";
 
 export default function CrudLabor() {
   // Fungsi untuk menambah labor
@@ -21,8 +21,12 @@ export default function CrudLabor() {
       alert("Labor berhasil ditambahkan!");
       setLabor("");
       // (opsional) refresh data labor di tabel jika ada
-    } catch (err: any) {
-      alert(err.message || "Gagal menambah labor");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message || "Gagal menambah labor");
+      } else {
+        alert("Gagal menambah labor");
+      }
     }
   };
   // Fungsi untuk menambah kelas
@@ -42,23 +46,19 @@ export default function CrudLabor() {
       alert("Kelas berhasil ditambahkan!");
       setKelas("");
       // (opsional) refresh data kelas di tabel jika ada
-    } catch (err: any) {
-      alert(err.message || "Gagal menambah kelas");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message || "Gagal menambah kelas");
+      } else {
+        alert("Gagal menambah kelas");
+      }
     }
   };
   const [labor, setLabor] = useState("");
   const [kelas, setKelas] = useState("");
   const [kategori, setKategori] = useState("");
   const [jurusan, setJurusan] = useState("");
-  // Dummy jurusan data for table
-  const [jurusanList, setJurusanList] = useState<string[]>([
-    "RPL",
-    "TKJ",
-    "DKV",
-    "BC",
-  ]);
-  // Table dropdown state
-  const [selectedTable, setSelectedTable] = useState<string>("labor");
+  // Removed unused jurusanList and selectedTable state
   // Collapsible state & refs for jurusan
   const [jurusanOpen, setJurusanOpen] = useState(false);
   const jurusanRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +88,9 @@ export default function CrudLabor() {
         if (res.ok && data.data) {
           setJumlahKelas(data.data.length);
         }
-      } catch (err) {}
+      } catch {
+        // error ignored
+      }
     };
     const fetchJumlahLabor = async () => {
       try {
@@ -99,7 +101,9 @@ export default function CrudLabor() {
         if (res.ok && data.data) {
           setJumlahLabor(data.data.length);
         }
-      } catch (err) {}
+      } catch {
+        // error ignored
+      }
     };
     const fetchJumlahJurusan = async () => {
       try {
@@ -110,7 +114,9 @@ export default function CrudLabor() {
         if (res.ok && data.data) {
           setJumlahJurusan(data.data.length);
         }
-      } catch (err) {}
+      } catch {
+        // error ignored
+      }
     };
     const fetchJumlahKategori = async () => {
       try {
@@ -121,7 +127,9 @@ export default function CrudLabor() {
         if (res.ok && data.data) {
           setJumlahKategori(data.data.length);
         }
-      } catch (err) {}
+      } catch {
+        // error ignored
+      }
     };
     fetchJumlahKelas();
     fetchJumlahLabor();
@@ -282,7 +290,7 @@ export default function CrudLabor() {
 
         {/* Table Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-          {selectedTable === "jurusan" && <TabelJurusan />}
+          {/* <TabelJurusan /> bisa langsung dirender jika ingin tampil selalu, atau hapus jika tidak perlu */}
           {/* Tambahkan Labor */}
           <div className="bg-white hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
             <button
@@ -404,10 +412,10 @@ export default function CrudLabor() {
                             }),
                           }
                         );
-                        let data: any = {};
+                        let data: { detail?: string } = {};
                         try {
                           data = await res.json();
-                        } catch (e) {
+                        } catch {
                           data = {
                             detail: `Non-JSON response (status ${res.status})`,
                           };
@@ -420,15 +428,19 @@ export default function CrudLabor() {
                             data
                           );
                           throw new Error(
-                            data.detail ||
+                            (data.detail as string) ||
                               `Gagal menambah jurusan (status ${res.status})`
                           );
                         }
                         alert("Jurusan berhasil ditambahkan!");
                         setJurusan("");
                         // (opsional) refresh data jurusan di tabel jika ada
-                      } catch (err: any) {
-                        alert(err.message || "Gagal menambah jurusan");
+                      } catch (err: unknown) {
+                        if (err instanceof Error) {
+                          alert(err.message || "Gagal menambah jurusan");
+                        } else {
+                          alert("Gagal menambah jurusan");
+                        }
                       }
                     }}
                   >
@@ -561,8 +573,12 @@ export default function CrudLabor() {
                           );
                         alert("Kategori berhasil ditambahkan!");
                         setKategori("");
-                      } catch (err: any) {
-                        alert(err.message || "Gagal menambah kategori");
+                      } catch (err: unknown) {
+                        if (err instanceof Error) {
+                          alert(err.message || "Gagal menambah kategori");
+                        } else {
+                          alert("Gagal menambah kategori");
+                        }
                       }
                     }}
                   >

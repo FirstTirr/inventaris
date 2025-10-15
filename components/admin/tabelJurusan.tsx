@@ -45,7 +45,7 @@ const TabelJurusan = React.memo(() => {
         } else {
           setJurusanList([]);
         }
-      } catch (err) {
+      } catch {
         setJurusanList([]);
       } finally {
         setLoading(false);
@@ -75,8 +75,8 @@ const TabelJurusan = React.memo(() => {
         if (!res.ok) throw new Error(data.detail || "Gagal menghapus jurusan");
         setJurusanList((prev) => prev.filter((j) => j.jurusan !== jurusan));
         alert("Jurusan berhasil dihapus!");
-      } catch (err: any) {
-        alert(err.message || "Gagal menghapus jurusan");
+      } catch {
+        alert("Gagal menghapus jurusan");
       }
     },
     [isOnline]
@@ -157,7 +157,7 @@ const TabelJurusan = React.memo(() => {
               </tr>
             </thead>
             <tbody>
-              {paginatedJurusan.map((row, idx) => (
+              {paginatedJurusan.map((row) => (
                 <tr
                   key={row.jurusan}
                   className="border-b last:border-b-0 hover:bg-blue-50 transition"
