@@ -62,7 +62,7 @@ export default function TerimaLaporan() {
       return;
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan/delete`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/kabeng/laporan/delete`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -91,7 +91,7 @@ export default function TerimaLaporan() {
       setError("");
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/kabeng/laporan`
         );
         if (!res.ok) throw new Error("Gagal mengambil data laporan");
         const data = await res.json();
@@ -189,7 +189,7 @@ export default function TerimaLaporan() {
                   setError("");
                   try {
                     const res = await fetch(
-                      `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`
+                      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/kabeng/laporan`
                     );
                     if (!res.ok)
                       throw new Error("Gagal mengambil data laporan");

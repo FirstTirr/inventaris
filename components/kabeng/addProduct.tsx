@@ -37,7 +37,7 @@ export default function AddProduct({
     const fetchKategori = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/kategori`
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -47,7 +47,7 @@ export default function AddProduct({
     const fetchLabor = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/labor`
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -57,7 +57,7 @@ export default function AddProduct({
     const fetchJurusan = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/jurusan`
         );
         const data = await res.json();
         if (res.ok && data.data)

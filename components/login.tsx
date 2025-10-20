@@ -15,10 +15,10 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError("");``
     try {
       // Debug: print runtime env and target URL
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/login`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,30 +71,6 @@ export default function Login() {
       </div>
 
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-3 sm:p-6 md:p-8 z-20">
-        <div className="text-gray-900 font-bold text-base sm:text-xl md:text-3xl tracking-tight leading-tight">
-          <span className="text-blue-600">SISTEM</span>
-          <span className="block sm:inline"> PEMANTAUAN LABOR</span>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Image
-            src="/tefa.jpg"
-            alt="Logo SMK"
-            width={80}
-            height={80}
-            className="w-16 h-16 sm:w-32 sm:h-32 md:w-20 md:h-20 rounded-full object-cover border-2 md:border-3 border-blue-200 shadow-lg ring-1 md:ring-2 ring-blue-100"
-            priority
-          />
-          <div className="hidden sm:block text-right">
-            <div className="text-xs sm:text-base md:text-lg font-bold text-gray-900">
-              TEFA RPL
-            </div>
-            <div className="text-xs sm:text-sm md:text-base text-blue-600 font-semibold">
-              Binary Coding Space
-            </div>
-          </div>
-        </div>
-      </div>
       {/* Main Login Container */}
       <div className="relative z-10 w-full max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl mx-auto px-2 sm:px-4 md:px-6 mt-20 sm:mt-12 md:mt-0">
         {/* Login Card */}
@@ -117,8 +93,8 @@ export default function Login() {
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 md:mb-3">
               Welcome
             </h1>
-            <p className="text-gray-600 text-xs sm:text-base md:text-lg">
-              Sign in to your account
+            <p className="text-gray-600 text-xs sm:text-base md:text-lg font-semibold">
+              SISTEM PEMANTAUAN <span className="text-blue-600">LABOR</span>
             </p>
           </div>
 

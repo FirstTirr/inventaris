@@ -9,7 +9,7 @@ export async function editRemoteProduct(payload: {
   status: string;
 }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/edit`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/edit`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

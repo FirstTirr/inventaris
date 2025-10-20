@@ -59,7 +59,7 @@ const LaporanKerusakanBarang = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/labor`
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -103,7 +103,7 @@ const LaporanKerusakanBarang = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -173,7 +173,7 @@ const LaporanKerusakanBarang = React.memo(() => {
     setMessage("");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/laporan`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/laporan`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

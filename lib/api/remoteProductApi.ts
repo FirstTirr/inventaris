@@ -1,5 +1,5 @@
 export async function logoutRemoteUser() {
-  await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+  await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/logout`, {
     method: "POST",
   });
 }
@@ -7,7 +7,7 @@ export async function logoutRemoteUser() {
 export async function deleteRemoteUser(id_user: number) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user/delete`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/user/delete`,
       {
         method: "POST",
         headers: {
@@ -46,7 +46,7 @@ export async function getRemoteUsers() {
   }
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/user`,
     {
       method: "GET",
       headers,
@@ -69,7 +69,7 @@ export async function getRemoteUsers() {
 export async function deleteRemoteProduct(id_perangkat: number) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/delete`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/delete`,
       {
         method: "POST",
         headers: {
@@ -96,7 +96,7 @@ export async function deleteRemoteProduct(id_perangkat: number) {
 // API khusus untuk ambil data dari database di laptop lain (GET)
 export async function getRemoteProducts() {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`,
     {
       method: "GET",
       credentials: "include",
@@ -120,7 +120,7 @@ export async function getRemoteProducts() {
 
 // API untuk login user
 export async function loginRemoteUser(nama_user: string, password: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/login`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ nama_user, password }),

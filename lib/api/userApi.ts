@@ -8,7 +8,7 @@ export async function createUser({
   id_role: number;
 }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user/new`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/user/new`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

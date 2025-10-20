@@ -9,7 +9,7 @@ export interface ProductData {
 
 export async function postProduct(data: ProductData) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang`,
     {
       method: "POST",
       headers: {
