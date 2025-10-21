@@ -117,7 +117,7 @@ const NavWasapras = React.memo(() => {
               </h1>
               <button
                 onClick={() => setSidebarOpen(false)}
-                aria-label="Tutup sidebar"
+                aria-label="Tutup Sidebar"
               >
                 <svg
                   width="28"
@@ -181,7 +181,7 @@ const NavWasapras = React.memo(() => {
                   <path d="M17 16l4-4m0 0l-4-4m4 4H7" />
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                 </svg>
-                Log out
+                Log Out
               </button>
             </nav>
           </aside>

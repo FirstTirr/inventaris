@@ -81,7 +81,7 @@ export default function LastUser() {
       setError("");
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/kabeng/penggunaan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan`
         );
         if (!res.ok) throw new Error("Gagal mengambil data penggunaan");
         const result = await res.json();
@@ -106,7 +106,7 @@ export default function LastUser() {
       if (!window.confirm("Yakin ingin menghapus penggunaan ini?")) return;
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/kabeng/penggunaan/delete`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan/delete`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

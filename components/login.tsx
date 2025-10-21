@@ -18,7 +18,7 @@ export default function Login() {
     setError("");``
     try {
       // Debug: print runtime env and target URL
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/login`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

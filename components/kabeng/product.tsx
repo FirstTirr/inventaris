@@ -65,7 +65,7 @@ const Product = ({
   // Fetch jurusan list from API
   useEffect(() => {
     if (!isOnline) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/jurusan`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data.data)) {

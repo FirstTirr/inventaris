@@ -5,9 +5,9 @@ export default function ResourcePreloader() {
   useEffect(() => {
     // Preload critical API endpoints
     const criticalEndpoints = [
-      `https://in${process.env.NEXT_PUBLIC_API_BASE_URL}v.tefa-bcs.org/api/admin/kelas`,
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/labor`,
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`,
     ];
 
     // Preload critical resources
