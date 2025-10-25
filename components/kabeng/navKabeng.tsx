@@ -15,6 +15,12 @@ const TerimaLaporan = dynamic(() => import("./terimaLaporan"), {
   loading: () => <div className="text-center py-8">Loading laporan...</div>,
   ssr: false,
 });
+const LaporanBulanan = dynamic(() => import("./laporanBulanan"), {
+  loading: () => (
+    <div className="text-center py-8">Loading laporan bulanan...</div>
+  ),
+  ssr: false,
+});
 
 // Memoized components for better performance
 const MemoizedLogo = memo(Logo);
@@ -124,6 +130,32 @@ const Navbar = memo(() => {
               >
                 <Flag size={20} />
                 Laporan
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 text-left ${
+                  active === "laporanBulanan"
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-[#232e3c] text-gray-200"
+                }`}
+                onClick={() => handleChangePage("laporanBulanan")}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                  <line x1="16" y1="6" x2="8" y2="6" />
+                  <line x1="16" y1="10" x2="8" y2="10" />
+                  <line x1="16" y1="14" x2="8" y2="14" />
+                </svg>
+                Laporan Bulanan
               </button>
             </li>
           </ul>
@@ -261,6 +293,32 @@ const Navbar = memo(() => {
                     Laporan
                   </button>
                 </li>
+                <li>
+                  <button
+                    className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 text-left ${
+                      active === "laporanBulanan"
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-[#232e3c] text-gray-200"
+                    }`}
+                    onClick={() => handleChangePage("laporanBulanan")}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                      <line x1="16" y1="6" x2="8" y2="6" />
+                      <line x1="16" y1="10" x2="8" y2="10" />
+                      <line x1="16" y1="14" x2="8" y2="14" />
+                    </svg>
+                    Laporan Bulanan
+                  </button>
+                </li>
               </ul>
             </nav>
             <div className="mt-auto pt-8">
@@ -299,6 +357,7 @@ const Navbar = memo(() => {
             {active === "product" && ""}
             {active === "user" && ""}
             {active === "laporan" && ""}
+            {active === "laporanBulanan" && ""}
           </h1>
         </header>
         <main className="p-2 md:p-8 overflow-x-auto min-h-screen">
@@ -336,6 +395,17 @@ const Navbar = memo(() => {
               }
             >
               <TerimaLaporan />
+            </Suspense>
+          )}
+          {active === "laporanBulanan" && (
+            <Suspense
+              fallback={
+                <div className="text-center py-8">
+                  Loading laporan bulanan...
+                </div>
+              }
+            >
+              <LaporanBulanan />
             </Suspense>
           )}
         </main>

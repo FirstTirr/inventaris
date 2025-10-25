@@ -340,26 +340,51 @@ const Product = ({
                 ))}
               </select>
             </div>
-            <button
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all ml-auto"
-              onClick={() => setShowAdd(true)}
-            >
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="inline"
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:ml-auto">
+              <button
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all"
+                onClick={() => {}}
+                type="button"
               >
-                <circle cx="9" cy="9" r="8" />
-                <line x1="9" y1="5" x2="9" y2="13" />
-                <line x1="5" y1="9" x2="13" y2="9" />
-              </svg>
-              Add Product
-            </button>
+                <svg
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="inline"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                  <polyline points="10 9 9 9 8 9" />
+                  <line x1="16" y1="5" x2="8" y2="5" />
+                  <line x1="16" y1="11" x2="8" y2="11" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                Cetak Laporan
+              </button>
+              <button
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all"
+                onClick={() => setShowAdd(true)}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="inline"
+                >
+                  <circle cx="9" cy="9" r="8" />
+                  <line x1="9" y1="5" x2="9" y2="13" />
+                  <line x1="5" y1="9" x2="13" y2="9" />
+                </svg>
+                Add Product
+              </button>
+            </div>
           </div>
         )}
         {showAdd && (
