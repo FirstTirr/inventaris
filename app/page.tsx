@@ -80,7 +80,7 @@ export default function Home() {
               </a>
             </li>
             <li>
-              <a href="#perusahaan" className="hover:text-[#353ba7]">
+              <a href="#Features" className="hover:text-[#353ba7]">
                 Fitur
               </a>
             </li>
@@ -152,45 +152,20 @@ export default function Home() {
       {/* Hero Section */}
       <HeroWithSlider />
 
-      {/* Wave Divider */}
-      <div className="-mt-12 mb-[-2px]">
-        <svg
-          viewBox="0 0 1440 120"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-24 md:h-32"
-        >
-          <path
-            fill="url(#gradient)"
-            fillOpacity="1"
-            d="M0,32L60,37.3C120,43,240,53,360,69.3C480,85,600,107,720,106.7C840,107,960,85,1080,74.7C1200,64,1320,64,1380,64L1440,64L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z"
-          ></path>
-          <defs>
-            <linearGradient
-              id="gradient"
-              x1="0"
-              y1="0"
-              x2="1440"
-              y2="0"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#e1e7f6" />
-              <stop offset="0.5" stopColor="#698ae8" />
-              <stop offset="1" stopColor="#353ba7" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
       {/* About Section */}
-      <section id="About" className="px-6 md:px-20 py-16 bg-white">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+      <section
+        id="About"
+        className="min-h-screen flex items-center justify-center px-6 md:px-20 py-20 bg-white"
+      >
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           {/* Image Side */}
           <div className="flex justify-center items-center">
             <img
               src="/tefa.jpg"
               alt="Siswa PKL"
-              className="rounded-xl shadow-xl w-full max-w-[800px] h-[600px] object-cover object-center"
+              className="rounded-xl shadow-2xl w-full max-w-[500px] h-[400px] object-cover object-center"
+              data-aos="fade-right"
+              data-aos-duration="1000"
             />
           </div>
           {/* Content Side */}
@@ -199,13 +174,13 @@ export default function Home() {
             data-aos="fade-left"
             data-aos-duration="1000"
           >
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900">
               Solusi Cerdas untuk{" "}
               <span className="text-[#353ba7]">
                 Memonitoring Fasilitas Labor
               </span>
             </h3>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600 text-lg leading-relaxed">
               Sistem inventaris merupakan sebuah sistem yang dibangun oleh tim
               TeFa-BCS untuk memonitoring peralatan labor. Mulai penggunaan alat
               labor sampai kepada pemantau kerusahan alat labor. Masing-masing
@@ -214,8 +189,8 @@ export default function Home() {
             </p>
             <div>
               <a
-                href="#perusahaan"
-                className="inline-block px-6 py-3 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] transition duration-300 transform hover:scale-105 hover:shadow-lg text-white font-semibold text-center"
+                href="#Features"
+                className="inline-block px-8 py-4 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] transition duration-300 transform hover:scale-105 hover:shadow-lg text-white font-semibold text-center"
               >
                 Mulai Sekarang →
               </a>
@@ -224,6 +199,110 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Features Section (converted to TSX) */}
+      <section
+        id="Features"
+        className="min-h-screen flex flex-col items-center justify-center px-6 md:px-20 py-20 bg-gradient-to-br from-[#f8f9fe] via-[#e1e7f6] to-[#698ae8]/20"
+      >
+        <div className="max-w-7xl mx-auto w-full">
+          {/* Title */}
+          <div
+            className="text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="800"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Fitur Utama <span className="text-[#353ba7]">Inventaris</span>
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Platform lengkap untuk memonitoring dan mengelola fasilitas labor
+              Anda
+            </p>
+          </div>
+
+          {/* Grid 1 */}
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8"
+            data-aos="zoom-in"
+            data-aos-duration="500"
+          >
+            {/* Feature 1 */}
+            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-300 text-white text-2xl mb-4">
+                ⚡
+              </div>
+              <h3 className="text-lg font-bold mb-2">Lightning Fast</h3>
+              <p className="text-gray-600 text-sm">
+                Rasakan kinerja yang sangat cepat dengan infrastruktur kami yang
+                dioptimalkan dan teknologi mutakhir.
+              </p>
+            </div>
+            {/* Feature 2 */}
+            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-cyan-500 text-white text-2xl mb-4">
+                🛡
+              </div>
+              <h3 className="text-lg font-bold mb-2">Enterprise Security</h3>
+              <p className="text-gray-600 text-sm">
+                Keamanan tingkat bank dengan enkripsi menyeluruh, memastikan
+                data Anda selalu terlindungi.
+              </p>
+            </div>
+            {/* Feature 3 */}
+            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white text-2xl mb-4">
+                📊
+              </div>
+              <h3 className="text-lg font-bold mb-2">Advanced Analytics</h3>
+              <p className="text-gray-600 text-sm">
+                Dapatkan wawasan mendalam dengan analisis waktu nyata dan dasbor
+                yang dapat disesuaikan.
+              </p>
+            </div>
+          </div>
+
+          {/* Grid 2 */}
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12"
+            data-aos="zoom-in"
+            data-aos-duration="500"
+          >
+            {/* Feature 4 */}
+            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-400 to-blue-500 text-white text-2xl mb-4">
+                👥
+              </div>
+              <h3 className="text-lg font-bold mb-2">Team Collaboration</h3>
+              <p className="text-gray-600 text-sm">
+                Berkolaborasilah secara lancar dengan tim Anda secara real-time,
+                di mana pun mereka berada di dunia.
+              </p>
+            </div>
+            {/* Feature 5 */}
+            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-purple-400 to-violet-600 text-white text-2xl mb-4">
+                📱
+              </div>
+              <h3 className="text-lg font-bold mb-2">Mobile First</h3>
+              <p className="text-gray-600 text-sm">
+                Akses ruang kerja Anda dari mana saja dengan aplikasi seluler
+                asli dan desain responsif.
+              </p>
+            </div>
+            {/* Feature 6 */}
+            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-emerald-600 text-white text-2xl mb-4">
+                🌍
+              </div>
+              <h3 className="text-lg font-bold mb-2">Global Scale</h3>
+              <p className="text-gray-600 text-sm">
+                Terapkan secara global dengan infrastruktur kami di seluruh
+                dunia, yang memastikan latensi rendah.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-[#2d4286] via-[#353ba7] to-[#698ae8] text-gray-200">
@@ -238,10 +317,7 @@ export default function Home() {
                 TEFA RPL
               </span>
             </div>
-            <p className="text-gray-300 mb-4">
-              Lihat dan Cari Perusahaan Yang Anda Inginkan Sebagai tempat PKL
-              Nanti
-            </p>
+            <p className="text-gray-300 mb-4">Pantau Penggunaan Labor Anda</p>
           </div>
 
           {/* Product */}
@@ -280,42 +356,199 @@ export default function Home() {
 }
 
 function HeroWithSlider() {
+  const images = [
+    { src: "/homepagelaptop.jpg", title: "Homepage Inventaris" },
+    { src: "/inv-kabeng.png", title: "Dashboard Kabeng" },
+    { src: "/laporan-guru.png", title: "Laporan Guru" },
+  ];
+
+  const [slides, setSlides] = useState<any[]>([]);
+  const [current, setCurrent] = useState(1);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const isAnimatingRef = useRef(false);
+  const ignoreNextEffectRef = useRef(false);
+  const intervalRef = useRef<number | null>(null);
+
+  // build slides with clones [last, ...images, first]
+  useEffect(() => {
+    setSlides([images[images.length - 1], ...images, images[0]]);
+  }, []);
+
+  // initial position after slides are set
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || slides.length === 0) return;
+    const slidePercent = 100 / slides.length;
+    // set to first real slide without animation
+    track.style.transition = "none";
+    track.style.transform = `translateX(-${slidePercent}%)`;
+    setCurrent(1);
+  }, [slides]);
+
+  // auto-slide
+  useEffect(() => {
+    if (slides.length === 0) return;
+    intervalRef.current = window.setInterval(() => {
+      if (isAnimatingRef.current) return;
+      isAnimatingRef.current = true;
+      setCurrent((c) => c + 1);
+    }, 4000);
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
+  }, [slides]);
+
+  // apply transform when current changes
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || slides.length === 0) return;
+    const slidePercent = 100 / slides.length;
+    // if we are about to snap (ignoreNextEffectRef is true) don't animate here
+    if (ignoreNextEffectRef.current) {
+      // next effect should be ignored once
+      ignoreNextEffectRef.current = false;
+      return;
+    }
+    track.style.transition = "transform 0.5s";
+    track.style.transform = `translateX(-${current * slidePercent}%)`;
+  }, [current, slides]);
+
+  const handleTransitionEnd = () => {
+    const track = trackRef.current;
+    if (!track || slides.length === 0) return;
+    // finished an animated move
+    isAnimatingRef.current = false;
+
+    // if we're at a cloned slide, snap without animation to the real one
+    if (current === slides.length - 1) {
+      // clone of first -> jump to real first (index 1)
+      const slidePercent = 100 / slides.length;
+      ignoreNextEffectRef.current = true;
+      track.style.transition = "none";
+      track.style.transform = `translateX(-${1 * slidePercent}%)`;
+      setCurrent(1);
+    } else if (current === 0) {
+      // clone of last -> jump to last real
+      const lastReal = slides.length - 2;
+      const slidePercent = 100 / slides.length;
+      ignoreNextEffectRef.current = true;
+      track.style.transition = "none";
+      track.style.transform = `translateX(-${lastReal * slidePercent}%)`;
+      setCurrent(lastReal);
+    }
+  };
+
+  const prev = () => {
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setCurrent((c) => c - 1);
+  };
+
+  const next = () => {
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setCurrent((c) => c + 1);
+  };
+
   return (
     <section
       id="Home"
-      className="flex flex-col md:flex-row justify-between items-center px-6 md:px-20 py-16 space-y-10 md:space-y-0"
+      className="min-h-screen flex flex-col md:flex-row justify-between items-center px-6 md:px-20 py-20 space-y-12 md:space-y-0 md:space-x-16"
     >
       {/* Left */}
-      <div className="max-w-xl" data-aos="fade-right" data-aos-duration="1000">
-        <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+      <div
+        className="flex-1 max-w-2xl"
+        data-aos="fade-right"
+        data-aos-duration="1000"
+      >
+        <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-8">
           <span className="bg-gradient-to-r from-[#698ae8] via-[#353ba7] to-[#2d4286] bg-clip-text text-transparent">
             Monitoring Fasilitas
           </span>
           <br />
           Labor Anda Dengan Website Inventaris
         </h1>
-        <p className="text-base md:text-lg text-gray-600 mb-8">
+        <p className="text-base md:text-lg text-gray-600 mb-10 leading-relaxed">
           Anda bisa melihat penggunaan, laporan kerusakan, dan barang apa saja
           yang tersedia di labor, website ini memudahkan anda untuk memantau,
           dan mencatat fasilitas labor anda
         </p>
-        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0 mb-6">
+        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
           <a
             href="/login"
-            className="px-6 py-3 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] transition duration-300 transform hover:scale-105 hover:shadow-lg text-white font-semibold text-center"
+            className="px-8 py-4 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] transition duration-300 transform hover:scale-105 hover:shadow-lg text-white font-semibold text-center"
           >
             Mulai Sekarang
           </a>
         </div>
       </div>
 
-      {/* Right: Static Image */}
-      <div className="mt-6 w-full md:w-auto flex justify-center">
-        <img
-          src="/tefa.jpg"
-          alt="TEFA"
-          className="w-full max-w-sm md:w-[460px] h-12 object-cover rounded-lg shadow-lg"
-        />
+      {/* Right: Slider */}
+      <div className="flex-1 flex justify-center md:justify-end">
+        <div className="relative w-full max-w-xl md:max-w-3xl">
+          <div className="overflow-hidden rounded-xl shadow-lg">
+            <div
+              className="flex"
+              ref={trackRef}
+              style={{ width: `${slides.length * 100}%` }}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {slides.map((img, idx) => (
+                <div
+                  key={idx}
+                  className="flex-shrink-0 flex flex-col items-center"
+                  style={{ width: `${100 / slides.length}%` }}
+                >
+                  <div className="relative w-full">
+                    <img
+                      src={img.src}
+                      alt={`Gambar ${idx + 1}`}
+                      className="w-full h-[280px] md:h-[360px] lg:h-[420px] object-cover rounded-xl"
+                    />
+                    <div
+                      className="absolute left-0 right-0 bottom-0 h-32 rounded-b-xl"
+                      style={{
+                        background:
+                          "linear-gradient(to bottom, transparent, #000000 90%)",
+                      }}
+                    />
+                    <div className="absolute left-0 bottom-6 flex flex-col items-start pl-6">
+                      <p className="text-left text-base md:text-lg font-semibold text-white drop-shadow mr-7 hidden md:block">
+                        {img.title}
+                      </p>
+                      <button className="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md transition transform hover:scale-105">
+                        Detail
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={prev}
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-gray-900 bg-opacity-70 text-white px-3 py-2 rounded-full hover:bg-blue-600 transition transform hover:scale-105 shadow-md"
+            aria-label="Prev"
+          >
+            &#8592;
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-900 bg-opacity-70 text-white px-3 py-2 rounded-full hover:bg-blue-600 transition transform hover:scale-105 shadow-md"
+            aria-label="Next"
+          >
+            &#8594;
+          </button>
+        </div>
       </div>
     </section>
   );

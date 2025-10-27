@@ -34,10 +34,34 @@ export default function AddProduct({
   const [laborList, setLaborList] = useState<string[]>([]);
   const [jurusanList, setJurusanList] = useState<string[]>([]);
   useEffect(() => {
+    // Get auth headers
+    const getAuthHeaders = () => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (typeof window !== "undefined") {
+        const token = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("token="))
+          ?.split("=")[1];
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+      }
+
+      return headers;
+    };
+
     const fetchKategori = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`,
+          {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          }
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -47,7 +71,11 @@ export default function AddProduct({
     const fetchLabor = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
+          {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          }
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -57,7 +85,11 @@ export default function AddProduct({
     const fetchJurusan = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
+          {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          }
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -151,20 +183,6 @@ export default function AddProduct({
       }
     }
   };
-
-  // const handleYakin = () => {
-  //   // Kirim data produk baru ke parent (Product)
-  //   onAddProduct([
-  //     "new", // ID sementara
-  //     form.nama_barang,
-  //     form.category,
-  //     form.jurusan,
-  //     form.labor,
-  //     Number(form.jumlah),
-  //     form.status,
-  //   ]);
-  //   setShowConfirm(false);
-  // };
 
   const handleCancel = () => {
     if (showConfirm) {

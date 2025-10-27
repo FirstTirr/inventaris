@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import TabelDropdownNav from "./TabelDropdownNav";
 import Logo from "../Logo";
+import { clearAllCookies } from "@/lib/utils";
 
 // Lazy load only when needed
 const CrudAKun = lazy(() => import("./crudAkun"));
@@ -133,7 +134,21 @@ export default function NavAdmin() {
           <button
             className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-[3rem]"
             onClick={() => {
-              localStorage.clear();
+              try {
+                fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+                  method: "POST",
+                  credentials: "include",
+                }).catch(() => {});
+              } catch {}
+              try {
+                clearAllCookies();
+              } catch {}
+              try {
+                localStorage.clear();
+              } catch {}
+              try {
+                sessionStorage.clear();
+              } catch {}
               window.location.href = "/";
             }}
           >
@@ -248,7 +263,33 @@ export default function NavAdmin() {
               <button
                 className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-10"
                 onClick={() => {
-                  localStorage.clear();
+                  try {
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+                      method: "POST",
+                      credentials: "include",
+                    }).catch(() => {});
+                  } catch {}
+                  try {
+                    if (typeof document !== "undefined") {
+                      const cookies = document.cookie
+                        ? document.cookie.split("; ")
+                        : [];
+                      for (const c of cookies) {
+                        const [k] = c.split("=");
+                        if (k) {
+                          document.cookie = `${encodeURIComponent(
+                            k
+                          )}=; path=/; max-age=0; samesite=lax`;
+                        }
+                      }
+                    }
+                  } catch {}
+                  try {
+                    localStorage.clear();
+                  } catch {}
+                  try {
+                    sessionStorage.clear();
+                  } catch {}
                   window.location.href = "/";
                 }}
               >

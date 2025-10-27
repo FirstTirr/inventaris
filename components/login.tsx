@@ -15,7 +15,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");``
+    setError("");
     try {
       // Debug: print runtime env and target URL
       const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/login`;
@@ -32,16 +32,28 @@ export default function Login() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Login gagal");
 
-      // Set cookie dan localStorage setelah login sukses
+      // Simpan token ke cookie (bukan username). Jika token ada di response, pakai itu.
       try {
-        document.cookie = `user=${nama_user}; path=/; max-age=3600`;
-        localStorage.setItem("user", nama_user);
-        console.log(
-          "Cookie user disimpan di domain frontend:",
-          document.cookie
-        );
+        const token: string | undefined =
+          (data && (data.token || data?.data?.token)) || undefined;
+        const maxAge = 60 * 60; // 1 jam
+        if (token) {
+          // Simpan token sebagai cookie non-HttpOnly di sisi client (untuk kebutuhan FE)
+          // Catatan: Untuk keamanan yang lebih baik, mintalah backend set-cookie HttpOnly.
+          document.cookie = `token=${encodeURIComponent(
+            token
+          )}; path=/; max-age=${maxAge}; samesite=lax`;
+        }
+        // Bersihkan penyimpanan username lama jika ada
+        try {
+          localStorage.removeItem("user");
+        } catch {}
+        // Opsional: simpan nama user di sessionStorage untuk UI saja (bukan auth)
+        try {
+          sessionStorage.setItem("displayName", nama_user);
+        } catch {}
       } catch (errSet) {
-        console.error("Gagal set cookie/localStorage:", errSet);
+        console.error("Gagal set token cookie:", errSet);
       }
 
       // Redirect setelah penyimpanan

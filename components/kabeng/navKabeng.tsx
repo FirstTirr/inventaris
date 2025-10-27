@@ -35,7 +35,33 @@ const Navbar = memo(() => {
   }, []);
 
   const handleLogout = useCallback(() => {
-    localStorage.clear();
+    try {
+      // Invalidate server session if applicable
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+        method: "POST",
+        credentials: "include",
+      }).catch(() => {});
+    } catch {}
+    try {
+      // Clear all non-HttpOnly cookies
+      if (typeof document !== "undefined") {
+        const cookies = document.cookie ? document.cookie.split("; ") : [];
+        for (const c of cookies) {
+          const [k] = c.split("=");
+          if (k) {
+            document.cookie = `${encodeURIComponent(
+              k
+            )}=; path=/; max-age=0; samesite=lax`;
+          }
+        }
+      }
+    } catch {}
+    try {
+      localStorage.clear();
+    } catch {}
+    try {
+      sessionStorage.clear();
+    } catch {}
     window.location.href = "/";
   }, []);
 

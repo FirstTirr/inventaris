@@ -3,6 +3,7 @@ import AddProduct from "./addProduct";
 import {
   getRemoteProducts,
   deleteRemoteProduct,
+  getRemoteJurusan,
 } from "@/lib/api/remoteProductApi";
 import { CircleArrowRight, SquarePen, Trash2 } from "lucide-react";
 
@@ -40,6 +41,15 @@ const Product = ({
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [jurusanList, setJurusanList] = useState<string[]>([]);
   const [selectedJurusan, setSelectedJurusan] = useState<string>("");
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printJurusanList, setPrintJurusanList] = useState<string[]>([]);
+  const [selectedPrintJurusan, setSelectedPrintJurusan] = useState<string>("");
+  const [selectedPrintMonth, setSelectedPrintMonth] = useState<string>("");
+  const [printLaborList, setPrintLaborList] = useState<string[]>([]);
+  const [selectedPrintLabor, setSelectedPrintLabor] = useState<string>("");
+  const [statsJurusanList, setStatsJurusanList] = useState<
+    { jurusan: string; warna?: string }[]
+  >([]);
 
   // Data structure: [id_perangkat, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]
   const [data, setData] = useState<
@@ -65,7 +75,31 @@ const Product = ({
   // Fetch jurusan list from API
   useEffect(() => {
     if (!isOnline) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`)
+
+    // Get auth headers
+    const getAuthHeaders = () => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (typeof window !== "undefined") {
+        const token = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("token="))
+          ?.split("=")[1];
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+      }
+
+      return headers;
+    };
+
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`, {
+      headers: getAuthHeaders(),
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data.data)) {
@@ -73,6 +107,179 @@ const Product = ({
         }
       })
       .catch(() => setJurusanList([]));
+  }, [isOnline]);
+
+  // Fetch jurusan list for statistics cards
+  useEffect(() => {
+    if (!isOnline) return;
+
+    console.log("🔄 Fetching jurusan data from API...");
+
+    // Method 1: Try getRemoteJurusan first
+    getRemoteJurusan()
+      .then((data) => {
+        console.log("✅ Success! Received jurusan data:", data);
+        if (Array.isArray(data.data) && data.data.length > 0) {
+          // Assign colors to jurusan dynamically
+          const colors = [
+            "bg-black",
+            "bg-green-500",
+            "bg-red-700",
+            "bg-gray-500",
+            "bg-blue-500",
+            "bg-purple-500",
+            "bg-yellow-500",
+            "bg-pink-500",
+          ];
+          const jurusanWithColors = data.data.map(
+            (j: { jurusan: string; warna?: string }, index: number) => ({
+              ...j,
+              warna: j.warna || colors[index % colors.length], // Use warna from API or fallback to predefined colors
+            })
+          );
+          console.log("🎨 Setting statsJurusanList:", jurusanWithColors);
+          setStatsJurusanList(jurusanWithColors);
+        } else {
+          console.log("⚠️ Data kosong atau format tidak valid");
+          // Method 2: Try direct fetch as backup
+          console.log("🔄 Trying direct fetch as backup...");
+
+          const getAuthHeaders = () => {
+            const headers: Record<string, string> = {
+              "Content-Type": "application/json",
+            };
+
+            if (typeof window !== "undefined") {
+              const token = document.cookie
+                .split("; ")
+                .find((c) => c.startsWith("token="))
+                ?.split("=")[1];
+
+              if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+              }
+            }
+
+            return headers;
+          };
+
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`, {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          })
+            .then((res) => {
+              console.log(
+                "📡 Direct fetch response:",
+                res.status,
+                res.statusText
+              );
+              return res.json();
+            })
+            .then((directData) => {
+              console.log("📦 Direct fetch data:", directData);
+              if (
+                Array.isArray(directData.data) &&
+                directData.data.length > 0
+              ) {
+                const colors = [
+                  "bg-black",
+                  "bg-green-500",
+                  "bg-red-700",
+                  "bg-gray-500",
+                  "bg-blue-500",
+                  "bg-purple-500",
+                  "bg-yellow-500",
+                  "bg-pink-500",
+                ];
+                const jurusanWithColors = directData.data.map(
+                  (j: { jurusan: string; warna?: string }, index: number) => ({
+                    ...j,
+                    warna: j.warna || colors[index % colors.length],
+                  })
+                );
+                console.log(
+                  "🎨 Direct fetch success, setting statsJurusanList:",
+                  jurusanWithColors
+                );
+                setStatsJurusanList(jurusanWithColors);
+              } else {
+                throw new Error("Direct fetch also returned empty data");
+              }
+            })
+            .catch((directError) => {
+              console.error("❌ Direct fetch also failed:", directError);
+              // Jangan pakai data dummy; kosongkan daftar agar murni dari API
+              setStatsJurusanList([]);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error("❌ getRemoteJurusan failed:", error);
+        // Jangan pakai data dummy; kosongkan daftar agar murni dari API
+        setStatsJurusanList([]);
+      });
+  }, [isOnline]);
+
+  // Fetch jurusan list for print modal
+  const fetchJurusanForPrint = useCallback(async () => {
+    if (!isOnline) return;
+
+    const getAuthHeaders = () => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (typeof window !== "undefined") {
+        const token = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("token="))
+          ?.split("=")[1];
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+      }
+
+      return headers;
+    };
+
+    try {
+      // Fetch jurusan data
+      const jurusanResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
+        {
+          headers: getAuthHeaders(),
+          credentials: "include",
+        }
+      );
+
+      const jurusanData = await jurusanResponse.json();
+      if (Array.isArray(jurusanData.data)) {
+        setPrintJurusanList(
+          jurusanData.data.map((j: { jurusan: string }) => j.jurusan)
+        );
+      }
+
+      // Fetch labor data
+      const laborResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
+        {
+          headers: getAuthHeaders(),
+          credentials: "include",
+        }
+      );
+
+      const laborData = await laborResponse.json();
+      if (Array.isArray(laborData.data)) {
+        setPrintLaborList(
+          laborData.data.map((l: { nama_labor: string }) => l.nama_labor)
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching data for print:", error);
+      setPrintJurusanList([]);
+      setPrintLaborList([]);
+    }
   }, [isOnline]);
 
   // Fetch data from API only when online dengan caching
@@ -249,6 +456,52 @@ const Product = ({
     setEditData(null);
   }, []);
 
+  // Handle print modal
+  const handleOpenPrintModal = () => {
+    setShowPrintModal(true);
+    fetchJurusanForPrint();
+  };
+
+  const handleClosePrintModal = () => {
+    setShowPrintModal(false);
+    setSelectedPrintJurusan("");
+    setSelectedPrintMonth("");
+    setSelectedPrintLabor("");
+  };
+
+  const handlePrintReport = () => {
+    if (!selectedPrintJurusan) {
+      alert("Pilih jurusan terlebih dahulu!");
+      return;
+    }
+
+    if (!selectedPrintMonth) {
+      alert("Pilih bulan terlebih dahulu!");
+      return;
+    }
+
+    if (!selectedPrintLabor) {
+      alert("Pilih labor terlebih dahulu!");
+      return;
+    }
+
+    // TODO: Implement actual printing logic here
+    console.log(
+      "Printing report for jurusan:",
+      selectedPrintJurusan,
+      "month:",
+      selectedPrintMonth,
+      "labor:",
+      selectedPrintLabor
+    );
+    alert(
+      `Mencetak laporan untuk jurusan: ${selectedPrintJurusan}, bulan: ${selectedPrintMonth}, labor: ${selectedPrintLabor}`
+    );
+
+    // Close modal after printing
+    handleClosePrintModal();
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
       <div className="w-full mx-auto px-6 lg:px-12">
@@ -259,42 +512,39 @@ const Product = ({
         {/* Dashboard Statistic Cards - Responsive */}
         {!hideStats && (
           <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 w-full">
-            {(() => {
-              // Calculate total items per jurusan (BC, TKJ, RPL, DKV)
-              const jurusanList = [
-                { key: "BC", label: "Barang BC", color: "bg-black" },
-                { key: "TKJ", label: "Barang TKJ", color: "bg-green-500" },
-                { key: "RPL", label: "Barang RPL", color: "bg-red-700" },
-                { key: "DKV", label: "Barang DKV", color: "bg-gray-500" },
-              ];
-              return jurusanList.map(({ key, label, color }) => {
-                const total = data
-                  .filter(([, , , jurusan]) => jurusan === key)
-                  .reduce((sum, [, , , , , jumlah]) => {
-                    const num =
-                      typeof jumlah === "number" ? jumlah : Number(jumlah);
-                    return sum + (isNaN(num) ? 0 : num);
-                  }, 0);
-                return (
-                  <div
-                    key={key}
-                    className={`rounded-xl shadow flex flex-col items-center justify-center py-7 px-3 ${color} text-white w-full`}
-                  >
-                    <div className="text-lg font-semibold mb-1">{label}</div>
-                    <div className="text-3xl font-bold">{total}</div>
-                    <a
-                      href={`/${key.toLowerCase()}`}
-                      className="w-full flex justify-center mt-3"
-                    >
-                      <button className="bg-white text-gray-700 text-xs font-semibold rounded-full px-4 py-1 shadow hover:bg-gray-100 transition flex items-center gap-2">
-                        <CircleArrowRight className="w-4 h-4" />
-                        more info
-                      </button>
-                    </a>
+            {statsJurusanList.map(({ jurusan, warna }) => {
+              // Calculate total items per jurusan from API data
+              const total = data
+                .filter(([, , , dataJurusan]) => dataJurusan === jurusan)
+                .reduce((sum, [, , , , , jumlah]) => {
+                  const num =
+                    typeof jumlah === "number" ? jumlah : Number(jumlah);
+                  return sum + (isNaN(num) ? 0 : num);
+                }, 0);
+
+              return (
+                <div
+                  key={jurusan}
+                  className={`rounded-xl shadow flex flex-col items-center justify-center py-7 px-3 ${
+                    warna || "bg-gray-500"
+                  } text-white w-full`}
+                >
+                  <div className="text-lg font-semibold mb-1">
+                    Barang {jurusan}
                   </div>
-                );
-              });
-            })()}
+                  <div className="text-3xl font-bold">{total}</div>
+                  <a
+                    href={`/${jurusan.toLowerCase()}`}
+                    className="w-full flex justify-center mt-3"
+                  >
+                    <button className="bg-white text-gray-700 text-xs font-semibold rounded-full px-4 py-1 shadow hover:bg-gray-100 transition flex items-center gap-2">
+                      <CircleArrowRight className="w-4 h-4" />
+                      more info
+                    </button>
+                  </a>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -332,7 +582,7 @@ const Product = ({
                 style={{ minWidth: 180 }}
                 aria-label="Filter by jurusan"
               >
-                <option value="">All Jurusan</option>
+                <option value="">Jurusan</option>
                 {jurusanList.map((j) => (
                   <option key={j} value={j}>
                     {j}
@@ -343,7 +593,7 @@ const Product = ({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:ml-auto">
               <button
                 className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all"
-                onClick={() => {}}
+                onClick={handleOpenPrintModal}
                 type="button"
               >
                 <svg
@@ -649,6 +899,130 @@ const Product = ({
             >
               Next
             </button>
+          </div>
+        )}
+
+        {/* Print Modal */}
+        {showPrintModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Pilih Jurusan untuk Cetak Laporan
+                </h3>
+                <button
+                  onClick={handleClosePrintModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Jurusan:
+                </label>
+                <select
+                  value={selectedPrintJurusan}
+                  onChange={(e) => setSelectedPrintJurusan(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">-- Pilih Jurusan --</option>
+                  {printJurusanList.map((jurusan) => (
+                    <option key={jurusan} value={jurusan}>
+                      {jurusan}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bulan:
+                </label>
+                <select
+                  value={selectedPrintMonth}
+                  onChange={(e) => setSelectedPrintMonth(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">-- Pilih Bulan --</option>
+                  <option value="01">Januari</option>
+                  <option value="02">Februari</option>
+                  <option value="03">Maret</option>
+                  <option value="04">April</option>
+                  <option value="05">Mei</option>
+                  <option value="06">Juni</option>
+                  <option value="07">Juli</option>
+                  <option value="08">Agustus</option>
+                  <option value="09">September</option>
+                  <option value="10">Oktober</option>
+                  <option value="11">November</option>
+                  <option value="12">Desember</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Labor:
+                </label>
+                <select
+                  value={selectedPrintLabor}
+                  onChange={(e) => setSelectedPrintLabor(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">-- Pilih Labor --</option>
+                  {printLaborList.map((labor) => (
+                    <option key={labor} value={labor}>
+                      {labor}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-sm text-yellow-800 text-center">
+                  <span className="font-medium">⚠️ Peringatan:</span>
+                  <br />
+                  Apakah Anda yakin mencetak laporan ini? Mohon cek lagi jika
+                  tidak yakin.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={handleClosePrintModal}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handlePrintReport}
+                  disabled={
+                    !selectedPrintJurusan ||
+                    !selectedPrintMonth ||
+                    !selectedPrintLabor
+                  }
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                    <polyline points="10 9 9 9 8 9" />
+                    <line x1="16" y1="5" x2="8" y2="5" />
+                    <line x1="16" y1="11" x2="8" y2="11" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                  Cetak Laporan
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

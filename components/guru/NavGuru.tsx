@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, Suspense, lazy } from "react";
+import React, { useState, Suspense, lazy, useCallback } from "react";
 import { Flag, FolderInput } from "lucide-react";
 import Logo from "../Logo";
+import { clearAllCookies } from "@/lib/utils";
 
 // Lazy load heavy components
 const LaporanKerusakan = lazy(() => import("./laporanKerusakan"));
@@ -25,6 +26,26 @@ const NavWasapras = React.memo(() => {
     { key: "laporan kerusakan", label: "Laporan Kerusakan" },
     { key: "input kelas", label: "Input Kelas" },
   ];
+
+  const handleLogout = useCallback(() => {
+      try {
+        // Invalidate server session if applicable
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+          method: "POST",
+          credentials: "include",
+        }).catch(() => {});
+      } catch {}
+      try {
+        clearAllCookies();
+      } catch {}
+      try {
+        localStorage.clear();
+      } catch {}
+      try {
+        sessionStorage.clear();
+      } catch {}
+      window.location.href = "/";
+    }, []);
 
   return (
     <div className="flex min-h-screen bg-[#f7f8fa] flex-col md:flex-row">
@@ -75,7 +96,39 @@ const NavWasapras = React.memo(() => {
           <button
             className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-[3rem]"
             onClick={() => {
-              localStorage.clear();
+              try {
+                fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+                  method: "POST",
+                  credentials: "include",
+                }).catch(() => {});
+              } catch {}
+              try {
+                if (typeof document !== "undefined") {
+                  const cookies = document.cookie ? document.cookie.split("; ") : [];
+                  const hostname = window.location.hostname;
+                  const parts = hostname.split(".");
+                  const rootDomain = parts.length >= 2 ? `.${parts.slice(-2).join(".")}` : hostname;
+                  const dotHostname = hostname.startsWith(".") ? hostname : `.${hostname}`;
+                  for (const c of cookies) {
+                    const [k] = c.split("=");
+                    if (k) {
+                      const name = encodeURIComponent(k);
+                      // default path
+                      document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
+                      // explicit domain variants
+                      document.cookie = `${name}=; path=/; domain=${hostname}; max-age=0; samesite=lax`;
+                      document.cookie = `${name}=; path=/; domain=${dotHostname}; max-age=0; samesite=lax`;
+                      document.cookie = `${name}=; path=/; domain=${rootDomain}; max-age=0; samesite=lax`;
+                    }
+                  }
+                }
+              } catch {}
+              try {
+                localStorage.clear();
+              } catch {}
+              try {
+                sessionStorage.clear();
+              } catch {}
               window.location.href = "/";
             }}
           >
@@ -163,7 +216,21 @@ const NavWasapras = React.memo(() => {
               <button
                 className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-10"
                 onClick={() => {
-                  localStorage.clear();
+                  try {
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+                      method: "POST",
+                      credentials: "include",
+                    }).catch(() => {});
+                  } catch {}
+                  try {
+                    clearAllCookies();
+                  } catch {}
+                  try {
+                    localStorage.clear();
+                  } catch {}
+                  try {
+                    sessionStorage.clear();
+                  } catch {}
                   window.location.href = "/";
                 }}
               >
