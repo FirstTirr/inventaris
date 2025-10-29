@@ -46,6 +46,11 @@ export default function Login() {
         try {
           sessionStorage.setItem("displayName", nama_user);
         } catch {}
+        // Simpan password sementara di sessionStorage agar bisa dipakai untuk
+        // validasi cetak laporan sesuai permintaan (disimpan hanya di sesi)
+        try {
+          sessionStorage.setItem("userPassword", password);
+        } catch {}
       } catch (errSet) {
         console.error("Gagal set user cookie:", errSet);
       }

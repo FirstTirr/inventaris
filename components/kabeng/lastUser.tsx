@@ -21,6 +21,8 @@ function useDebounce(value: string, delay: number) {
 export default function LastUser() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300); // 300ms debounce
+  const [jurusanList, setJurusanList] = useState<string[]>([]);
+  const [selectedJurusan, setSelectedJurusan] = useState<string>("");
   type Penggunaan = {
     id_penggunaan: number;
     nama_kelas: string;
@@ -38,9 +40,20 @@ export default function LastUser() {
 
   // Memoized filtered data untuk performa lebih baik
   const filteredData = useMemo(() => {
-    if (!debouncedSearch) return data;
+    let arr = data;
+    if (selectedJurusan) {
+      const j = selectedJurusan.toLowerCase();
+      arr = arr.filter((item) =>
+        Boolean(
+          (item.nama_labor && item.nama_labor.toLowerCase().includes(j)) ||
+            (item.nama_perangkat &&
+              item.nama_perangkat.toLowerCase().includes(j))
+        )
+      );
+    }
+    if (!debouncedSearch) return arr;
     const s = debouncedSearch.toLowerCase();
-    return data.filter(
+    return arr.filter(
       (item) =>
         (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
         (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
@@ -93,6 +106,24 @@ export default function LastUser() {
       }
     };
     fetchData();
+    // fetch jurusan list for filter
+    (async function fetchJurusan() {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        if (!res.ok) throw new Error("Gagal mengambil jurusan");
+        const j = await res.json();
+        if (j && Array.isArray(j.data))
+          setJurusanList(j.data.map((x: any) => x.jurusan));
+      } catch (e) {
+        // ignore
+      }
+    })();
   }, [isOnline]);
 
   // Tambahkan fungsi hapus penggunaan dengan useCallback
@@ -162,6 +193,21 @@ export default function LastUser() {
             >
               ×
             </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedJurusan}
+              onChange={(e) => setSelectedJurusan(e.target.value)}
+              className="border rounded px-2 py-2 text-sm bg-white"
+              aria-label="Filter by jurusan"
+            >
+              <option value="">Semua Jurusan</option>
+              {jurusanList.map((j) => (
+                <option key={j} value={j}>
+                  {j}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="w-full overflow-x-auto rounded-xl bg-white shadow font-sans">

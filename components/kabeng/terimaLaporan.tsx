@@ -11,22 +11,35 @@ export default function TerimaLaporan() {
     tanggal_lapor?: string;
   }
   const [laporan, setLaporan] = useState<LaporanItem[]>([]);
+  const [jurusanList, setJurusanList] = useState<string[]>([]);
+  const [selectedJurusan, setSelectedJurusan] = useState<string>("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  // Filter laporan by labor and perangkat
+  // Filter laporan by jurusan, labor and perangkat
   const filteredLaporan = useMemo(() => {
-    if (!search) return laporan;
+    let arr = laporan;
+    if (selectedJurusan) {
+      const j = selectedJurusan.toLowerCase();
+      arr = arr.filter((item) =>
+        Boolean(
+          (item.nama_labor && item.nama_labor.toLowerCase().includes(j)) ||
+            (item.nama_perangkat &&
+              item.nama_perangkat.toLowerCase().includes(j))
+        )
+      );
+    }
+    if (!search) return arr;
     const s = search.toLowerCase();
-    return laporan.filter(
+    return arr.filter(
       (item: LaporanItem) =>
         (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
         (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
     );
-  }, [laporan, search]);
+  }, [laporan, search, selectedJurusan]);
   const paginatedLaporan = filteredLaporan.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
@@ -103,6 +116,24 @@ export default function TerimaLaporan() {
       }
     };
     fetchLaporan();
+    // fetch jurusan for filter
+    (async function fetchJurusan() {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        if (!res.ok) throw new Error("Gagal mengambil jurusan");
+        const j = await res.json();
+        if (j && Array.isArray(j.data))
+          setJurusanList(j.data.map((x: any) => x.jurusan));
+      } catch (e) {
+        // ignore
+      }
+    })();
   }, [isOnline]);
 
   if (loading) return <div className="text-center py-8">Loading...</div>;
@@ -166,6 +197,19 @@ export default function TerimaLaporan() {
               </span>
             </div>
             <div className="flex items-center gap-2 ml-auto">
+              <select
+                value={selectedJurusan}
+                onChange={(e) => setSelectedJurusan(e.target.value)}
+                className="border rounded px-2 py-1 text-sm mr-2"
+                aria-label="Filter by jurusan"
+              >
+                <option value="">Semua Jurusan</option>
+                {jurusanList.map((j) => (
+                  <option key={j} value={j}>
+                    {j}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
                 placeholder="Cari labor/perangkat..."
