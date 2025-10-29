@@ -116,7 +116,7 @@ export async function deleteRemoteProduct(id_perangkat: number) {
 export async function getRemoteProducts() {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`,
       {
         method: "GET",
         headers: getAuthHeaders(),

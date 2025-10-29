@@ -11,6 +11,8 @@ const LaporanKerusakanBarang = React.memo(() => {
     nama_perangkat: string;
     status: string;
     labor?: string;
+    jumlah?: number;
+    id_perangkat?: number;
     [key: string]: unknown;
   };
   type Labor = { nama_labor: string };
@@ -94,7 +96,16 @@ const LaporanKerusakanBarang = React.memo(() => {
         );
         const goodNames = good.map((p: Product) => p.nama_perangkat);
         setProductsList(goodNames);
-        if (goodNames.length > 0) setBarang(goodNames[0]);
+        if (goodNames.length > 0) {
+          setBarang(goodNames[0]);
+          // set jumlah from the first product
+          const first = good.find(
+            (p: Product) => p.nama_perangkat === goodNames[0]
+          );
+          setJumlah(
+            first && first.jumlah !== undefined ? String(first.jumlah) : ""
+          );
+        }
         return;
       } catch (err) {
         console.error("Cache parse error:", err);
@@ -103,7 +114,7 @@ const LaporanKerusakanBarang = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -116,7 +127,15 @@ const LaporanKerusakanBarang = React.memo(() => {
         );
         const goodNames = good.map((p: Product) => p.nama_perangkat);
         setProductsList(goodNames);
-        if (goodNames.length > 0) setBarang(goodNames[0]);
+        if (goodNames.length > 0) {
+          setBarang(goodNames[0]);
+          const first = good.find(
+            (p: Product) => p.nama_perangkat === goodNames[0]
+          );
+          setJumlah(
+            first && first.jumlah !== undefined ? String(first.jumlah) : ""
+          );
+        }
       }
     } catch (err) {
       console.error("Fetch products error:", err);
@@ -164,7 +183,33 @@ const LaporanKerusakanBarang = React.memo(() => {
     const names = filtered.map((p: Product) => p.nama_perangkat);
     setProductsList(names);
     if (names.length > 0) setBarang(names[0]);
+    // set jumlah based on selected first item after labor filter
+    if (names.length > 0) {
+      const first = filtered.find(
+        (p: Product) => p.nama_perangkat === names[0]
+      );
+      setJumlah(
+        first && first.jumlah !== undefined ? String(first.jumlah) : ""
+      );
+    } else {
+      setJumlah("");
+    }
   }, [labor, productsRaw]);
+
+  // When barang selection changes, populate jumlah from productsRaw
+  useEffect(() => {
+    if (!barang) return;
+    // Prefer product record with status BAIK when populating jumlah
+    const prod = productsRaw.find(
+      (p) =>
+        p.nama_perangkat === barang && String(p.status).toUpperCase() === "BAIK"
+    );
+    if (prod && prod.jumlah !== undefined) {
+      setJumlah(String(prod.jumlah));
+    } else {
+      setJumlah("");
+    }
+  }, [barang, productsRaw]);
 
   // Handle submit POST
   const handleSubmit = async (e: React.FormEvent) => {
@@ -188,9 +233,25 @@ const LaporanKerusakanBarang = React.memo(() => {
       const data = await res.json();
       if (res.ok) {
         setMessage("✅ Laporan berhasil ditambahkan");
+        // Invalidate and refresh product cache so UI reflects real-time stock/status
+        try {
+          localStorage.removeItem("laporan-products-cache");
+          localStorage.removeItem("laporan-products-cache-time");
+        } catch (e) {
+          // ignore
+        }
+        try {
+          // refresh product list from server so reported item (now RUSAK) is removed from choices
+          await fetchProducts();
+        } catch (e) {
+          console.error("Failed to refresh products after submit:", e);
+        }
+
+        // Reset form fields (keep labor selected so user can continue reporting in same labor)
         setBarang("");
         setKerusakan("");
-        setLabor("");
+        // Do not clear labor so teacher can keep reporting for same lab; if you prefer to clear, uncomment:
+        // setLabor("");
         setJumlah("");
       } else {
         setMessage(data.detail || "Gagal mengirim data");
@@ -288,11 +349,21 @@ const LaporanKerusakanBarang = React.memo(() => {
               {productsList.length === 0 ? (
                 <option value="">(tidak ada data barang baik)</option>
               ) : (
-                productsList.map((p, idx) => (
-                  <option key={p + "-" + idx} value={p}>
-                    {p}
-                  </option>
-                ))
+                productsList.map((p, idx) => {
+                  // Prefer the BAIK product record when showing quantity
+                  const prod = productsRaw.find(
+                    (r) =>
+                      r.nama_perangkat === p &&
+                      String(r.status).toUpperCase() === "BAIK"
+                  );
+                  const qty =
+                    prod && prod.jumlah !== undefined ? prod.jumlah : null;
+                  return (
+                    <option key={p + "-" + idx} value={p}>
+                      {qty !== null ? `${p} (${qty})` : p}
+                    </option>
+                  );
+                })
               )}
             </select>
           </div>

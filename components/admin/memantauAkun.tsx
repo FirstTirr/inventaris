@@ -69,24 +69,17 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
       setLoading(true);
       setError("");
       try {
-        const cookiesObj = getAllCookiesAsObject();
-        const headers: Record<string, string> = {};
-        if (Object.keys(cookiesObj).length > 0) {
-          headers["X-User-Cookies"] = JSON.stringify(cookiesObj);
-        }
-
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`,
           {
             method: "GET",
-            headers,
+            headers: { "Content-Type": "application/json" },
             credentials: "include",
           }
         );
         if (!res.ok) throw new Error("Gagal mengambil data user dari remote");
         const data = await res.json();
         setUsers(Array.isArray(data.data) ? data.data : []);
-        // cookies removed
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError("Gagal mengambil data user");

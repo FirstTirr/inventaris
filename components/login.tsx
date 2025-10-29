@@ -32,28 +32,22 @@ export default function Login() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Login gagal");
 
-      // Simpan token ke cookie (bukan username). Jika token ada di response, pakai itu.
+      // Jangan simpan token di cookie. Simpan hanya nama user sebagai cookie untuk UI.
       try {
-        const token: string | undefined =
-          (data && (data.token || data?.data?.token)) || undefined;
         const maxAge = 60 * 60; // 1 jam
-        if (token) {
-          // Simpan token sebagai cookie non-HttpOnly di sisi client (untuk kebutuhan FE)
-          // Catatan: Untuk keamanan yang lebih baik, mintalah backend set-cookie HttpOnly.
-          document.cookie = `token=${encodeURIComponent(
-            token
-          )}; path=/; max-age=${maxAge}; samesite=lax`;
-        }
-        // Bersihkan penyimpanan username lama jika ada
+        // Set cookie 'user' pada origin frontend (tidak mengirim token ke backend)
+        document.cookie = `user=${encodeURIComponent(
+          nama_user
+        )}; path=/; max-age=${maxAge}; samesite=lax`;
+        // Simpan juga nama user di localStorage/sessionStorage untuk keperluan UI saja
         try {
-          localStorage.removeItem("user");
+          localStorage.setItem("user", nama_user);
         } catch {}
-        // Opsional: simpan nama user di sessionStorage untuk UI saja (bukan auth)
         try {
           sessionStorage.setItem("displayName", nama_user);
         } catch {}
       } catch (errSet) {
-        console.error("Gagal set token cookie:", errSet);
+        console.error("Gagal set user cookie:", errSet);
       }
 
       // Redirect setelah penyimpanan

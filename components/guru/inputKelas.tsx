@@ -148,7 +148,7 @@ const InputKelas = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -248,8 +248,8 @@ const InputKelas = React.memo(() => {
         localStorage.removeItem("input-kelas-cache-time");
         localStorage.removeItem("input-labor-cache");
         localStorage.removeItem("input-labor-cache-time");
-        localStorage.removeItem("input-products-cache");
-        localStorage.removeItem("input-products-cache-time");
+        // Keep input-products cache so displayed stock doesn't immediately change on submit.
+        // (Backend may update stock, but frontend should continue showing 'baik' stock until a manual refresh.)
       } else {
         setMessage(data.detail || "Gagal mengirim data");
       }
@@ -438,14 +438,43 @@ const InputKelas = React.memo(() => {
                 {productsList.length === 0 ? (
                   <option value="">(tidak ada data barang baik)</option>
                 ) : (
-                  productsList.map((p, idx) => (
-                    <option key={p + "-" + idx} value={p}>
-                      {p}
-                    </option>
-                  ))
+                  productsList.map((p, idx) => {
+                    const prod = productsRaw.find(
+                      (r) =>
+                        r.nama_perangkat === p &&
+                        String(r.status).toUpperCase() === "BAIK"
+                    );
+                    const qty =
+                      prod && (prod as any).jumlah !== undefined
+                        ? (prod as any).jumlah
+                        : null;
+                    return (
+                      <option key={p + "-" + idx} value={p}>
+                        {qty !== null ? `${p} (${qty})` : p}
+                      </option>
+                    );
+                  })
                 )}
               </select>
             </div>
+            {barang && (
+              <div className="text-xs text-gray-500 mt-1">
+                {(() => {
+                  const prod = productsRaw.find(
+                    (r) =>
+                      r.nama_perangkat === barang &&
+                      String(r.status).toUpperCase() === "BAIK"
+                  );
+                  const qty =
+                    prod && (prod as any).jumlah !== undefined
+                      ? (prod as any).jumlah
+                      : null;
+                  return qty !== null
+                    ? `Stok tersedia: ${qty}`
+                    : "Stok tidak tersedia";
+                })()}
+              </div>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">
