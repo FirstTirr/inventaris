@@ -15,6 +15,7 @@ const InputKelas = React.memo(() => {
     nama_perangkat?: string;
     status?: string;
     labor?: string;
+    jumlah?: number;
   };
   const [productsRaw, setProductsRaw] = useState<ProductRaw[]>([]);
   const [loading, setLoading] = useState(false);
@@ -444,10 +445,7 @@ const InputKelas = React.memo(() => {
                         r.nama_perangkat === p &&
                         String(r.status).toUpperCase() === "BAIK"
                     );
-                    const qty =
-                      prod && (prod as any).jumlah !== undefined
-                        ? (prod as any).jumlah
-                        : null;
+                    const qty = prod?.jumlah ?? null;
                     return (
                       <option key={p + "-" + idx} value={p}>
                         {qty !== null ? `${p} (${qty})` : p}
@@ -465,10 +463,7 @@ const InputKelas = React.memo(() => {
                       r.nama_perangkat === barang &&
                       String(r.status).toUpperCase() === "BAIK"
                   );
-                  const qty =
-                    prod && (prod as any).jumlah !== undefined
-                      ? (prod as any).jumlah
-                      : null;
+                  const qty = prod?.jumlah ?? null;
                   return qty !== null
                     ? `Stok tersedia: ${qty}`
                     : "Stok tidak tersedia";

@@ -99,7 +99,7 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
   const totalPages = Math.ceil(users.length / itemsPerPage);
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (error) return <div style={{ color: "red" }}>{error}z</div>;
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-12">

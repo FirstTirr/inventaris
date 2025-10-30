@@ -182,21 +182,55 @@ export async function getRemoteJurusan() {
       throw new Error(`API Error: ${res.status} ${res.statusText}`);
     }
 
-    const json = await res.json();
-    console.log("📦 Raw API response:", json);
-    // Jika backend sudah mengembalikan { data: [...] }, langsung return
-    if (json && Array.isArray(json.data)) {
-      return json;
+    // Try to parse JSON first
+    try {
+      const json = await res.json();
+      console.log("📦 Parsed API JSON response:", json);
+      // Jika backend sudah mengembalikan { data: [...] }, langsung return
+      if (json && Array.isArray(json.data)) {
+        return json;
+      }
+      // Jika backend mengembalikan array langsung, bungkus ke dalam { data: [...] }
+      if (Array.isArray(json)) {
+        return { data: json };
+      }
+      // If format not expected, warn and return empty
+      console.warn(
+        "getRemoteJurusan: unexpected JSON shape, returning empty. JSON:",
+        json
+      );
+      return { data: [] };
+    } catch {
+      // JSON parsing failed — attempt to read raw text and parse common non-JSON shapes
+      try {
+        const txt = await res.text();
+        console.warn("getRemoteJurusan: failed to parse JSON, raw text:", txt);
+        // Example raw formats observed: "{@{jurusan=TKJ}, @{jurusan=RPL}}" or plain lines
+        const matches = Array.from(
+          txt.matchAll(/jurusan\s*=\s*([^},\s]+)/gi)
+        ).map((m) => m[1]);
+        if (matches.length > 0) {
+          const data = matches.map((label) => ({ jurusan: label }));
+          return { data };
+        }
+        // fallback: try to split lines and take non-empty lines as labels
+        const lines = txt
+          .split(/\r?\n/)
+          .map((l) => l.trim())
+          .filter(Boolean);
+        if (lines.length > 0) {
+          // filter out header-like lines and convert to objects
+          const data = lines.map((l) => ({ jurusan: l }));
+          return { data };
+        }
+      } catch (tErr) {
+        console.error("getRemoteJurusan: failed to read raw text:", tErr);
+      }
+      // If all parsing attempts fail, return empty
+      return { data: [] };
     }
-    // Jika backend mengembalikan array langsung, bungkus ke dalam { data: [...] }
-    if (Array.isArray(json)) {
-      return { data: json };
-    }
-    // Jika format tidak sesuai, return data kosong
-    return { data: [] };
   } catch (error) {
     console.error("💥 API Error fetching jurusan:", error);
-    // Kembalikan data kosong agar UI tidak memakai data dummy
     return { data: [] };
   }
 }

@@ -2,19 +2,25 @@
 import React, { useState } from "react";
 
 interface User {
-  nama: string;
-  password: string;
-  // Tambahkan field lain sesuai kebutuhan, misal:
-  id_role?: number;
+  id_user?: number;
+  nama_user: string;
+  password?: string | null;
+  id_role?: number | null;
+  id_jurusan?: number | null;
 }
 import { useEffect } from "react";
 import { createUser } from "@/lib/api/userApi";
+import { getRemoteJurusan } from "@/lib/api/remoteProductApi";
 
 export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
   const [nama, setNama] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   // Hanya izinkan huruf dan angka
+  const [jurusan, setJurusan] = useState("");
+  const [jurusanList, setJurusanList] = useState<
+    Array<{ id: number; label: string }>
+  >([]);
   const [users, setUsers] = useState<User[]>([]);
   const fetchUsers = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`, {
@@ -22,13 +28,58 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
       credentials: "include",
     })
       .then((res) => res.json())
-      .then((data: { data: User[] }) => {
-        if (Array.isArray(data.data)) setUsers(data.data);
-      });
+      .then((data: unknown) => {
+        // normalise response which can be either { data: User[] } or User[]
+        const list: User[] = Array.isArray((data as { data?: unknown })?.data)
+          ? ((data as { data?: unknown }).data as User[])
+          : Array.isArray(data)
+          ? (data as User[])
+          : [];
+        if (Array.isArray(list)) setUsers(list);
+      })
+      .catch((e) => console.error("fetchUsers error:", e));
   };
   useEffect(() => {
     fetchUsers();
+    fetchJurusan();
   }, []);
+
+  async function fetchJurusan() {
+    try {
+      const res: unknown = await getRemoteJurusan();
+      const maybeData = (res as { data?: unknown })?.data;
+      const list: unknown[] = Array.isArray(maybeData)
+        ? maybeData
+        : Array.isArray(res)
+        ? (res as unknown[])
+        : [];
+
+      const getLabel = (j: unknown, idx: number) => {
+        if (j && typeof j === "object") {
+          const obj = j as Record<string, unknown>;
+          return String(
+            obj.jurusan ??
+              obj.nama_jurusan ??
+              obj.name ??
+              obj.label ??
+              obj.nama ??
+              `Jurusan ${idx + 1}`
+          );
+        }
+        return `Jurusan ${idx + 1}`;
+      };
+
+      const normalized = list.map((j, idx) => ({
+        id: idx + 1,
+        label: getLabel(j, idx),
+      }));
+      setJurusanList(normalized);
+      if (typeof window !== "undefined")
+        console.debug("Loaded jurusan:", normalized);
+    } catch (e) {
+      console.error("Gagal mengambil jurusan:", e);
+    }
+  }
   const handleNamaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
     setNama(value);
@@ -53,13 +104,16 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
       setError("Semua field wajib diisi.");
       return;
     }
+    // require jurusan (backend expects nama_jurusan in current API)
+    if (!jurusan) {
+      setError("Pilih jurusan terlebih dahulu.");
+      return;
+    }
     setLoading(true);
-    // Cek apakah nama dan password sudah ada
-    const userExists = users.some(
-      (u) => u.nama === nama && u.password === password
-    );
+    // Cek apakah nama sudah ada (backend uses nama_user)
+    const userExists = users.some((u) => u.nama_user === nama);
     if (userExists) {
-      setError("nama dan password sudah ada");
+      setError("Nama user sudah ada");
       setLoading(false);
       return;
     }
@@ -68,11 +122,14 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
         nama_user: nama,
         password,
         id_role: Number(role),
+        // backend currently accepts nama_jurusan (number)
+        nama_jurusan: String(jurusan),
       });
       setSuccess(res.message || "User berhasil ditambahkan");
       setNama("");
       setPassword("");
       setRole("");
+      setJurusan("");
       fetchUsers(); // refetch users agar validasi up-to-date
     } catch (err) {
       if (err instanceof Error) {
@@ -190,6 +247,40 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
                 <option value="1">GURU</option>
                 <option value="2">WAKA SARANA</option>
                 <option value="3">KEPALA SEKOLAH</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-base font-medium">JURUSAN:</label>
+                <button
+                  type="button"
+                  onClick={() => fetchJurusan()}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Refresh
+                </button>
+              </div>
+              <select
+                className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                value={jurusan}
+                onChange={(e) => setJurusan(e.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Pilih Jurusan
+                </option>
+                {jurusanList.length === 0 ? (
+                  <option key="no-jurusan" value="" disabled>
+                    (tidak ada jurusan)
+                  </option>
+                ) : (
+                  jurusanList.map((j, idx) => (
+                    // use the jurusan name as the option value so backend receives `nama_jurusan`
+                    <option key={`jur-${idx}`} value={j.label}>
+                      {j.label}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
             {error && (

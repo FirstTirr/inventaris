@@ -129,7 +129,7 @@ export default function TerimaLaporan() {
         if (!res.ok) throw new Error("Gagal mengambil jurusan");
         const j = await res.json();
         if (j && Array.isArray(j.data))
-          setJurusanList(j.data.map((x: any) => x.jurusan));
+          setJurusanList(j.data.map((x: { jurusan: string }) => x.jurusan));
       } catch (e) {
         // ignore
       }

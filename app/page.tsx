@@ -1,5 +1,7 @@
 "use client";
 
+import Footer from "@/components/footer";
+import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function Home() {
@@ -152,48 +154,111 @@ export default function Home() {
       {/* Hero Section */}
       <HeroWithSlider />
 
-      {/* About Section */}
+      {/* About — redesigned for comfort and smoothness */}
       <section
         id="About"
-        className="min-h-screen flex items-center justify-center px-6 md:px-20 py-20 bg-white"
+        className="min-h-[70vh] flex items-center justify-center px-6 md:px-20 py-16 bg-white"
       >
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Image Side */}
-          <div className="flex justify-center items-center">
-            <img
-              src="/tefa.jpg"
-              alt="Siswa PKL"
-              className="rounded-xl shadow-2xl w-full max-w-[500px] h-[400px] object-cover object-center"
-              data-aos="fade-right"
-              data-aos-duration="1000"
-            />
-          </div>
-          {/* Content Side */}
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          {/* Content */}
           <div
             className="space-y-6"
-            data-aos="fade-left"
-            data-aos-duration="1000"
+            data-aos="fade-right"
+            data-aos-duration="900"
           >
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Solusi Cerdas untuk{" "}
+            <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+              Solusi Cerdas untuk
+              <br />
               <span className="text-[#353ba7]">
                 Memonitoring Fasilitas Labor
               </span>
             </h3>
-            <p className="text-gray-600 text-lg leading-relaxed">
-              Sistem inventaris merupakan sebuah sistem yang dibangun oleh tim
-              TeFa-BCS untuk memonitoring peralatan labor. Mulai penggunaan alat
-              labor sampai kepada pemantau kerusahan alat labor. Masing-masing
-              kepala bengkel, guru mapel produktif dan waka sarana memiliki
-              akses untuk memonitoring
+
+            <p className="text-gray-600 text-lg leading-relaxed max-w-xl">
+              Inventaris Labor memudahkan Anda melihat penggunaan alat, mencatat
+              laporan kerusakan, dan memonitor stok secara real-time. Dirancang
+              untuk kepala bengkel, guru produktif, dan waka sarana — cepat,
+              mudah, dan dapat dipercaya.
             </p>
-            <div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#698ae8] to-[#353ba7] text-white flex items-center justify-center text-lg">
+                  ⚡
+                </div>
+                <div>
+                  <h4 className="font-semibold">Realtime Monitoring</h4>
+                  <p className="text-sm text-gray-500">
+                    Laporan dan stok terlihat langsung tanpa repot.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-green-400 to-cyan-500 text-white flex items-center justify-center text-lg">
+                  🛡
+                </div>
+                <div>
+                  <h4 className="font-semibold">Akses Terkontrol</h4>
+                  <p className="text-sm text-gray-500">
+                    Peran terpisah untuk Kabeng, Guru, dan Waka sarana.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mt-6">
               <a
                 href="#Features"
-                className="inline-block px-8 py-4 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] transition duration-300 transform hover:scale-105 hover:shadow-lg text-white font-semibold text-center"
+                className="inline-block px-6 py-3 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] text-white font-semibold transition"
               >
-                Mulai Sekarang →
+                Pelajari Fitur
               </a>
+              <a
+                href="/login"
+                className="inline-block px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+              >
+                Masuk
+              </a>
+            </div>
+          </div>
+
+          {/* Image with floating stat card */}
+          <div
+            className="relative flex justify-center items-center"
+            data-aos="fade-left"
+            data-aos-duration="900"
+          >
+            <div className="w-full max-w-lg rounded-xl overflow-hidden shadow-2xl transform transition-transform hover:scale-[1.01]">
+              <img
+                src="/tefa.jpg"
+                alt="Siswa PKL"
+                className="w-full h-[420px] object-cover object-center"
+              />
+            </div>
+
+            <div className="absolute -bottom-6 left-6 bg-white rounded-xl p-4 shadow-lg border border-gray-100 w-[260px]">
+              <div className="text-xs text-gray-500">Ringkasan</div>
+              <div className="flex items-center justify-between mt-3">
+                <div className="text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-[#353ba7]">
+                    500+
+                  </div>
+                  <div className="text-xs text-gray-500">Barang</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-[#353ba7]">
+                    8
+                  </div>
+                  <div className="text-xs text-gray-500">Jurusan</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-[#353ba7]">
+                    24/7
+                  </div>
+                  <div className="text-xs text-gray-500">Akses</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -231,10 +296,10 @@ export default function Home() {
               <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-300 text-white text-2xl mb-4">
                 ⚡
               </div>
-              <h3 className="text-lg font-bold mb-2">Lightning Fast</h3>
+              <h3 className="text-lg font-bold mb-2">Cetak Laporan</h3>
               <p className="text-gray-600 text-sm">
-                Rasakan kinerja yang sangat cepat dengan infrastruktur kami yang
-                dioptimalkan dan teknologi mutakhir.
+                Setiap kepala bengkel bisa mencetak laporan barang sesuai dengan
+                jurusan nya masing masing
               </p>
             </div>
             {/* Feature 2 */}
@@ -242,10 +307,10 @@ export default function Home() {
               <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-cyan-500 text-white text-2xl mb-4">
                 🛡
               </div>
-              <h3 className="text-lg font-bold mb-2">Enterprise Security</h3>
+              <h3 className="text-lg font-bold mb-2">Laporan Kerusakan</h3>
               <p className="text-gray-600 text-sm">
-                Keamanan tingkat bank dengan enkripsi menyeluruh, memastikan
-                data Anda selalu terlindungi.
+                Guru mapel produktif bisa melaporkan barang yang rusak kepada
+                kepala bengkel
               </p>
             </div>
             {/* Feature 3 */}
@@ -253,10 +318,12 @@ export default function Home() {
               <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white text-2xl mb-4">
                 📊
               </div>
-              <h3 className="text-lg font-bold mb-2">Advanced Analytics</h3>
+              <h3 className="text-lg font-bold mb-2">
+                Pemantauan Langsung Oleh Kepala Sekolah
+              </h3>
               <p className="text-gray-600 text-sm">
-                Dapatkan wawasan mendalam dengan analisis waktu nyata dan dasbor
-                yang dapat disesuaikan.
+                Kepala Sekolah bisa memantau atau melihat barang yang ada di
+                semua jurusan dan semua labor yang ada
               </p>
             </div>
           </div>
@@ -272,10 +339,10 @@ export default function Home() {
               <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-400 to-blue-500 text-white text-2xl mb-4">
                 👥
               </div>
-              <h3 className="text-lg font-bold mb-2">Team Collaboration</h3>
+              <h3 className="text-lg font-bold mb-2">Pemantauan Waka Sarana</h3>
               <p className="text-gray-600 text-sm">
-                Berkolaborasilah secara lancar dengan tim Anda secara real-time,
-                di mana pun mereka berada di dunia.
+                Waka Sarana Prasarana juga bisa memantau atau melihat barang
+                yang ada di semua jurusan dan semua labor yang ada
               </p>
             </div>
             {/* Feature 5 */}
@@ -305,64 +372,20 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-[#2d4286] via-[#353ba7] to-[#698ae8] text-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 px-6 md:px-10 py-12">
-          {/* Logo & About */}
-          <div className="mx-auto md:col-span-2">
-            <div className="flex items-center mb-4">
-              <div className="bg-[#698ae8] p-2 rounded-lg">
-                <img src="/tefa.jpg" alt="" className="h-12 w-12" />
-              </div>
-              <span className="ml-2 text-xl font-bold text-white">
-                TEFA RPL
-              </span>
-            </div>
-            <p className="text-gray-300 mb-4">Pantau Penggunaan Labor Anda</p>
-          </div>
-
-          {/* Product */}
-          <div className="mx-auto">
-            <h3 className="font-semibold text-white mb-4">Fitur</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#Home" className="hover:text-white">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#Features" className="hover:text-white">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#About" className="hover:text-white">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#Contact" className="hover:text-white">
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-[#e1e7f6]/20 py-6 text-center text-gray-300 text-sm">
-          © 2025 TEFA RPL. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
 
 function HeroWithSlider() {
   const images = [
-    { src: "/homepagelaptop.jpg", title: "Homepage Inventaris" },
+    { src: "/homepagelaptop.jpg", title: "login page Inventaris" },
     { src: "/inv-kabeng.png", title: "Dashboard Kabeng" },
     { src: "/laporan-guru.png", title: "Laporan Guru" },
   ];
 
-  const [slides, setSlides] = useState<any[]>([]);
+  type Slide = { src: string; title: string };
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [current, setCurrent] = useState(1);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const isAnimatingRef = useRef(false);
@@ -462,7 +485,7 @@ function HeroWithSlider() {
   return (
     <section
       id="Home"
-      className="min-h-screen flex flex-col md:flex-row justify-between items-center px-6 md:px-20 py-20 space-y-12 md:space-y-0 md:space-x-16"
+      className="min-h-screen flex flex-col md:flex-row justify-between items-center px-6 md:px-20 py-12 md:py-16 space-y-12 md:space-y-0 md:space-x-16"
     >
       {/* Left */}
       <div
@@ -489,6 +512,32 @@ function HeroWithSlider() {
           >
             Mulai Sekarang
           </a>
+        </div>
+
+        {/* Quick stats under hero paragraph */}
+        <div className="mt-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="flex flex-col items-start sm:items-center gap-1">
+              <div className="text-2xl md:text-3xl font-bold text-[#2563EB]">
+                500+
+              </div>
+              <div className="text-sm text-gray-500">Siswa Aktif</div>
+            </div>
+
+            <div className="flex flex-col items-start sm:items-center gap-1">
+              <div className="text-2xl md:text-3xl font-bold text-green-500">
+                10+
+              </div>
+              <div className="text-sm text-gray-500">Sekolah</div>
+            </div>
+
+            <div className="flex flex-col items-start sm:items-center gap-1">
+              <div className="text-2xl md:text-3xl font-bold text-pink-600">
+                92%
+              </div>
+              <div className="text-sm text-gray-500">Tingkat Kepuasan</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -525,9 +574,6 @@ function HeroWithSlider() {
                       <p className="text-left text-base md:text-lg font-semibold text-white drop-shadow mr-7 hidden md:block">
                         {img.title}
                       </p>
-                      <button className="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md transition transform hover:scale-105">
-                        Detail
-                      </button>
                     </div>
                   </div>
                 </div>

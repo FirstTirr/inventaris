@@ -45,6 +45,9 @@ const Product = ({
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printJurusanList, setPrintJurusanList] = useState<string[]>([]);
   const [selectedPrintJurusan, setSelectedPrintJurusan] = useState<string>("");
+  const [printJurusanRestrictedTo, setPrintJurusanRestrictedTo] = useState<
+    string | null
+  >(null);
   const [selectedPrintMonth, setSelectedPrintMonth] = useState<string>("");
   const [printLaborList, setPrintLaborList] = useState<string[]>([]);
   const [selectedPrintLabor, setSelectedPrintLabor] = useState<string>("");
@@ -55,11 +58,60 @@ const Product = ({
     id_role?: number;
   };
 
+  type RemoteProductItem = {
+    id_perangkat?: number;
+    nama_perangkat?: string;
+    kategori?: string;
+    jurusan?: string;
+    labor?: string | null;
+    jumlah?: number;
+    status?: string;
+    keterangan?: string;
+  };
+
+  type ExportProduct = {
+    id: number;
+    nama: string;
+    kategori: string;
+    jurusan: string;
+    labor: string;
+    jumlah: number;
+    status: string;
+    keterangan?: string;
+  };
+
+  type JsPDFInstance = {
+    internal: {
+      pageSize: { getWidth: () => number; getHeight: () => number };
+      getNumberOfPages?: () => number;
+    };
+    setFontSize: (n: number) => void;
+    text: (
+      text: string,
+      x: number,
+      y: number,
+      opts?: Record<string, unknown>
+    ) => void;
+    save: (name: string) => void;
+    setLineWidth: (n: number) => void;
+    setDrawColor: (...args: number[]) => void;
+    line: (x1: number, y1: number, x2: number, y2: number) => void;
+    setPage: (n: number) => void;
+  };
+
+  type JsPDFCtor = new (opts: {
+    orientation?: string;
+    unit?: string;
+    format?: string;
+  }) => JsPDFInstance;
+
   const [usersForPrint, setUsersForPrint] = useState<UserMinimal[]>([]);
   const [kabengForJurusan, setKabengForJurusan] = useState<UserMinimal | null>(
     null
   );
   const [selectedPrintPassword, setSelectedPrintPassword] = useState("");
+  const [printReporterName, setPrintReporterName] = useState("");
+  const [showPrintPassword, setShowPrintPassword] = useState(false);
   const [statsJurusanList, setStatsJurusanList] = useState<
     { jurusan: string; warna?: string }[]
   >([]);
@@ -311,6 +363,45 @@ const Product = ({
       try {
         const usersRes = await getRemoteUsers();
         const uArr = Array.isArray(usersRes.data) ? usersRes.data : [];
+        // determine logged-in user's jurusan from admin user table
+        try {
+          const loggedUsernameRaw =
+            (typeof window !== "undefined" &&
+              (localStorage.getItem("user") ||
+                sessionStorage.getItem("displayName") ||
+                (document.cookie || "")
+                  .split("; ")
+                  .find((c) => c.startsWith("user="))
+                  ?.split("=")[1])) ||
+            "";
+          const loggedUsername =
+            typeof loggedUsernameRaw === "string"
+              ? decodeURIComponent(loggedUsernameRaw)
+              : "";
+
+          const found = uArr.find(
+            (uu: UserMinimal) => String(uu.nama) === String(loggedUsername)
+          );
+          const userJurusan =
+            found?.jurusan ??
+            found?.nama_jurusan ??
+            found?.nama_jurusan?.toString?.() ??
+            null;
+
+          if (userJurusan && String(userJurusan).trim() !== "") {
+            // Restrict the print jurusan list to the user's jurusan
+            const uj = String(userJurusan).trim();
+            setPrintJurusanList([uj]);
+            setPrintJurusanRestrictedTo(uj);
+            setSelectedPrintJurusan(uj);
+          } else {
+            // no restriction
+            setPrintJurusanRestrictedTo(null);
+          }
+        } catch (innerErr) {
+          console.error("Error determining logged user's jurusan:", innerErr);
+        }
+
         setUsersForPrint(uArr);
       } catch (err) {
         console.error("Gagal mengambil users untuk print:", err);
@@ -642,7 +733,21 @@ const Product = ({
               jumlah: Number(row[5] ?? 0),
               status: String(row[6] ?? ""),
             }))
-            .filter((p) => p.jurusan === selectedPrintJurusan);
+            .filter(
+              (p) =>
+                String(p.jurusan ?? "")
+                  .trim()
+                  .toLowerCase() ===
+                  String(selectedPrintJurusan ?? "")
+                    .trim()
+                    .toLowerCase() &&
+                String(p.labor ?? "")
+                  .trim()
+                  .toLowerCase() ===
+                  String(selectedPrintLabor ?? "")
+                    .trim()
+                    .toLowerCase()
+            );
         }
 
         if (!products.length) {
@@ -650,16 +755,36 @@ const Product = ({
           const res = await getRemoteProducts();
           const arr = Array.isArray(res.data) ? res.data : res;
           products = (arr || [])
-            .map((item: any) => ({
+            .map((item: RemoteProductItem) => ({
               id: Number(item.id_perangkat ?? 0),
               nama: String(item.nama_perangkat ?? ""),
               kategori: String(item.kategori ?? ""),
               jurusan: String(item.jurusan ?? ""),
-              labor: String(item.labor ?? ""),
+              labor:
+                item.labor !== undefined &&
+                item.labor !== null &&
+                String(item.labor).trim() !== ""
+                  ? String(item.labor)
+                  : "-",
               jumlah: Number(item.jumlah ?? 0),
               status: String(item.status ?? ""),
             }))
-            .filter((p: any) => p.jurusan === selectedPrintJurusan);
+            .filter((p: ExportProduct) => {
+              return (
+                String(p.jurusan ?? "")
+                  .trim()
+                  .toLowerCase() ===
+                  String(selectedPrintJurusan ?? "")
+                    .trim()
+                    .toLowerCase() &&
+                String(p.labor ?? "")
+                  .trim()
+                  .toLowerCase() ===
+                  String(selectedPrintLabor ?? "")
+                    .trim()
+                    .toLowerCase()
+              );
+            });
         }
       } catch (err) {
         console.error("Gagal membangun daftar produk untuk cetak:", err);
@@ -670,22 +795,29 @@ const Product = ({
 
     const products = await buildProductsForJurusan();
 
+    // Determine signature name: prefer manually entered reporter name, then logged user, then kabengForJurusan
+    const signatureName =
+      (printReporterName && String(printReporterName).trim()) ||
+      (loggedUser && loggedUser.nama) ||
+      (kabengForJurusan && kabengForJurusan.nama) ||
+      "";
+
     // Try to generate a PDF with jsPDF + autotable and trigger download.
     // If generation fails, fallback to the previous print-window behavior.
     try {
       // dynamic import to avoid SSR issues and keep bundle small
       // Try several entry points: plain 'jspdf' may fail in some bundlers, so
       // fall back to the packaged ESM/UMD builds that are present in node_modules.
-      let jsPDFModule: any = null;
+      let jsPDFModule: unknown = null;
       try {
         jsPDFModule = await import("jspdf");
       } catch (e1) {
         try {
-          // @ts-ignore - Dynamic import path may not have declarations
+          // @ts-expect-error - Dynamic import path may not have declarations
           jsPDFModule = await import("jspdf/dist/jspdf.es.min.js");
         } catch (e2) {
           try {
-            // @ts-ignore - Dynamic import path may not have declarations
+            // @ts-expect-error - Dynamic import path may not have declarations
             jsPDFModule = await import("jspdf/dist/jspdf.umd.min.js");
           } catch (e3) {
             // Don't throw immediately — we'll try CDN fallback below
@@ -698,14 +830,14 @@ const Product = ({
         }
       }
 
-      let jsPDF: any = null;
+      let jsPDF: JsPDFCtor | null = null;
       if (jsPDFModule) {
+        // Try to extract jsPDF constructor from different module export patterns
+        const moduleRecord = jsPDFModule as Record<string, unknown>;
         jsPDF =
-          jsPDFModule && jsPDFModule.jsPDF
-            ? jsPDFModule.jsPDF
-            : jsPDFModule.default
-            ? jsPDFModule.default
-            : jsPDFModule;
+          (moduleRecord.jsPDF as JsPDFCtor) ||
+          (moduleRecord.default as JsPDFCtor) ||
+          (jsPDFModule as JsPDFCtor);
       }
 
       // autotable plugin: try ESM then UMD plugin
@@ -713,7 +845,7 @@ const Product = ({
         await import("jspdf-autotable");
       } catch (at1) {
         try {
-          // @ts-ignore - Dynamic import path may not have declarations
+          // @ts-expect-error - Dynamic import path may not have declarations
           await import("jspdf-autotable/dist/jspdf.plugin.autotable.js");
         } catch (at2) {
           // ignore - we'll fallback to print window below if plugin missing
@@ -734,8 +866,7 @@ const Product = ({
             s.src = src;
             s.async = true;
             s.onload = () => resolve();
-            s.onerror = (e) =>
-              reject(new Error(`Failed to load script ${src}`));
+            s.onerror = () => reject(new Error(`Failed to load script ${src}`));
             document.head.appendChild(s);
           });
 
@@ -749,11 +880,22 @@ const Product = ({
             "https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.js"
           );
           // Try to get jsPDF from globals (umd exposes window.jspdf.jsPDF)
-          const win: any = window as any;
+          const win = window as unknown as Record<string, unknown>;
           jsPDF =
-            (win && win.jspdf && win.jspdf.jsPDF) ||
-            win.jsPDF ||
-            (win && win.jspdf && win.jspdf.default && win.jspdf.default.jsPDF);
+            ((win &&
+              (win["jspdf"] as unknown) &&
+              (win["jspdf"] as unknown as Record<string, unknown>)[
+                "jsPDF"
+              ]) as unknown as JsPDFCtor) ||
+            (win["jsPDF"] as unknown as JsPDFCtor) ||
+            ((win &&
+              (win["jspdf"] as unknown) &&
+              (win["jspdf"] as unknown as Record<string, unknown>)["default"] &&
+              (
+                (win["jspdf"] as unknown as Record<string, unknown>)[
+                  "default"
+                ] as Record<string, unknown>
+              )["jsPDF"]) as unknown as JsPDFCtor);
           if (!jsPDF) throw new Error("jsPDF global not found after CDN load");
         } catch (cdnErr) {
           console.warn("CDN fallback for jsPDF failed:", cdnErr);
@@ -794,7 +936,7 @@ const Product = ({
 
       // Use boolean flags for Baik/Rusak so we can draw vector checks and avoid
       // relying on font glyphs (which caused stray characters).
-      const body = products.map((p: any, idx: number) => [
+      const body = products.map((p: ExportProduct, idx: number) => [
         idx + 1,
         p.nama ?? "",
         p.jumlah ?? "",
@@ -803,8 +945,12 @@ const Product = ({
         p.keterangan ?? "",
       ]);
 
-      // @ts-ignore - autoTable types augment jsPDF at runtime
-      (doc as any).autoTable({
+      // Call autoTable (provided by plugin) via a safe cast to avoid any
+      (
+        doc as unknown as {
+          autoTable?: (opts: Record<string, unknown>) => void;
+        }
+      ).autoTable?.({
         startY: selectedPrintLabor ? 100 : 90,
         head: [["No", "Nama Barang", "Jumlah", "Baik", "Rusak", "Keterangan"]],
         body,
@@ -820,50 +966,141 @@ const Product = ({
           4: { cellWidth: 40 },
           5: { cellWidth: 140 },
         },
-        didParseCell: (data: any) => {
+        didParseCell: (data: unknown) => {
           // Prevent boolean true/false from being rendered as text in cells 3 & 4
           try {
+            const d = data as Record<string, unknown>;
+            const column = d.column as Record<string, unknown> | undefined;
+            const cell = d.cell as Record<string, unknown> | undefined;
             if (
-              (data.column.index === 3 || data.column.index === 4) &&
-              data.cell &&
-              typeof data.cell.raw === "boolean"
+              column &&
+              (column.index === 3 || column.index === 4) &&
+              cell &&
+              typeof cell.raw === "boolean"
             ) {
-              data.cell.text = [""]; // clear text so no stray glyph appears for true/false
+              // Mutate text safely via generic record access to avoid TS errors
+              (cell as Record<string, unknown>).text = [""];
             }
-          } catch (e) {
+          } catch {
             // ignore
           }
         },
-        didDrawCell: (data: any) => {
+        didDrawCell: (data: unknown) => {
           // Draw a compact vector check mark for Baik (col 3) or Rusak (col 4)
           try {
-            const col = data.column.index;
+            const d = data as Record<string, unknown>;
+            const col = (d.column as Record<string, unknown>)?.index as
+              | number
+              | undefined;
+            const cell = d.cell as Record<string, unknown> | undefined;
             if (
+              col !== undefined &&
               (col === 3 || col === 4) &&
-              data.cell &&
-              data.cell.raw === true
+              cell &&
+              cell.raw === true
             ) {
-              const cell = data.cell;
-              const w = cell.width;
-              const h = cell.height;
-              // Slightly adjusted positions for a neat, small check
-              const startX = cell.x + w * 0.22;
-              const startY = cell.y + h * 0.62;
-              const midX = cell.x + w * 0.42;
-              const midY = cell.y + h * 0.78;
-              const endX = cell.x + w * 0.78;
-              const endY = cell.y + h * 0.28;
+              const w = (cell.width as number) || 0;
+              const h = (cell.height as number) || 0;
+              const startX = ((cell.x as number) || 0) + w * 0.22;
+              const startY = ((cell.y as number) || 0) + h * 0.62;
+              const midX = ((cell.x as number) || 0) + w * 0.42;
+              const midY = ((cell.y as number) || 0) + h * 0.78;
+              const endX = ((cell.x as number) || 0) + w * 0.78;
+              const endY = ((cell.y as number) || 0) + h * 0.28;
 
               doc.setDrawColor(0, 0, 0);
               doc.setLineWidth(1.1);
               doc.line(startX, startY, midX, midY);
               doc.line(midX, midY, endX, endY);
             }
-          } catch (e) {
+          } catch {
             // ignore drawing errors
           }
         },
       });
+
+      // Add printed date (left) and signature block (right) on the last page
+      try {
+        const pageCount =
+          typeof doc.internal.getNumberOfPages === "function"
+            ? doc.internal.getNumberOfPages()!
+            : 1;
+        const lastPage = pageCount || 1; // 1-based
+        const pageHeight = doc.internal.pageSize.getHeight();
+        // Move to last page
+        doc.setPage(lastPage);
+        doc.setFontSize(10);
+
+        // Printed date and left-side signature block (Mengetahui Kabeng)
+        try {
+          const now = new Date();
+          const monthNames = [
+            "Januari",
+            "Februari",
+            "Maret",
+            "April",
+            "Mei",
+            "Juni",
+            "Juli",
+            "Agustus",
+            "September",
+            "Oktober",
+            "November",
+            "Desember",
+          ];
+          const printedDate = `${now.getDate()} ${
+            monthNames[now.getMonth()]
+          } ${now.getFullYear()}`;
+
+          // LEFT: label "Mengetahui Kabeng <JURUSAN>" on one line and signature line with name under it
+          const leftX = 40; // left margin
+          const labelY = pageHeight - 140; // label above the signature line
+          const sigLineYLeft = pageHeight - 90; // signature line position
+          const sigNameYLeft = pageHeight - 60; // printed name below the line
+
+          const jurusanLabel = (
+            String(selectedPrintJurusan || "").trim() || ""
+          ).toUpperCase();
+          const labelLine = jurusanLabel
+            ? `Mengetahui Kabeng ${jurusanLabel}`
+            : `Mengetahui Kabeng`;
+          doc.text(labelLine, leftX, labelY, { align: "left" });
+
+          // Print current date on the bottom-right corner
+          try {
+            const dateRightX = pageWidth - 40;
+            const dateRightY = pageHeight - 170; // align with top of signature block
+            doc.text(printedDate, dateRightX, dateRightY, { align: "right" });
+          } catch (dateRightErr) {
+            console.warn("Failed to draw printed date on right:", dateRightErr);
+          }
+
+          // draw left signature line
+          try {
+            doc.setLineWidth(0.6);
+            const leftLineStart = leftX + 10;
+            const leftLineEnd = leftX + 150; // ~140pt long
+            doc.line(leftLineStart, sigLineYLeft, leftLineEnd, sigLineYLeft);
+          } catch (leftLineErr) {
+            console.warn("Failed to draw left signature line:", leftLineErr);
+          }
+
+          if (signatureName) {
+            doc.text(String(signatureName), leftX + 10, sigNameYLeft, {
+              align: "left",
+            });
+          }
+
+          // (right-side signature block removed — left-side block is used for "Mengetahui Kabeng")
+        } catch (dateErr) {
+          console.warn(
+            "Failed to draw printed date or signature blocks:",
+            dateErr
+          );
+        }
+      } catch (sigErr) {
+        console.warn("Failed to draw signature/date on PDF:", sigErr);
+      }
 
       const safeJurusan = (selectedPrintJurusan || "jurusan")
         .replace(/\s+/g, "-")
@@ -882,7 +1119,8 @@ const Product = ({
       const generateReportHtml = (
         jurusanTitle: string,
         monthLabel: string,
-        productsList: any[]
+        productsList: ExportProduct[],
+        signature: string
       ) => {
         const now = new Date();
         const header = `<div style="text-align:center;margin-bottom:12px;line-height:1.1"><h3 style="margin:0;padding:0;">DAFTAR INVENTARIS LABOR ${escapeHtml(
@@ -892,7 +1130,7 @@ const Product = ({
         )}</div></div>`;
 
         const tableRows = productsList
-          .map((p: any, idx: number) => {
+          .map((p: ExportProduct, idx: number) => {
             const isBaik = String(p.status ?? "").toLowerCase() === "baik";
             const isRusak = !isBaik;
             return `
@@ -936,13 +1174,49 @@ const Product = ({
           </tbody>
         </table>`;
 
+        const printedDate = `${now.getDate()} ${
+          [
+            "Januari",
+            "Februari",
+            "Maret",
+            "April",
+            "Mei",
+            "Juni",
+            "Juli",
+            "Agustus",
+            "September",
+            "Oktober",
+            "November",
+            "Desember",
+          ][now.getMonth()]
+        } ${now.getFullYear()}`;
+
+        const signatureHtml = signature
+          ? `
+            <div style="position:fixed;left:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;">
+              <div style="margin-bottom:6px;">${escapeHtml(
+                (jurusanTitle || "").toString().trim()
+                  ? `Mengetahui Kabeng ${escapeHtml(
+                      (jurusanTitle || "").toString().toUpperCase()
+                    )}`
+                  : `Mengetahui Kabeng`
+              )}</div>
+              <div style="width:220px;border-bottom:1px solid #000;margin-bottom:8px;margin-top:18px;"></div>
+              <div><strong>${escapeHtml(signature)}</strong></div>
+            </div>
+            <div style="position:fixed;right:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;text-align:right;">
+              ${escapeHtml(printedDate)}
+            </div>
+          `
+          : "";
+
         return `<!doctype html><html><head><meta charset="utf-8"><title>Report ${escapeHtml(
           jurusanTitle
-        )}</title></head><body style="margin:20px;">${header}${table}</body></html>`;
+        )}</title></head><body style="margin:20px;">${header}${table}${signatureHtml}</body></html>`;
       };
 
       // Small helper to avoid injecting raw HTML
-      const escapeHtml = (unsafe: any) => {
+      const escapeHtml = (unsafe: unknown) => {
         if (unsafe === null || unsafe === undefined) return "";
         return String(unsafe)
           .replace(/&/g, "&amp;")
@@ -956,7 +1230,8 @@ const Product = ({
         const html = generateReportHtml(
           selectedPrintJurusan || "",
           selectedPrintMonth || "",
-          products
+          products,
+          signatureName
         );
         const w = window.open("", "_blank", "width=900,height=700");
         if (!w) {
@@ -1392,7 +1667,7 @@ const Product = ({
             <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Pilih Jurusan untuk Cetak Laporan
+                  Pilih Jurusan untuk Cetak laporan
                 </h3>
                 <button
                   onClick={handleClosePrintModal}
@@ -1409,15 +1684,33 @@ const Product = ({
                 <select
                   value={selectedPrintJurusan}
                   onChange={(e) => setSelectedPrintJurusan(e.target.value)}
+                  disabled={!!printJurusanRestrictedTo}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">-- Pilih Jurusan --</option>
-                  {printJurusanList.map((jurusan) => (
-                    <option key={jurusan} value={jurusan}>
-                      {jurusan}
-                    </option>
-                  ))}
+                  {printJurusanRestrictedTo ? (
+                    // If restricted, only show the user's jurusan and disable changing
+                    <>
+                      <option value={printJurusanRestrictedTo}>
+                        {printJurusanRestrictedTo}
+                      </option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="">-- Pilih Jurusan --</option>
+                      {printJurusanList.map((jurusan) => (
+                        <option key={jurusan} value={jurusan}>
+                          {jurusan}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
+                {printJurusanRestrictedTo && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Anda dibatasi hanya dapat mencetak untuk jurusan:{" "}
+                    <strong>{printJurusanRestrictedTo}</strong>
+                  </p>
+                )}
               </div>
 
               <div className="mb-6">
@@ -1463,18 +1756,80 @@ const Product = ({
                 </select>
               </div>
 
+              {/* Nama yang mencetak laporan (reporter) */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nama Kabeng yang mencetak laporan:
+                </label>
+                <input
+                  type="text"
+                  inputMode="text"
+                  pattern="[A-Za-z0-9]+"
+                  value={printReporterName}
+                  onChange={(e) => {
+                    const filtered = e.target.value.replace(
+                      /[^A-Za-z0-9]/g,
+                      ""
+                    );
+                    setPrintReporterName(filtered);
+                  }}
+                  onPaste={(e) => {
+                    const paste =
+                      (e.clipboardData && e.clipboardData.getData("text")) ||
+                      "";
+                    const filtered = paste.replace(/[^A-Za-z0-9]/g, "");
+                    e.preventDefault();
+                    setPrintReporterName((prev) => `${prev}${filtered}`);
+                  }}
+                  placeholder="Masukkan Nama Anda (hanya huruf dan angka)"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
               {/* Password field for Kabeng per-jurusan */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Password Kabeng untuk jurusan terpilih:
                 </label>
-                <input
-                  type="password"
-                  value={selectedPrintPassword}
-                  onChange={(e) => setSelectedPrintPassword(e.target.value)}
-                  placeholder="Masukkan password Kabeng"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <div className="relative">
+                  <input
+                    type={showPrintPassword ? "text" : "password"}
+                    value={selectedPrintPassword}
+                    onChange={(e) => {
+                      // allow only alphanumeric characters
+                      const filtered = e.target.value.replace(
+                        /[^A-Za-z0-9]/g,
+                        ""
+                      );
+                      setSelectedPrintPassword(filtered);
+                    }}
+                    onPaste={(e) => {
+                      // sanitize pasted value to alphanumeric only
+                      const paste =
+                        (e.clipboardData && e.clipboardData.getData("text")) ||
+                        "";
+                      const filtered = paste.replace(/[^A-Za-z0-9]/g, "");
+                      e.preventDefault();
+                      // append the filtered paste to current value
+                      setSelectedPrintPassword((prev) => `${prev}${filtered}`);
+                    }}
+                    placeholder="Masukkan password Kabeng"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPrintPassword((s) => !s)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 px-2 py-1"
+                    aria-label={
+                      showPrintPassword
+                        ? "Sembunyikan password"
+                        : "Tampilkan password"
+                    }
+                  >
+                    {showPrintPassword ? "Sembunyikan" : "Lihat"}
+                  </button>
+                </div>
                 {loggedUserRecord ? (
                   <p className="text-xs text-gray-500 mt-2">
                     Memeriksa password akun login:{" "}
