@@ -1,6 +1,7 @@
 "use client";
 
 import Footer from "@/components/footer";
+import NoInspect from "@/components/NoInspect";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -53,6 +54,7 @@ export default function Home() {
   return (
     <div className="font-sans text-gray-900 bg-gradient-to-br from-[#e1e7f6] via-[#f8f9fe] to-[#698ae8] min-h-screen">
       {/* Navbar */}
+      <NoInspect />
       <nav
         className="sticky top-0 z-50 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-lg border border-white/20 shadow-lg"
         data-aos="fade-down"
@@ -248,7 +250,7 @@ export default function Home() {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl md:text-3xl font-bold text-[#353ba7]">
-                    8
+                    10+
                   </div>
                   <div className="text-xs text-gray-500">Jurusan</div>
                 </div>
@@ -343,28 +345,6 @@ export default function Home() {
               <p className="text-gray-600 text-sm">
                 Waka Sarana Prasarana juga bisa memantau atau melihat barang
                 yang ada di semua jurusan dan semua labor yang ada
-              </p>
-            </div>
-            {/* Feature 5 */}
-            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-purple-400 to-violet-600 text-white text-2xl mb-4">
-                📱
-              </div>
-              <h3 className="text-lg font-bold mb-2">Mobile First</h3>
-              <p className="text-gray-600 text-sm">
-                Akses ruang kerja Anda dari mana saja dengan aplikasi seluler
-                asli dan desain responsif.
-              </p>
-            </div>
-            {/* Feature 6 */}
-            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-emerald-600 text-white text-2xl mb-4">
-                🌍
-              </div>
-              <h3 className="text-lg font-bold mb-2">Global Scale</h3>
-              <p className="text-gray-600 text-sm">
-                Terapkan secara global dengan infrastruktur kami di seluruh
-                dunia, yang memastikan latensi rendah.
               </p>
             </div>
           </div>
@@ -519,16 +499,16 @@ function HeroWithSlider() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div className="flex flex-col items-start sm:items-center gap-1">
               <div className="text-2xl md:text-3xl font-bold text-[#2563EB]">
-                500+
+                1000+
               </div>
-              <div className="text-sm text-gray-500">Siswa Aktif</div>
+              <div className="text-sm text-gray-500">Barang</div>
             </div>
 
             <div className="flex flex-col items-start sm:items-center gap-1">
               <div className="text-2xl md:text-3xl font-bold text-green-500">
                 10+
               </div>
-              <div className="text-sm text-gray-500">Sekolah</div>
+              <div className="text-sm text-gray-500">jurusan</div>
             </div>
 
             <div className="flex flex-col items-start sm:items-center gap-1">
