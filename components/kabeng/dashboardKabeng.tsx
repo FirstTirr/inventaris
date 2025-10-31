@@ -30,7 +30,11 @@ const navComponents = {
   tkj: NavTkj,
 };
 
-const DashboardKabeng = () => {
+const DashboardKabeng = ({
+  hideControls = false,
+}: {
+  hideControls?: boolean;
+}) => {
   const router = useRouter();
   const [selected, setSelected] = useState<"rpl" | "bc" | "dkv" | "tkj">("rpl");
   return (
@@ -104,7 +108,7 @@ const DashboardKabeng = () => {
                   <div className="text-center py-8">Loading data produk...</div>
                 }
               >
-                <Product hideStats />
+                <Product hideStats showControls={!hideControls} />
               </Suspense>
             </div>
             {/* Right: Tabbed Jurusan */}

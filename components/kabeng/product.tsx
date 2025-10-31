@@ -28,9 +28,11 @@ function useDebounce(value: string, delay: number) {
 const Product = ({
   hideStats = false,
   onlyStats = false,
+  showControls = true,
 }: {
   hideStats?: boolean;
   onlyStats?: boolean;
+  showControls?: boolean;
 }) => {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300); // 300ms debounce
@@ -1313,7 +1315,7 @@ const Product = ({
           </div>
         )}
 
-        {isOnline && !onlyStats && (
+        {isOnline && !onlyStats && showControls && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 w-full">
             <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
               <input

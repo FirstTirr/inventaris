@@ -5,6 +5,7 @@ import { ShoppingCart, User, Flag } from "lucide-react";
 import Logo from "../Logo";
 import DashboardKabeng from "./dashboardKabeng";
 import LastUser from "./lastUser";
+import Wm from "../wm";
 
 // Lazy load ALL heavy components
 const Product = dynamic(() => import("./product"), {
@@ -178,6 +179,9 @@ const Navbar = memo(() => {
             </svg>
             Log out
           </button>
+          <div>
+            <Wm />
+          </div>
         </div>
       </aside>
 
@@ -310,6 +314,9 @@ const Navbar = memo(() => {
                 </svg>
                 Log out
               </button>
+              <div>
+                <Wm />
+              </div>
             </div>
           </aside>
         </div>

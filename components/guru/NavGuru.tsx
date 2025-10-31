@@ -3,6 +3,7 @@ import React, { useState, Suspense, lazy, useCallback } from "react";
 import { Flag, FolderInput } from "lucide-react";
 import Logo from "../Logo";
 import { clearAllCookies } from "@/lib/utils";
+import Wm from "../wm";
 
 // Lazy load heavy components
 const LaporanKerusakan = lazy(() => import("./laporanKerusakan"));
@@ -28,24 +29,24 @@ const NavWasapras = React.memo(() => {
   ];
 
   const handleLogout = useCallback(() => {
-      try {
-        // Invalidate server session if applicable
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
-          method: "POST",
-          credentials: "include",
-        }).catch(() => {});
-      } catch {}
-      try {
-        clearAllCookies();
-      } catch {}
-      try {
-        localStorage.clear();
-      } catch {}
-      try {
-        sessionStorage.clear();
-      } catch {}
-      window.location.href = "/";
-    }, []);
+    try {
+      // Invalidate server session if applicable
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
+        method: "POST",
+        credentials: "include",
+      }).catch(() => {});
+    } catch {}
+    try {
+      clearAllCookies();
+    } catch {}
+    try {
+      localStorage.clear();
+    } catch {}
+    try {
+      sessionStorage.clear();
+    } catch {}
+    window.location.href = "/";
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-[#f7f8fa] flex-col md:flex-row">
@@ -104,11 +105,18 @@ const NavWasapras = React.memo(() => {
               } catch {}
               try {
                 if (typeof document !== "undefined") {
-                  const cookies = document.cookie ? document.cookie.split("; ") : [];
+                  const cookies = document.cookie
+                    ? document.cookie.split("; ")
+                    : [];
                   const hostname = window.location.hostname;
                   const parts = hostname.split(".");
-                  const rootDomain = parts.length >= 2 ? `.${parts.slice(-2).join(".")}` : hostname;
-                  const dotHostname = hostname.startsWith(".") ? hostname : `.${hostname}`;
+                  const rootDomain =
+                    parts.length >= 2
+                      ? `.${parts.slice(-2).join(".")}`
+                      : hostname;
+                  const dotHostname = hostname.startsWith(".")
+                    ? hostname
+                    : `.${hostname}`;
                   for (const c of cookies) {
                     const [k] = c.split("=");
                     if (k) {
@@ -148,6 +156,9 @@ const NavWasapras = React.memo(() => {
             </svg>
             Log out
           </button>
+          <div>
+            <Wm />
+          </div>
         </nav>
       </aside>
 
@@ -250,6 +261,9 @@ const NavWasapras = React.memo(() => {
                 </svg>
                 Log Out
               </button>
+              <div>
+                <Wm />
+              </div>
             </nav>
           </aside>
         </div>

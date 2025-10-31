@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { House, User } from "lucide-react";
 import DashboardKabeng from "../kabeng/dashboardKabeng";
 import LastUser from "../kabeng/lastUser";
+import Wm from "../wm";
 
 export default function NavKepsek() {
   const [active, setActive] = useState("dashboard");
@@ -103,6 +104,9 @@ export default function NavKepsek() {
             </svg>
             Log out
           </button>
+          <div>
+              <Wm/>
+              </div>
         </div>
       </aside>
 
@@ -214,6 +218,9 @@ export default function NavKepsek() {
                 </svg>
                 Log out
               </button>
+              <div>
+              <Wm/>
+              </div>
             </div>
           </aside>
         </div>
@@ -228,7 +235,7 @@ export default function NavKepsek() {
           </h2>
         </header>
         <main className="p-8">
-          {active === "dashboard" && <DashboardKabeng />}
+          {active === "dashboard" && <DashboardKabeng hideControls />}
           {active === "user" && <LastUser />}
         </main>
       </div>

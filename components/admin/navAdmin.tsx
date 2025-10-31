@@ -11,6 +11,7 @@ import {
 import TabelDropdownNav from "./TabelDropdownNav";
 import Logo from "../Logo";
 import { clearAllCookies } from "@/lib/utils";
+import Wm from "../wm";
 
 // Lazy load only when needed
 const CrudAKun = lazy(() => import("./crudAkun"));
@@ -168,6 +169,9 @@ export default function NavAdmin() {
             </svg>
             Log out
           </button>
+          <div>
+            <Wm />
+          </div>
         </nav>
       </aside>
 
@@ -309,6 +313,9 @@ export default function NavAdmin() {
                 </svg>
                 Log out
               </button>
+              <div>
+                <Wm />
+              </div>
             </nav>
           </aside>
         </div>
