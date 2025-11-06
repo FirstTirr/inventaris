@@ -51,6 +51,8 @@ const Product = ({
     string | null
   >(null);
   const [selectedPrintMonth, setSelectedPrintMonth] = useState<string>("");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
+  const [selectedPrintCity, setSelectedPrintCity] = useState<string>("");
   const [printLaborList, setPrintLaborList] = useState<string[]>([]);
   const [selectedPrintLabor, setSelectedPrintLabor] = useState<string>("");
   type UserMinimal = {
@@ -113,6 +115,10 @@ const Product = ({
   );
   const [selectedPrintPassword, setSelectedPrintPassword] = useState("");
   const [printReporterName, setPrintReporterName] = useState("");
+  const [printReporterNip, setPrintReporterNip] = useState("");
+  const [printLocationCity, setPrintLocationCity] = useState<string>(
+    typeof window !== "undefined" ? localStorage.getItem("printCity") || "" : ""
+  );
   const [showPrintPassword, setShowPrintPassword] = useState(false);
   const [statsJurusanList, setStatsJurusanList] = useState<
     { jurusan: string; warna?: string }[]
@@ -624,6 +630,66 @@ const Product = ({
   const handleOpenPrintModal = () => {
     setShowPrintModal(true);
     fetchJurusanForPrint();
+    detectCityForPrint();
+  };
+
+  // Try to detect city for use in printed reports.
+  // Strategy: prefer localStorage('printCity'), otherwise try Geolocation + OpenStreetMap Nominatim reverse geocode.
+  const detectCityForPrint = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = localStorage.getItem("printCity");
+      if (stored && stored.trim()) {
+        setPrintLocationCity(stored.trim());
+        return;
+      }
+
+      if (!navigator.geolocation) return;
+
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        const onSuccess = (p: GeolocationPosition) => resolve(p);
+        const onError = (e: GeolocationPositionError) => reject(e);
+        navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+          maximumAge: 1000 * 60 * 60, // 1 hour
+          timeout: 5000,
+        });
+      }).catch(() => null);
+
+      if (!pos) return;
+
+      const { latitude, longitude } = pos.coords as {
+        latitude: number;
+        longitude: number;
+      };
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
+            latitude
+          )}&lon=${encodeURIComponent(longitude)}`,
+          {
+            headers: {
+              "User-Agent": "inventaris-app/1.0 (mailto:you@example.com)",
+            },
+          }
+        );
+        if (!res.ok) return;
+        const j = await res.json();
+        const addr = j?.address || {};
+        const city =
+          addr.city || addr.town || addr.village || addr.county || "";
+        if (city && String(city).trim()) {
+          setPrintLocationCity(String(city).trim());
+          try {
+            localStorage.setItem("printCity", String(city).trim());
+          } catch {}
+        }
+      } catch (err) {
+        // ignore reverse geocode errors
+      }
+    } catch (err) {
+      // ignore geolocation permission denials or other errors
+    }
   };
 
   const handleClosePrintModal = () => {
@@ -641,11 +707,16 @@ const Product = ({
       return;
     }
 
-    if (!selectedPrintMonth) {
-      alert("Pilih bulan terlebih dahulu!");
+    if (!selectedPrintJurusan) {
+      alert("Pilih jurusan terlebih dahulu!");
       return;
     }
 
+    // selectedPrintMonth now holds 'nama sekolah' (alphanumeric + spaces)
+    if (!selectedPrintMonth) {
+      alert("Masukkan nama sekolah terlebih dahulu!");
+      return;
+    }
     if (!selectedPrintLabor) {
       alert("Pilih labor terlebih dahulu!");
       return;
@@ -914,27 +985,52 @@ const Product = ({
 
       const pageWidth = doc.internal.pageSize.getWidth();
 
-      const title = `DAFTAR INVENTARIS LABOR ${String(
+      const title = `DAFTAR INVENTARIS LABOR JURUSAN ${String(
         selectedPrintJurusan || ""
       ).toUpperCase()}`;
       doc.setFontSize(14);
       doc.text(title, pageWidth / 2, 40, { align: "center" });
       doc.setFontSize(10);
-      doc.text("SMKN 4 PAYAKUMBUH", pageWidth / 2, 56, { align: "center" });
+      // Use school name from modal (selectedPrintMonth) as the school line; fallback to default
+      doc.text(String(selectedPrintMonth || ""), pageWidth / 2, 56, {
+        align: "center",
+      });
       // Include selected labor under the header if provided.
       // If a labor is selected, do NOT print the TP line beneath it (per request).
+      // If a labor is selected, render it. Otherwise, if a school name
+      // (selectedPrintMonth) was provided, render the school name. As a
+      // fallback show the current year label.
       if (selectedPrintLabor) {
         doc.text(String(selectedPrintLabor), pageWidth / 2, 72, {
           align: "center",
         });
+        // If academic year provided in modal, show it below the labor
+        if (selectedAcademicYear) {
+          doc.setFontSize(9);
+          doc.text(String(selectedAcademicYear), pageWidth / 2, 88, {
+            align: "center",
+          });
+          doc.setFontSize(10);
+        }
+      } else if (selectedPrintMonth) {
+        doc.text(String(selectedPrintMonth), pageWidth / 2, 72, {
+          align: "center",
+        });
+        if (selectedAcademicYear) {
+          doc.setFontSize(9);
+          doc.text(String(selectedAcademicYear), pageWidth / 2, 88, {
+            align: "center",
+          });
+          doc.setFontSize(10);
+        }
       } else {
-        doc.text(
-          `TP. ${selectedPrintMonth || new Date().getFullYear()}`,
-          pageWidth / 2,
-          72,
-          { align: "center" }
-        );
+        doc.text(`TP. ${new Date().getFullYear()}`, pageWidth / 2, 72, {
+          align: "center",
+        });
       }
+
+      // (top-right date removed per user request — date will be shown above the
+      // left signature block only)
 
       // Use boolean flags for Baik/Rusak so we can draw vector checks and avoid
       // relying on font glyphs (which caused stray characters).
@@ -946,6 +1042,52 @@ const Product = ({
         String(p.status ?? "").toLowerCase() !== "baik", // Rusak boolean
         p.keterangan ?? "",
       ]);
+
+      // Prepare a smooth check icon (from a small SVG) rendered to PNG data URL
+      // so we can draw a crisp check image inside table cells. This is created
+      // once and reused per-cell to avoid expensive canvas ops inside didDrawCell.
+      let checkPngDataUrl: string | null = null;
+      if (typeof window !== "undefined") {
+        try {
+          const createCheckPng = (size: number) =>
+            new Promise<string>((resolve, reject) => {
+              try {
+                const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 24 24'><path d='M20 6L9 17l-5-5' fill='none' stroke='#000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5'/></svg>`;
+                const img = new Image();
+                img.onload = () => {
+                  try {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) return reject(new Error("no-canvas-ctx"));
+                    // draw transparent background then the svg image
+                    ctx.clearRect(0, 0, size, size);
+                    ctx.drawImage(img, 0, 0, size, size);
+                    resolve(canvas.toDataURL("image/png"));
+                  } catch (err) {
+                    reject(err);
+                  }
+                };
+                img.onerror = (e) => reject(e);
+                img.src =
+                  "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+              } catch (err) {
+                reject(err);
+              }
+            });
+
+          // Choose a base pixel size for the check icon. We'll scale it to cell size later.
+          checkPngDataUrl = await createCheckPng(48);
+        } catch (err) {
+          // If icon rendering fails, fall back to vector lines (handled in didDrawCell fallback)
+          console.warn(
+            "Failed to render check icon PNG, will fallback to vector drawing:",
+            err
+          );
+          checkPngDataUrl = null;
+        }
+      }
 
       // Call autoTable (provided by plugin) via a safe cast to avoid any
       (
@@ -988,7 +1130,6 @@ const Product = ({
           }
         },
         didDrawCell: (data: unknown) => {
-          // Draw a compact vector check mark for Baik (col 3) or Rusak (col 4)
           try {
             const d = data as Record<string, unknown>;
             const col = (d.column as Record<string, unknown>)?.index as
@@ -1003,17 +1144,59 @@ const Product = ({
             ) {
               const w = (cell.width as number) || 0;
               const h = (cell.height as number) || 0;
-              const startX = ((cell.x as number) || 0) + w * 0.22;
-              const startY = ((cell.y as number) || 0) + h * 0.62;
-              const midX = ((cell.x as number) || 0) + w * 0.42;
-              const midY = ((cell.y as number) || 0) + h * 0.78;
-              const endX = ((cell.x as number) || 0) + w * 0.78;
-              const endY = ((cell.y as number) || 0) + h * 0.28;
+              // center the icon within the cell and make it a bit smaller than the cell
+              const imgSize = Math.min(w * 0.6, h * 0.6, 18);
+              const imgX = ((cell.x as number) || 0) + (w - imgSize) / 2;
+              const imgY = ((cell.y as number) || 0) + (h - imgSize) / 2;
 
-              doc.setDrawColor(0, 0, 0);
-              doc.setLineWidth(1.1);
-              doc.line(startX, startY, midX, midY);
-              doc.line(midX, midY, endX, endY);
+              if (checkPngDataUrl) {
+                try {
+                  // addImage expects dimensions in points (same units as doc)
+                  (doc as any).addImage(
+                    checkPngDataUrl,
+                    "PNG",
+                    imgX,
+                    imgY,
+                    imgSize,
+                    imgSize
+                  );
+                } catch (imgErr) {
+                  // fallback to vector drawing if addImage fails
+                  try {
+                    if ((doc as any).setLineCap)
+                      (doc as any).setLineCap("round");
+                    if ((doc as any).setLineJoin)
+                      (doc as any).setLineJoin("round");
+                  } catch {}
+                  doc.setDrawColor(0, 0, 0);
+                  doc.setLineWidth(1.6);
+                  const startX = ((cell.x as number) || 0) + w * 0.22;
+                  const startY = ((cell.y as number) || 0) + h * 0.62;
+                  const midX = ((cell.x as number) || 0) + w * 0.42;
+                  const midY = ((cell.y as number) || 0) + h * 0.78;
+                  const endX = ((cell.x as number) || 0) + w * 0.78;
+                  const endY = ((cell.y as number) || 0) + h * 0.28;
+                  doc.line(startX, startY, midX, midY);
+                  doc.line(midX, midY, endX, endY);
+                }
+              } else {
+                // fallback vector drawing when PNG is not available
+                try {
+                  if ((doc as any).setLineCap) (doc as any).setLineCap("round");
+                  if ((doc as any).setLineJoin)
+                    (doc as any).setLineJoin("round");
+                } catch {}
+                doc.setDrawColor(0, 0, 0);
+                doc.setLineWidth(1.6);
+                const startX = ((cell.x as number) || 0) + w * 0.22;
+                const startY = ((cell.y as number) || 0) + h * 0.62;
+                const midX = ((cell.x as number) || 0) + w * 0.42;
+                const midY = ((cell.y as number) || 0) + h * 0.78;
+                const endX = ((cell.x as number) || 0) + w * 0.78;
+                const endY = ((cell.y as number) || 0) + h * 0.28;
+                doc.line(startX, startY, midX, midY);
+                doc.line(midX, midY, endX, endY);
+              }
             }
           } catch {
             // ignore drawing errors
@@ -1050,13 +1233,19 @@ const Product = ({
             "November",
             "Desember",
           ];
-          const printedDate = `${now.getDate()} ${
-            monthNames[now.getMonth()]
-          } ${now.getFullYear()}`;
+          // Use detected city (if any) and month name for printed date, matching sample: "City, Month Year"
+          const cityForPrint = (selectedPrintCity && String(selectedPrintCity).trim()) || (printLocationCity && String(printLocationCity).trim()) || "";
+          const printedDate = `${cityForPrint}${cityForPrint ? ", " : ""}${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
-          // LEFT: label "Mengetahui Kabeng <JURUSAN>" on one line and signature line with name under it
+          // LEFT: printed date above the signature block, then label "Mengetahui Kabeng <JURUSAN>" and signature line with name under it
           const leftX = 40; // left margin
           const labelY = pageHeight - 140; // label above the signature line
+          const printedDateY = labelY - 22; // date sits above the label
+          // draw printed date near the left signature area (city, month year)
+          try {
+            doc.setFontSize(10);
+            doc.text(printedDate, leftX, printedDateY, { align: "left" });
+          } catch {}
           const sigLineYLeft = pageHeight - 90; // signature line position
           const sigNameYLeft = pageHeight - 60; // printed name below the line
 
@@ -1068,14 +1257,7 @@ const Product = ({
             : `Mengetahui Kabeng`;
           doc.text(labelLine, leftX, labelY, { align: "left" });
 
-          // Print current date on the bottom-right corner
-          try {
-            const dateRightX = pageWidth - 40;
-            const dateRightY = pageHeight - 170; // align with top of signature block
-            doc.text(printedDate, dateRightX, dateRightY, { align: "right" });
-          } catch (dateRightErr) {
-            console.warn("Failed to draw printed date on right:", dateRightErr);
-          }
+          // (date now printed at top-right in header)
 
           // draw left signature line
           try {
@@ -1091,6 +1273,25 @@ const Product = ({
             doc.text(String(signatureName), leftX + 10, sigNameYLeft, {
               align: "left",
             });
+            // If NIP provided, print it below the name with 'NIP.' prefix to match sample
+            try {
+              const signatureNip = (printReporterNip || "").toString().trim();
+              if (signatureNip) {
+                doc.setFontSize(9);
+                doc.text(
+                  `NIP. ${String(signatureNip)}`,
+                  leftX + 10,
+                  sigNameYLeft + 14,
+                  {
+                    align: "left",
+                  }
+                );
+                // restore font size
+                doc.setFontSize(10);
+              }
+            } catch {
+              // ignore NIP drawing errors
+            }
           }
 
           // (right-side signature block removed — left-side block is used for "Mengetahui Kabeng")
@@ -1107,9 +1308,12 @@ const Product = ({
       const safeJurusan = (selectedPrintJurusan || "jurusan")
         .replace(/\s+/g, "-")
         .toLowerCase();
-      const fileName = `laporan-${safeJurusan}-${
-        selectedPrintMonth || String(new Date().getMonth() + 1)
-      }.pdf`;
+      const safeSchool = (
+        selectedPrintMonth || String(new Date().getFullYear())
+      )
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+      const fileName = `laporan-${safeJurusan}-${safeSchool}.pdf`;
       doc.save(fileName);
     } catch (pdfErr) {
       console.error(
@@ -1121,15 +1325,40 @@ const Product = ({
       const generateReportHtml = (
         jurusanTitle: string,
         monthLabel: string,
+        laborLabel: string,
+        academicYear: string,
         productsList: ExportProduct[],
-        signature: string
+        signatureName: string,
+        signatureNip: string
       ) => {
         const now = new Date();
-        const header = `<div style="text-align:center;margin-bottom:12px;line-height:1.1"><h3 style="margin:0;padding:0;">DAFTAR INVENTARIS LABOR ${escapeHtml(
+        const monthNames = [
+          "Januari",
+          "Februari",
+          "Maret",
+          "April",
+          "Mei",
+          "Juni",
+          "Juli",
+          "Agustus",
+          "September",
+          "Oktober",
+          "November",
+          "Desember",
+        ];
+
+        const cityForPrintHtml = (selectedPrintCity && String(selectedPrintCity).trim()) || (printLocationCity && String(printLocationCity).trim()) || "";
+        const printedDateHtml = `${escapeHtml(cityForPrintHtml)}${cityForPrintHtml ? ", " : ""}${escapeHtml(monthNames[now.getMonth()])} ${now.getFullYear()}`;
+
+        const header = `<div style="position:relative;margin-bottom:12px;line-height:1.1"><div style="text-align:center"><h3 style="margin:0;padding:0;">DAFTAR INVENTARIS LABOR JURUSAN ${escapeHtml(
           jurusanTitle.toUpperCase()
-        )}</h3><div style="font-weight:700">SMKN 4 PAYAKUMBUH</div><div style="margin-top:4px">TP.${escapeHtml(
-          monthLabel || String(now.getFullYear())
-        )}</div></div>`;
+        )}</h3><div style="font-weight:700">${escapeHtml(
+          (monthLabel && monthLabel.toString().trim()) || ""
+        )}</div><div style="margin-top:4px">${escapeHtml(
+          laborLabel || ""
+        )}</div><div style="margin-top:2px;font-size:12px">${escapeHtml(
+          academicYear || ""
+        )}</div></div></div>`;
 
         const tableRows = productsList
           .map((p: ExportProduct, idx: number) => {
@@ -1176,26 +1405,12 @@ const Product = ({
           </tbody>
         </table>`;
 
-        const printedDate = `${now.getDate()} ${
-          [
-            "Januari",
-            "Februari",
-            "Maret",
-            "April",
-            "Mei",
-            "Juni",
-            "Juli",
-            "Agustus",
-            "September",
-            "Oktober",
-            "November",
-            "Desember",
-          ][now.getMonth()]
-        } ${now.getFullYear()}`;
-
-        const signatureHtml = signature
+        const signatureHtml = signatureName
           ? `
             <div style="position:fixed;left:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;">
+              <div style="margin-bottom:6px;">${escapeHtml(
+                printedDateHtml
+              )}</div>
               <div style="margin-bottom:6px;">${escapeHtml(
                 (jurusanTitle || "").toString().trim()
                   ? `Mengetahui Kabeng ${escapeHtml(
@@ -1204,13 +1419,17 @@ const Product = ({
                   : `Mengetahui Kabeng`
               )}</div>
               <div style="width:220px;border-bottom:1px solid #000;margin-bottom:8px;margin-top:18px;"></div>
-              <div><strong>${escapeHtml(signature)}</strong></div>
-            </div>
-            <div style="position:fixed;right:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;text-align:right;">
-              ${escapeHtml(printedDate)}
+              <div><strong>${escapeHtml(signatureName)}</strong></div>
+              ${
+                signatureNip
+                  ? `<div style="margin-top:4px;">NIP. ${escapeHtml(
+                      signatureNip
+                    )}</div>`
+                  : ""
+              }
             </div>
           `
-          : "";
+          : `<div style="position:fixed;left:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;">${printedDateHtml}</div>`;
 
         return `<!doctype html><html><head><meta charset="utf-8"><title>Report ${escapeHtml(
           jurusanTitle
@@ -1229,11 +1448,15 @@ const Product = ({
       };
 
       if (typeof window !== "undefined") {
+        const signatureNip = (printReporterNip || "").toString().trim();
         const html = generateReportHtml(
           selectedPrintJurusan || "",
           selectedPrintMonth || "",
+          selectedPrintLabor || "",
+          selectedAcademicYear || "",
           products,
-          signatureName
+          signatureName,
+          signatureNip
         );
         const w = window.open("", "_blank", "width=900,height=700");
         if (!w) {
@@ -1665,8 +1888,8 @@ const Product = ({
 
         {/* Print Modal */}
         {showPrintModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50 overflow-auto z-50 flex items-start justify-center py-8">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Pilih Jurusan untuk Cetak laporan
@@ -1717,27 +1940,86 @@ const Product = ({
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bulan:
+                  Nama Sekolah:
                 </label>
-                <select
-                  value={selectedPrintMonth}
-                  onChange={(e) => setSelectedPrintMonth(e.target.value)}
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="text"
+                    value={selectedPrintMonth}
+                    onChange={(e) => {
+                      // allow only letters, numbers and spaces
+                      const filtered = e.target.value.replace(
+                        /[^A-Za-z0-9 ]/g,
+                        ""
+                      );
+                      setSelectedPrintMonth(filtered);
+                    }}
+                    onPaste={(e) => {
+                      const paste =
+                        (e.clipboardData && e.clipboardData.getData("text")) ||
+                        "";
+                      const filtered = paste.replace(/[^A-Za-z0-9 ]/g, "");
+                      e.preventDefault();
+                      setSelectedPrintMonth((prev) => `${prev}${filtered}`);
+                    }}
+                    placeholder="Masukkan nama sekolah (angka, huruf, spasi)"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Kota (opsional, akan muncul di sebelah tanggal):
+                </label>
+                <input
+                  type="text"
+                  inputMode="text"
+                  value={selectedPrintCity}
+                  onChange={(e) => {
+                    // allow letters, numbers, spaces, dot and hyphen
+                    const filtered = e.target.value.replace(/[^A-Za-z0-9 .-]/g, "");
+                    setSelectedPrintCity(filtered);
+                  }}
+                  onPaste={(e) => {
+                    const paste = (e.clipboardData && e.clipboardData.getData("text")) || "";
+                    const filtered = paste.replace(/[^A-Za-z0-9 .-]/g, "");
+                    e.preventDefault();
+                    setSelectedPrintCity((prev) => `${prev}${filtered}`);
+                  }}
+                  placeholder="Masukkan nama kota (contoh: Payakumbuh)"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">-- Pilih Bulan --</option>
-                  <option value="01">Januari</option>
-                  <option value="02">Februari</option>
-                  <option value="03">Maret</option>
-                  <option value="04">April</option>
-                  <option value="05">Mei</option>
-                  <option value="06">Juni</option>
-                  <option value="07">Juli</option>
-                  <option value="08">Agustus</option>
-                  <option value="09">September</option>
-                  <option value="10">Oktober</option>
-                  <option value="11">November</option>
-                  <option value="12">Desember</option>
-                </select>
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tahun Ajaran:
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="text"
+                    value={selectedAcademicYear}
+                    onChange={(e) => {
+                      // allow only digits, spaces and slash (/)
+                      const filtered = e.target.value.replace(
+                        /[^A-Za-z0-9,.\/ ]/g,
+                        ""
+                      );
+                      setSelectedAcademicYear(filtered);
+                    }}
+                    onPaste={(e) => {
+                      const paste =
+                        (e.clipboardData && e.clipboardData.getData("text")) ||
+                        "";
+                      const filtered = paste.replace(/[^A-Za-z0-9,.\/ ]/g, "");
+                      e.preventDefault();
+                      setSelectedAcademicYear((prev) => `${prev}${filtered}`);
+                    }}
+                    placeholder="Masukkan tahun ajaran, contoh: 2024/2025"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
               </div>
 
               <div className="mb-4">
@@ -1761,16 +2043,42 @@ const Product = ({
               {/* Nama yang mencetak laporan (reporter) */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  NIP (hanya angka dan titik):
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={printReporterNip}
+                  onChange={(e) => {
+                    // allow digits, dots, and spaces
+                    const filtered = e.target.value.replace(/[^0-9. ]/g, "");
+                    setPrintReporterNip(filtered);
+                  }}
+                  onPaste={(e) => {
+                    const paste =
+                      (e.clipboardData && e.clipboardData.getData("text")) ||
+                      "";
+                    const filtered = paste.replace(/[^0-9. ]/g, "");
+                    e.preventDefault();
+                    setPrintReporterNip((prev) => `${prev}${filtered}`);
+                  }}
+                  placeholder="Masukkan NIP (contoh: 19870501.200501.1)"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nama Kabeng yang mencetak laporan:
                 </label>
                 <input
                   type="text"
                   inputMode="text"
-                  pattern="[A-Za-z0-9]+"
+                  pattern="[A-Za-z0-9 ]+"
                   value={printReporterName}
                   onChange={(e) => {
+                    // allow letters, numbers and spaces
                     const filtered = e.target.value.replace(
-                      /[^A-Za-z0-9]/g,
+                      /[^A-Za-z0-9,. ]/g,
                       ""
                     );
                     setPrintReporterName(filtered);
@@ -1779,11 +2087,11 @@ const Product = ({
                     const paste =
                       (e.clipboardData && e.clipboardData.getData("text")) ||
                       "";
-                    const filtered = paste.replace(/[^A-Za-z0-9]/g, "");
+                    const filtered = paste.replace(/[^A-Za-z0-9,. ]/g, "");
                     e.preventDefault();
                     setPrintReporterName((prev) => `${prev}${filtered}`);
                   }}
-                  placeholder="Masukkan Nama Anda (hanya huruf dan angka)"
+                  placeholder="Masukkan Nama Anda (hanya huruf, angka, dan spasi)"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -1854,7 +2162,7 @@ const Product = ({
                   <span className="font-medium">⚠️ Peringatan:</span>
                   <br />
                   Apakah Anda yakin mencetak laporan ini? Mohon cek lagi jika
-                  tidak yakin.
+                  kurang yakin.
                 </p>
               </div>
 

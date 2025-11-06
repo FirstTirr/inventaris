@@ -7,7 +7,7 @@ import NoInspect from "@/components/NoInspect";
 export default function Home() {
   return (
     <AuthGuard>
-      <NoInspect />
+      {/* <NoInspect /> */}
       <NavAdmin />
     </AuthGuard>
   );
