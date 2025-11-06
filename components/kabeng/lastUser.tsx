@@ -120,7 +120,7 @@ export default function LastUser() {
         const j = await res.json();
         if (j && Array.isArray(j.data))
           setJurusanList(j.data.map((x: { jurusan: string }) => x.jurusan));
-      } catch (e) {
+      } catch {
         // ignore
       }
     })();

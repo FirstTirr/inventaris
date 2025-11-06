@@ -237,7 +237,7 @@ const LaporanKerusakanBarang = React.memo(() => {
         try {
           localStorage.removeItem("laporan-products-cache");
           localStorage.removeItem("laporan-products-cache-time");
-        } catch (e) {
+        } catch {
           // ignore
         }
         try {

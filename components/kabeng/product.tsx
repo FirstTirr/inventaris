@@ -1129,6 +1129,7 @@ const Product = ({
             // ignore
           }
         },
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         didDrawCell: (data: unknown) => {
           try {
             const d = data as Record<string, unknown>;
@@ -1202,6 +1203,7 @@ const Product = ({
             // ignore drawing errors
           }
         },
+        /* eslint-enable @typescript-eslint/no-explicit-any */
       });
 
       // Add printed date (left) and signature block (right) on the last page

@@ -64,7 +64,7 @@ export default function NoInspect() {
         const open = widthDiff > 160 || heightDiff > 160;
         if (open && !last) setDetected(true);
         last = open;
-      } catch (e) {
+      } catch {
         // ignore
       }
     };
