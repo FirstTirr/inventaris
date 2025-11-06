@@ -1233,9 +1233,18 @@ const Product = ({
             "November",
             "Desember",
           ];
-          // Use detected city (if any) and month name for printed date, matching sample: "City, Month Year"
-          const cityForPrint = (selectedPrintCity && String(selectedPrintCity).trim()) || (printLocationCity && String(printLocationCity).trim()) || "";
-          const printedDate = `${cityForPrint}${cityForPrint ? ", " : ""}${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+          // Use detected city (if any) and month name for printed date, matching sample: "City, Month Year".
+          // Ensure we always have at least the Month Year so the date doesn't disappear.
+          const cityForPrint =
+            (selectedPrintCity && String(selectedPrintCity).trim()) ||
+            (printLocationCity && String(printLocationCity).trim()) ||
+            "";
+          const monthYear = `${
+            monthNames[now.getMonth()]
+          } ${now.getFullYear()}`;
+          const printedDate = cityForPrint
+            ? `${cityForPrint}, ${monthYear}`
+            : monthYear;
 
           // LEFT: printed date above the signature block, then label "Mengetahui Kabeng <JURUSAN>" and signature line with name under it
           const leftX = 40; // left margin
@@ -1243,9 +1252,16 @@ const Product = ({
           const printedDateY = labelY - 22; // date sits above the label
           // draw printed date near the left signature area (city, month year)
           try {
+            // Draw printed date above the left signature block. Use a readable font size
+            // and ensure the text is not empty.
             doc.setFontSize(10);
-            doc.text(printedDate, leftX, printedDateY, { align: "left" });
-          } catch {}
+            const safePrintedDate = String(printedDate || monthYear);
+            doc.text(safePrintedDate, leftX, printedDateY, { align: "left" });
+          } catch (dateErr) {
+            // If drawing the date fails, log for debugging but continue printing.
+            // eslint-disable-next-line no-console
+            console.warn("Failed to draw printed date:", dateErr);
+          }
           const sigLineYLeft = pageHeight - 90; // signature line position
           const sigNameYLeft = pageHeight - 60; // printed name below the line
 
@@ -1347,8 +1363,13 @@ const Product = ({
           "Desember",
         ];
 
-        const cityForPrintHtml = (selectedPrintCity && String(selectedPrintCity).trim()) || (printLocationCity && String(printLocationCity).trim()) || "";
-        const printedDateHtml = `${escapeHtml(cityForPrintHtml)}${cityForPrintHtml ? ", " : ""}${escapeHtml(monthNames[now.getMonth()])} ${now.getFullYear()}`;
+        const cityForPrintHtml =
+          (selectedPrintCity && String(selectedPrintCity).trim()) ||
+          (printLocationCity && String(printLocationCity).trim()) ||
+          "";
+        const printedDateHtml = `${escapeHtml(cityForPrintHtml)}${
+          cityForPrintHtml ? ", " : ""
+        }${escapeHtml(monthNames[now.getMonth()])} ${now.getFullYear()}`;
 
         const header = `<div style="position:relative;margin-bottom:12px;line-height:1.1"><div style="text-align:center"><h3 style="margin:0;padding:0;">DAFTAR INVENTARIS LABOR JURUSAN ${escapeHtml(
           jurusanTitle.toUpperCase()
@@ -1978,11 +1999,16 @@ const Product = ({
                   value={selectedPrintCity}
                   onChange={(e) => {
                     // allow letters, numbers, spaces, dot and hyphen
-                    const filtered = e.target.value.replace(/[^A-Za-z0-9 .-]/g, "");
+                    const filtered = e.target.value.replace(
+                      /[^A-Za-z0-9 .-]/g,
+                      ""
+                    );
                     setSelectedPrintCity(filtered);
                   }}
                   onPaste={(e) => {
-                    const paste = (e.clipboardData && e.clipboardData.getData("text")) || "";
+                    const paste =
+                      (e.clipboardData && e.clipboardData.getData("text")) ||
+                      "";
                     const filtered = paste.replace(/[^A-Za-z0-9 .-]/g, "");
                     e.preventDefault();
                     setSelectedPrintCity((prev) => `${prev}${filtered}`);
