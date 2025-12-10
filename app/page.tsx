@@ -1,728 +1,758 @@
 "use client";
 
-import Footer from "@/components/footer";
-import NoInspect from "@/components/NoInspect";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
+import {
+  FaUserShield,
+  FaUserTie,
+  FaChalkboardTeacher,
+  FaCamera,
+  FaFingerprint,
+  FaChartPie,
+  FaShieldAlt,
+  FaArrowRight,
+  FaBars,
+  FaTimes,
+  FaBolt,
+  FaClock,
+  FaMobileAlt,
+  FaDatabase,
+} from "react-icons/fa";
+import Footer from "@/components/footer";
+import { useTheme } from "@/components/theme-provider";
+import ThemeToggle from "@/components/theme-toggle";
 
 export default function Home() {
-  // Mobile menu toggle
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isLight } = useTheme();
 
-  // Simple AOS-like animation
   useEffect(() => {
-    const setInitialAOS = () => {
-      const elements = document.querySelectorAll<HTMLElement>("[data-aos]");
-      elements.forEach((el) => {
-        const type = el.getAttribute("data-aos");
-        el.style.opacity = "0";
-        if (type === "fade-up") el.style.transform = "translateY(40px)";
-        else if (type === "fade-down") el.style.transform = "translateY(-40px)";
-        else if (type === "fade-right")
-          el.style.transform = "translateX(-40px)";
-        else if (type === "fade-left") el.style.transform = "translateX(40px)";
-        else if (type === "zoom-in") el.style.transform = "scale(0.8)";
-      });
-    };
-
-    const animateOnScroll = () => {
-      const elements = document.querySelectorAll<HTMLElement>("[data-aos]");
-      const windowHeight = window.innerHeight;
-      elements.forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < windowHeight - 50) {
-          const type = el.getAttribute("data-aos");
-          const duration = Number(el.getAttribute("data-aos-duration") || 800);
-          const delay = Number(el.getAttribute("data-aos-delay") || 0);
-          el.style.transition = `all ${duration}ms cubic-bezier(.4,0,.2,1) ${delay}ms`;
-          el.style.opacity = "1";
-          if (type === "fade-up" || type === "fade-down")
-            el.style.transform = "translateY(0)";
-          else if (type === "fade-right" || type === "fade-left")
-            el.style.transform = "translateX(0)";
-          else if (type === "zoom-in") el.style.transform = "scale(1)";
-        }
-      });
-    };
-
-    setInitialAOS();
-    animateOnScroll();
-    window.addEventListener("scroll", animateOnScroll);
-    return () => window.removeEventListener("scroll", animateOnScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <div className="font-sans text-gray-900 bg-gradient-to-br from-[#e1e7f6] via-[#f8f9fe] to-[#698ae8] min-h-screen">
-      {/* Navbar */}
-      <NoInspect />
+    <div
+      className={`min-h-screen transition-colors duration-300 ${
+        isLight ? "bg-slate-50 text-slate-900" : "bg-slate-950 text-white"
+      } selection:bg-cyan-500 selection:text-slate-900 overflow-x-hidden font-sans`}
+    >
+      {/* Background Elements */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div
+          className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] ${
+            isLight ? "bg-blue-400/20" : "bg-blue-600/20"
+          }`}
+        />
+        <div
+          className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] ${
+            isLight ? "bg-cyan-400/20" : "bg-cyan-600/20"
+          }`}
+        />
+        <div
+          className={`absolute top-[40%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full blur-[100px] ${
+            isLight ? "bg-violet-400/10" : "bg-violet-600/10"
+          }`}
+        />
+      </div>
+
+      {/* Floating Navbar */}
       <nav
-        className="sticky top-0 z-50 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-lg border border-white/20 shadow-lg"
-        data-aos="fade-down"
-        data-aos-duration="800"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? "py-4" : "py-6"
+        }`}
       >
-        <header className="flex justify-between items-center px-6 md:px-20 py-3">
-          {/* Logo */}
-          <div className="flex items-center text-[#353ba7] font-bold text-xl">
-            <span className="mr-2">✦</span>
-            <img
-              src="/tefa.jpg"
-              alt="Logo"
-              className="h-16 w-16 rounded-full"
-            />
-          </div>
-
-          {/* Desktop Menu */}
-          <ul className="hidden md:flex space-x-10 ml-20 font-medium">
-            <li>
-              <a href="#Home" className="hover:text-[#353ba7]">
-                Home
-              </a>
-            </li>
-            <li>
-              <a href="#About" className="hover:text-[#353ba7]">
-                About
-              </a>
-            </li>
-            <li>
-              <a href="#Features" className="hover:text-[#353ba7]">
-                Fitur
-              </a>
-            </li>
-          </ul>
-
-          {/* Desktop Buttons */}
-          <div className="hidden md:flex space-x-4">
-            <a
-              href="/login"
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#353ba7] via-[#698ae8] to-[#2d4286] text-white font-bold shadow-lg hover:scale-105 hover:shadow-xl transition duration-300 border-2 border-[#353ba7]"
-            >
-              Login
-            </a>
-          </div>
-
-          {/* Mobile Hamburger */}
-          <button
-            className="md:hidden text-2xl ml-4"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label="Toggle menu"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className={`mx-auto backdrop-blur-xl border rounded-2xl px-6 py-3 flex items-center justify-between transition-all duration-300 ${
+              isLight
+                ? "bg-white/80 border-slate-200 shadow-sm"
+                : "bg-slate-900/80 border-white/10"
+            } ${scrolled ? "shadow-lg shadow-cyan-500/5" : ""}`}
           >
-            ☰
-          </button>
-        </header>
+            <div className="flex items-center gap-3">
+              <div className="relative w-10 h-10 flex items-center justify-center bg-linear-to-br from-cyan-500 to-blue-600 rounded-xl shadow-lg shadow-cyan-500/20">
+                <img
+                  src="/tefa.jpg"
+                  alt="logo"
+                  className="w-10 h-10 rounded-xl shadow-lg shadow-indigo-500/20"
+                />
+              </div>
+              <span
+                className={`text-xl font-bold tracking-tight ${
+                  isLight ? "text-slate-800" : "text-white"
+                }`}
+              >
+                Inventaris<span className="text-cyan-400"> Labor</span>
+              </span>
+            </div>
 
-        {/* Mobile Menu */}
-        {mobileOpen && (
-          <ul className="flex flex-col space-y-4 px-6 pb-6 font-medium bg-white/80 backdrop-blur-md border-t">
-            <li>
-              <a
-                href="#Home"
-                className="hover:text-[#353ba7]"
-                onClick={() => setMobileOpen(false)}
-              >
-                Home
-              </a>
-            </li>
-            <li>
-              <a
-                href="#About"
-                className="hover:text-[#353ba7]"
-                onClick={() => setMobileOpen(false)}
-              >
-                About
-              </a>
-            </li>
-            <li>
-              <a
-                href="#Features"
-                className="hover:text-[#353ba7]"
-                onClick={() => setMobileOpen(false)}
-              >
-                Features
-              </a>
-            </li>
-            <li>
-              <a
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center gap-8">
+              {["Tentang", "Fitur", "Cara Kerja", "Akses"].map((item) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase().replace(" ", "-")}`}
+                  className={`text-sm font-medium transition-colors relative group ${
+                    isLight
+                      ? "text-slate-600 hover:text-cyan-600"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  {item}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 transition-all group-hover:w-full" />
+                </a>
+              ))}
+            </div>
+
+            {/* CTA & Theme Toggle */}
+            <div className="hidden md:flex items-center gap-4">
+              <ThemeToggle />
+              <Link
                 href="/login"
-                className="block w-full text-center px-6 py-2 rounded-lg bg-gradient-to-r from-[#353ba7] via-[#698ae8] to-[#2d4286] text-white font-bold shadow-lg hover:scale-105 hover:shadow-xl transition duration-300 border-2 border-[#353ba7]"
-                onClick={() => setMobileOpen(false)}
+                className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] ${
+                  isLight
+                    ? "bg-slate-900 text-white hover:bg-slate-800"
+                    : "bg-white text-slate-900 hover:bg-cyan-50"
+                }`}
               >
                 Login
+              </Link>
+            </div>
+
+            {/* Mobile Toggle */}
+            <button
+              className={`md:hidden p-2 ${
+                isLight ? "text-slate-800" : "text-white"
+              }`}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div
+            className={`absolute top-full left-4 right-4 mt-2 p-4 backdrop-blur-xl border rounded-2xl flex flex-col gap-4 md:hidden ${
+              isLight
+                ? "bg-white/95 border-slate-200 shadow-xl"
+                : "bg-slate-900/95 border-white/10"
+            }`}
+          >
+            {["Tentang", "Fitur", "Cara Kerja", "Akses"].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase().replace(" ", "-")}`}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`font-medium ${
+                  isLight
+                    ? "text-slate-600 hover:text-cyan-600"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                {item}
               </a>
-            </li>
-          </ul>
+            ))}
+            <div className="flex items-center justify-between border-t pt-4 border-slate-200/10">
+              <span
+                className={`text-sm font-medium ${
+                  isLight ? "text-slate-600" : "text-slate-400"
+                }`}
+              >
+                Theme
+              </span>
+              <ThemeToggle />
+            </div>
+            <Link
+              href="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-center py-3 bg-cyan-500 text-white rounded-xl font-bold"
+            >
+              Login
+            </Link>
+          </div>
         )}
       </nav>
 
       {/* Hero Section */}
-      <HeroWithSlider />
-
-      {/* About — redesigned for comfort and smoothness */}
-      <section
-        id="About"
-        className="min-h-[70vh] flex items-center justify-center px-6 md:px-20 py-16 bg-white"
-      >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          {/* Content */}
+      <section className="relative pt-40 pb-20 px-4 sm:px-6 lg:px-8 z-10">
+        <div className="max-w-5xl mx-auto text-center">
           <div
-            className="space-y-6"
-            data-aos="fade-right"
-            data-aos-duration="900"
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-cyan-300 text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in-up ${
+              isLight
+                ? "bg-white/50 border-slate-200 text-cyan-600"
+                : "bg-white/5 border-white/10 text-cyan-300"
+            }`}
           >
-            <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-              Solusi Cerdas untuk
-              <br />
-              <span className="text-[#353ba7]">
-                Memonitoring Fasilitas Labor
-              </span>
-            </h3>
-
-            <p className="text-gray-600 text-lg leading-relaxed max-w-xl">
-              Inventaris Labor memudahkan Anda melihat penggunaan alat, mencatat
-              laporan kerusakan, dan memonitor stok secara real-time. Dirancang
-              untuk kepala bengkel, guru produktif, dan waka sarana — cepat,
-              mudah, dan dapat dipercaya.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#698ae8] to-[#353ba7] text-white flex items-center justify-center text-lg">
-                  ⚡
-                </div>
-                <div>
-                  <h4 className="font-semibold">Realtime Monitoring</h4>
-                  <p className="text-sm text-gray-500">
-                    Laporan dan stok terlihat langsung tanpa repot.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-green-400 to-cyan-500 text-white flex items-center justify-center text-lg">
-                  🛡
-                </div>
-                <div>
-                  <h4 className="font-semibold">Akses Terkontrol</h4>
-                  <p className="text-sm text-gray-500">
-                    Peran terpisah untuk Kabeng, Guru, dan Waka sarana.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 mt-6">
-              <a
-                href="#Features"
-                className="inline-block px-6 py-3 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] text-white font-semibold transition"
-              >
-                Pelajari Fitur
-              </a>
-              <a
-                href="/login"
-                className="inline-block px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
-              >
-                Masuk
-              </a>
-            </div>
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            web-based labor inventory
           </div>
 
-          {/* Image with floating stat card */}
-          <div
-            className="relative flex justify-center items-center"
-            data-aos="fade-left"
-            data-aos-duration="900"
+          <h1
+            className={`text-5xl sm:text-7xl font-extrabold tracking-tight mb-8 leading-tight ${
+              isLight ? "text-slate-900" : "text-white"
+            }`}
           >
-            <div className="w-full max-w-lg rounded-xl overflow-hidden shadow-2xl transform transition-transform hover:scale-[1.01]">
-              <img
-                src="/tefa.jpg"
-                alt="Siswa PKL"
-                className="w-full h-[420px] object-cover object-center"
-              />
-            </div>
+            Inventaris Labor <br />
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-blue-500 to-purple-600 animate-gradient-x">
+              Berbasis Website
+            </span>
+          </h1>
 
-            <div className="absolute -bottom-6 left-6 bg-white rounded-xl p-4 shadow-lg border border-gray-100 w-[260px]">
-              <div className="text-xs text-gray-500">Ringkasan</div>
-              <div className="flex items-center justify-between mt-3">
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-[#353ba7]">
-                    500+
-                  </div>
-                  <div className="text-xs text-gray-500">Barang</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-[#353ba7]">
-                    10+
-                  </div>
-                  <div className="text-xs text-gray-500">Jurusan</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-[#353ba7]">
-                    24/7
-                  </div>
-                  <div className="text-xs text-gray-500">Akses</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section (converted to TSX) */}
-      <section
-        id="Features"
-        className="min-h-screen flex flex-col items-center justify-center px-6 md:px-20 py-20 bg-gradient-to-br from-[#f8f9fe] via-[#e1e7f6] to-[#698ae8]/20"
-      >
-        <div className="max-w-7xl mx-auto w-full">
-          {/* Title */}
-          <div
-            className="text-center mb-12"
-            data-aos="fade-up"
-            data-aos-duration="800"
+          <p
+            className={`text-lg sm:text-xl mb-12 max-w-2xl mx-auto leading-relaxed ${
+              isLight ? "text-slate-600" : "text-slate-400"
+            }`}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Fitur Utama <span className="text-[#353ba7]">Inventaris</span>
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Platform lengkap untuk memonitoring dan mengelola fasilitas labor
-              Anda
-            </p>
-          </div>
+            Revolusi sistem inventaris sekolah dengan teknologi Website yang
+            akurat, cepat, dan aman. Hilangkan Manipulasi Data fasilitas Labor
+          </p>
 
-          {/* Grid 1 */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8"
-            data-aos="zoom-in"
-            data-aos-duration="500"
-          >
-            {/* Feature 1 */}
-            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-300 text-white text-2xl mb-4">
-                ⚡
-              </div>
-              <h3 className="text-lg font-bold mb-2">Cetak Laporan</h3>
-              <p className="text-gray-600 text-sm">
-                Setiap kepala bengkel bisa mencetak laporan barang sesuai dengan
-                jurusan nya masing masing
-              </p>
-            </div>
-            {/* Feature 2 */}
-            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-cyan-500 text-white text-2xl mb-4">
-                🛡
-              </div>
-              <h3 className="text-lg font-bold mb-2">Laporan Kerusakan</h3>
-              <p className="text-gray-600 text-sm">
-                Guru mapel produktif bisa melaporkan barang yang rusak kepada
-                kepala bengkel
-              </p>
-            </div>
-            {/* Feature 3 */}
-            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white text-2xl mb-4">
-                📊
-              </div>
-              <h3 className="text-lg font-bold mb-2">
-                Pemantauan Langsung Oleh Kepala Sekolah
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Kepala Sekolah bisa memantau atau melihat barang yang ada di
-                semua jurusan dan semua labor yang ada
-              </p>
-            </div>
-          </div>
-
-          {/* Grid 2 */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12"
-            data-aos="zoom-in"
-            data-aos-duration="500"
-          >
-            {/* Feature 4 */}
-            <div className="bg-white rounded-2xl shadow-md p-6 text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-400 to-blue-500 text-white text-2xl mb-4">
-                👥
-              </div>
-              <h3 className="text-lg font-bold mb-2">Pemantauan Waka Sarana</h3>
-              <p className="text-gray-600 text-sm">
-                Waka Sarana Prasarana juga bisa memantau atau melihat barang
-                yang ada di semua jurusan dan semua labor yang ada
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <Footer />
-    </div>
-  );
-}
-
-function HeroWithSlider() {
-  const images = [
-    { src: "/homepagelaptop.jpg", title: "login page Inventaris" },
-    { src: "/inv-kabeng.png", title: "Dashboard Kabeng" },
-    { src: "/laporan-guru.png", title: "Laporan Guru" },
-  ];
-
-  type Slide = { src: string; title: string };
-  const [slides, setSlides] = useState<Slide[]>([]);
-  const [current, setCurrent] = useState(1);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const isAnimatingRef = useRef(false);
-  const ignoreNextEffectRef = useRef(false);
-  const intervalRef = useRef<number | null>(null);
-
-  // build slides with clones [last, ...images, first]
-  useEffect(() => {
-    setSlides([images[images.length - 1], ...images, images[0]]);
-  }, []);
-
-  // initial position after slides are set
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track || slides.length === 0) return;
-    const slidePercent = 100 / slides.length;
-    // set to first real slide without animation
-    track.style.transition = "none";
-    track.style.transform = `translateX(-${slidePercent}%)`;
-    setCurrent(1);
-  }, [slides]);
-
-  // auto-slide
-  useEffect(() => {
-    if (slides.length === 0) return;
-    intervalRef.current = window.setInterval(() => {
-      if (isAnimatingRef.current) return;
-      isAnimatingRef.current = true;
-      setCurrent((c) => c + 1);
-    }, 4000);
-    return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    };
-  }, [slides]);
-
-  // apply transform when current changes
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track || slides.length === 0) return;
-    const slidePercent = 100 / slides.length;
-    // if we are about to snap (ignoreNextEffectRef is true) don't animate here
-    if (ignoreNextEffectRef.current) {
-      // next effect should be ignored once
-      ignoreNextEffectRef.current = false;
-      return;
-    }
-    track.style.transition = "transform 0.5s";
-    track.style.transform = `translateX(-${current * slidePercent}%)`;
-  }, [current, slides]);
-
-  const handleTransitionEnd = () => {
-    const track = trackRef.current;
-    if (!track || slides.length === 0) return;
-    // finished an animated move
-    isAnimatingRef.current = false;
-
-    // if we're at a cloned slide, snap without animation to the real one
-    if (current === slides.length - 1) {
-      // clone of first -> jump to real first (index 1)
-      const slidePercent = 100 / slides.length;
-      ignoreNextEffectRef.current = true;
-      track.style.transition = "none";
-      track.style.transform = `translateX(-${1 * slidePercent}%)`;
-      setCurrent(1);
-    } else if (current === 0) {
-      // clone of last -> jump to last real
-      const lastReal = slides.length - 2;
-      const slidePercent = 100 / slides.length;
-      ignoreNextEffectRef.current = true;
-      track.style.transition = "none";
-      track.style.transform = `translateX(-${lastReal * slidePercent}%)`;
-      setCurrent(lastReal);
-    }
-  };
-
-  const prev = () => {
-    if (isAnimatingRef.current) return;
-    isAnimatingRef.current = true;
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    setCurrent((c) => c - 1);
-  };
-
-  const next = () => {
-    if (isAnimatingRef.current) return;
-    isAnimatingRef.current = true;
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    setCurrent((c) => c + 1);
-  };
-
-  return (
-    <section
-      id="Home"
-      className="min-h-screen flex flex-col md:flex-row justify-between items-center px-6 md:px-20 py-12 md:py-16 space-y-12 md:space-y-0 md:space-x-16"
-    >
-      {/* Left */}
-      <div
-        className="flex-1 max-w-2xl"
-        data-aos="fade-right"
-        data-aos-duration="1000"
-      >
-        <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-8">
-          <span className="bg-gradient-to-r from-[#698ae8] via-[#353ba7] to-[#2d4286] bg-clip-text text-transparent">
-            Monitoring Fasilitas
-          </span>
-          <br />
-          Labor Anda Dengan Website Inventaris
-        </h1>
-        <p className="text-base md:text-lg text-gray-600 mb-10 leading-relaxed">
-          Anda bisa melihat penggunaan, laporan kerusakan, dan barang apa saja
-          yang tersedia di labor, website ini memudahkan anda untuk memantau,
-          dan mencatat fasilitas labor anda
-        </p>
-        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-          <a
-            href="/login"
-            className="px-8 py-4 rounded-lg bg-[#353ba7] hover:bg-[#2d4286] transition duration-300 transform hover:scale-105 hover:shadow-lg text-white font-semibold text-center"
-          >
-            Mulai Sekarang
-          </a>
-        </div>
-
-        {/* Quick stats under hero paragraph */}
-        <div className="mt-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div className="flex flex-col items-start sm:items-center gap-1">
-              <div className="text-2xl md:text-3xl font-bold text-[#2563EB]">
-                1000+
-              </div>
-              <div className="text-sm text-gray-500">Barang</div>
-            </div>
-
-            <div className="flex flex-col items-start sm:items-center gap-1">
-              <div className="text-2xl md:text-3xl font-bold text-green-500">
-                10+
-              </div>
-              <div className="text-sm text-gray-500">jurusan</div>
-            </div>
-
-            <div className="flex flex-col items-start sm:items-center gap-1">
-              <div className="text-2xl md:text-3xl font-bold text-pink-600">
-                92%
-              </div>
-              <div className="text-sm text-gray-500">Tingkat Kepuasan</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right: Slider */}
-      <div className="flex-1 flex justify-center md:justify-end">
-        <div className="relative w-full max-w-xl md:max-w-3xl">
-          <div className="overflow-hidden rounded-xl shadow-lg">
-            <div
-              className="flex"
-              ref={trackRef}
-              style={{ width: `${slides.length * 100}%` }}
-              onTransitionEnd={handleTransitionEnd}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Link
+              href="#cara-kerja"
+              className="group relative px-8 py-4 bg-cyan-500 text-slate-900 rounded-2xl font-bold text-lg overflow-hidden transition-all hover:scale-105"
             >
-              {slides.map((img, idx) => (
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              <span className="relative flex items-center gap-2">
+                <FaCamera /> Pelajari Lebih Lanjut
+              </span>
+            </Link>
+            <a
+              href="#akses"
+              className={`px-8 py-4 border rounded-2xl font-bold text-lg transition-all hover:scale-105 backdrop-blur-sm ${
+                isLight
+                  ? "bg-white/50 border-slate-200 text-slate-700 hover:bg-white"
+                  : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+              }`}
+            >
+              Portal Akses
+            </a>
+          </div>
+
+          {/* Stats Strip */}
+          <div
+            className={`mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 border-t pt-12 ${
+              isLight ? "border-slate-200" : "border-white/10"
+            }`}
+          >
+            {[
+              { label: "Akurasi Model", value: "99.9%" },
+              { label: "Kecepatan Scan", value: "< 1 Detik" },
+              { label: "Siswa Terdaftar", value: "1,200+" },
+              { label: "Uptime Server", value: "24/7" },
+            ].map((stat, idx) => (
+              <div key={idx} className="text-center">
                 <div
-                  key={idx}
-                  className="flex-shrink-0 flex flex-col items-center"
-                  style={{ width: `${100 / slides.length}%` }}
+                  className={`text-3xl font-bold mb-1 ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}
                 >
-                  <div className="relative w-full">
-                    <img
-                      src={img.src}
-                      alt={`Gambar ${idx + 1}`}
-                      className="w-full h-[280px] md:h-[360px] lg:h-[420px] object-cover rounded-xl"
-                    />
-                    <div
-                      className="absolute left-0 right-0 bottom-0 h-32 rounded-b-xl"
-                      style={{
-                        background:
-                          "linear-gradient(to bottom, transparent, #000000 90%)",
-                      }}
-                    />
-                    <div className="absolute left-0 bottom-6 flex flex-col items-start pl-6">
-                      <p className="text-left text-base md:text-lg font-semibold text-white drop-shadow mr-7 hidden md:block">
-                        {img.title}
-                      </p>
+                  {stat.value}
+                </div>
+                <div className="text-sm text-slate-500 uppercase tracking-wider">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="tentang" className="py-24 relative z-10 scroll-mt-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className={`rounded-3xl border p-8 md:p-16 relative overflow-hidden ${
+              isLight
+                ? "bg-white border-slate-200 shadow-xl"
+                : "bg-linear-to-br from-slate-900 to-slate-950 border-white/10"
+            }`}
+          >
+            {/* Decorative Background */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+
+            <div className="relative z-10 flex flex-col md:flex-row gap-12 items-center">
+              <div className="w-full md:w-1/2">
+                <h2
+                  className={`text-3xl md:text-4xl font-bold mb-6 ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}
+                >
+                  Revolusi Pencatatan Fasilitas Labor
+                </h2>
+                <p
+                  className={`mb-6 leading-relaxed ${
+                    isLight ? "text-slate-600" : "text-slate-400"
+                  }`}
+                >
+                  Sistem Inventaris Labor bukan sekadar alat pencatatan. Ini
+                  adalah langkah awal menuju digitalisasi manajemen aset sekolah
+                  yang menyeluruh. Kami percaya bahwa efisiensi pengelolaan
+                  fasilitas akan memberikan kenyamanan lebih bagi warga sekolah
+                  untuk fokus pada hal yang paling penting:
+                  <span className="text-cyan-400 font-semibold">
+                    {" "}
+                    Mencerdaskan Bangsa.
+                  </span>
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  {[
+                    "Digital Inventory",
+                    "Asset Tracking",
+                    "Smart Lab",
+                    "Real-time Monitoring",
+                  ].map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className={`px-4 py-2 rounded-full border text-sm ${
+                        isLight
+                          ? "bg-slate-100 border-slate-200 text-slate-600"
+                          : "bg-white/5 border-white/10 text-slate-300"
+                      }`}
+                    >
+                      # {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="w-full md:w-1/2 grid grid-cols-2 gap-4">
+                <div className="space-y-4 mt-8">
+                  <div
+                    className={`p-6 rounded-2xl border backdrop-blur-sm ${
+                      isLight
+                        ? "bg-slate-50 border-slate-200"
+                        : "bg-slate-800/50 border-white/5"
+                    }`}
+                  >
+                    <div className="text-3xl font-bold text-cyan-400 mb-1">
+                      0%
+                    </div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider">
+                      Kecurangan
+                    </div>
+                  </div>
+                  <div
+                    className={`p-6 rounded-2xl border backdrop-blur-sm ${
+                      isLight
+                        ? "bg-slate-50 border-slate-200"
+                        : "bg-slate-800/50 border-white/5"
+                    }`}
+                  >
+                    <div className="text-3xl font-bold text-purple-400 mb-1">
+                      50%
+                    </div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider">
+                      Lebih Efisien
                     </div>
                   </div>
                 </div>
-              ))}
+                <div className="space-y-4">
+                  <div
+                    className={`p-6 rounded-2xl border backdrop-blur-sm ${
+                      isLight
+                        ? "bg-slate-50 border-slate-200"
+                        : "bg-slate-800/50 border-white/5"
+                    }`}
+                  >
+                    <div className="text-3xl font-bold text-emerald-400 mb-1">
+                      1k+
+                    </div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider">
+                      Barang Terdata
+                    </div>
+                  </div>
+                  <div
+                    className={`p-6 rounded-2xl border backdrop-blur-sm ${
+                      isLight
+                        ? "bg-slate-50 border-slate-200"
+                        : "bg-slate-800/50 border-white/5"
+                    }`}
+                  >
+                    <div className="text-3xl font-bold text-rose-400 mb-1">
+                      24h
+                    </div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider">
+                      Monitoring
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <button
-            onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-gray-900 bg-opacity-70 text-white px-3 py-2 rounded-full hover:bg-blue-600 transition transform hover:scale-105 shadow-md"
-            aria-label="Prev"
-          >
-            &#8592;
-          </button>
-          <button
-            onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-900 bg-opacity-70 text-white px-3 py-2 rounded-full hover:bg-blue-600 transition transform hover:scale-105 shadow-md"
-            aria-label="Next"
-          >
-            &#8594;
-          </button>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function CompanyCard({
-  image,
-  name,
-  location,
-  rating,
-  reviews,
-  quota,
-  majors,
-  updated,
-}: {
-  image: string;
-  name: string;
-  location: string;
-  rating: string;
-  reviews: string;
-  quota: string;
-  majors: string;
-  updated: string;
-}) {
-  return (
-    <div className="bg-white rounded-2xl shadow-md p-0 overflow-hidden transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl w-full max-w-md mx-auto">
-      <div className="relative w-full group bg-white rounded-2xl shadow-lg border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-1">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-[20rem] object-cover rounded-t-2xl"
-        />
-        <span className="absolute top-3 left-3 flex items-center gap-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-          <svg
-            className="w-4 h-4 mr-1"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M17.657 16.657L13.414 12.414a2 2 0 00-2.828 0l-4.243 4.243M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          {location}
-        </span>
-        <button
-          className="absolute top-3 right-3 bg-white/90 hover:bg-blue-100 text-blue-600 rounded-full p-2 shadow transition"
-          aria-label="expand"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
-        </button>
-        <div className="p-4">
-          <h3 className="text-base font-bold mb-1 text-gray-900 group-hover:text-blue-700 transition">
-            {name}
-          </h3>
-          <div className="flex items-center gap-1 mb-1">
-            <span className="flex items-center">
-              <svg
-                className="w-4 h-4 text-yellow-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+      {/* Features Grid */}
+      <section
+        id="fitur"
+        className={`py-24 relative z-10 scroll-mt-28 ${
+          isLight ? "bg-slate-50/50" : "bg-slate-900/50"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2
+              className={`text-3xl md:text-4xl font-bold mb-4 ${
+                isLight ? "text-slate-900" : "text-white"
+              }`}
+            >
+              Teknologi Masa Depan
+            </h2>
+            <p
+              className={`max-w-2xl mx-auto ${
+                isLight ? "text-slate-600" : "text-slate-400"
+              }`}
+            >
+              Kami menggabungkan hardware canggih dan software cerdas untuk
+              menciptakan pencatatan fasilitas labor yang sempurna.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <FaDatabase />,
+                title: "Database Terpusat",
+                desc: "Sistem pencatatan barang yang terintegrasi dalam satu database pusat, memudahkan pelacakan dan pengelolaan aset laboratorium.",
+                color: "text-cyan-400",
+                bg: "bg-cyan-500/10",
+                border: "border-cyan-500/20",
+              },
+              {
+                icon: <FaChartPie />,
+                title: "Analitik Real-time",
+                desc: "Dashboard interaktif untuk memantau kondisi barang (baik/rusak) dan ketersediaan alat secara real-time dengan visualisasi intuitif.",
+                color: "text-purple-400",
+                bg: "bg-purple-500/10",
+                border: "border-purple-500/20",
+              },
+              {
+                icon: <FaShieldAlt />,
+                title: "Keamanan Data",
+                desc: "Akses sistem dilindungi dengan otentikasi bertingkat, memastikan hanya pihak berwenang yang dapat mengubah data inventaris.",
+                color: "text-emerald-400",
+                bg: "bg-emerald-500/10",
+                border: "border-emerald-500/20",
+              },
+              {
+                icon: <FaBolt />,
+                title: "Efisiensi Tinggi",
+                desc: "Proses input, update, dan pencarian data barang dilakukan dengan cepat, menghemat waktu administrasi pengelolaan labor.",
+                color: "text-yellow-400",
+                bg: "bg-yellow-500/10",
+                border: "border-yellow-500/20",
+              },
+              {
+                icon: <FaMobileAlt />,
+                title: "Akses Multi-Platform",
+                desc: "Kelola inventaris dari mana saja melalui perangkat desktop, tablet, maupun smartphone dengan tampilan yang responsif.",
+                color: "text-pink-400",
+                bg: "bg-pink-500/10",
+                border: "border-pink-500/20",
+              },
+              {
+                icon: <FaClock />,
+                title: "Riwayat Peminjaman",
+                desc: "Rekam jejak peminjaman dan pengembalian barang tercatat otomatis, memudahkan penelusuran penggunaan alat.",
+                color: "text-blue-400",
+                bg: "bg-blue-500/10",
+                border: "border-blue-500/20",
+              },
+            ].map((feature, idx) => (
+              <div
+                key={idx}
+                className={`p-8 rounded-3xl backdrop-blur-md border transition-all duration-300 hover:-translate-y-2 group ${
+                  isLight
+                    ? "bg-white border-slate-200 shadow-sm hover:shadow-md"
+                    : `bg-slate-950/50 ${feature.border} hover:border-opacity-50`
+                }`}
               >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.174 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z" />
-              </svg>
-              <span className="ml-1 text-blue-600 font-semibold">{rating}</span>
-            </span>
-            <span className="text-gray-500 text-xs">({reviews})</span>
-          </div>
-          <div className="flex items-center gap-2 mb-1">
-            <svg
-              className="w-4 h-4 text-green-500"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16 17l-4 4m0 0l-4-4m4 4V3"
-              />
-            </svg>
-            <span className="text-gray-600 text-sm">
-              Kuota:{" "}
-              <span className="font-semibold text-[#353ba7]">{quota}</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-2 mb-1">
-            <svg
-              className="w-4 h-4 text-blue-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 11c0-1.104-.896-2-2-2s-2 .896-2 2 .896 2 2 2 2-.896 2-2zm0 0c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2z"
-              />
-            </svg>
-            <span className="text-[#353ba7] font-bold text-sm">{majors}</span>
-          </div>
-          <div className="flex items-center gap-2 mt-2 text-gray-400 text-xs">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 17l4 4 4-4m-4-5v9"
-              />
-            </svg>
-            {updated}
+                <div
+                  className={`w-14 h-14 rounded-2xl ${feature.bg} ${feature.color} flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform`}
+                >
+                  {feature.icon}
+                </div>
+                <h3
+                  className={`text-xl font-bold mb-4 ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}
+                >
+                  {feature.title}
+                </h3>
+                <p
+                  className={`leading-relaxed text-sm ${
+                    isLight ? "text-slate-600" : "text-slate-400"
+                  }`}
+                >
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
+      </section>
 
-function StatItem({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="group">
-      <div className="text-3xl md:text-4xl font-bold text-[#353ba7] mb-2 group-hover:scale-110 transition-transform">
-        {value}
-      </div>
-      <div className="text-gray-600 font-medium">{label}</div>
+      {/* How It Works Section */}
+      <section id="cara-kerja" className="py-24 relative z-10 scroll-mt-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center gap-16">
+            <div className="w-full md:w-1/2">
+              <h2
+                className={`text-3xl md:text-4xl font-bold mb-6 ${
+                  isLight ? "text-slate-900" : "text-white"
+                }`}
+              >
+                Cara Kerja Sistem
+              </h2>
+              <div className="space-y-8">
+                {[
+                  {
+                    step: "01",
+                    title: "Input Data Barang",
+                    desc: "Admin memasukkan data lengkap barang laboratorium ke dalam sistem, termasuk spesifikasi dan kondisi awal.",
+                  },
+                  {
+                    step: "02",
+                    title: "Pelabelan Aset",
+                    desc: "Setiap barang diberi label atau kode unik untuk memudahkan identifikasi dan pelacakan fisik di laboratorium.",
+                  },
+                  {
+                    step: "03",
+                    title: "Manajemen Sirkulasi",
+                    desc: "Proses peminjaman dan pengembalian barang tercatat secara digital, mengubah status ketersediaan secara real-time.",
+                  },
+                  {
+                    step: "04",
+                    title: "Laporan & Evaluasi",
+                    desc: "Sistem menyajikan laporan kondisi aset dan riwayat penggunaan untuk bahan evaluasi pengadaan selanjutnya.",
+                  },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-6">
+                    <div
+                      className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                        isLight
+                          ? "bg-white border border-slate-200 shadow-md text-cyan-600"
+                          : "bg-slate-800 border border-slate-700 text-cyan-400"
+                      }`}
+                    >
+                      {item.step}
+                    </div>
+                    <div>
+                      <h3
+                        className={`text-xl font-bold mb-2 ${
+                          isLight ? "text-slate-900" : "text-white"
+                        }`}
+                      >
+                        {item.title}
+                      </h3>
+                      <p
+                        className={`${
+                          isLight ? "text-slate-600" : "text-slate-400"
+                        }`}
+                      >
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="w-full md:w-1/2 relative">
+              <div className="absolute inset-0 bg-cyan-500/20 blur-[100px] rounded-full" />
+              <div
+                className={`relative rounded-3xl p-8 shadow-2xl ${
+                  isLight
+                    ? "bg-slate-900 border border-slate-800"
+                    : "bg-slate-900 border border-slate-800"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                  <div className="text-slate-500 text-sm font-mono">
+                    System Status: Online
+                  </div>
+                </div>
+                <div className="space-y-4 font-mono text-sm">
+                  <div className="flex justify-between text-slate-300">
+                    <span>Initializing Dashboard...</span>
+                    <span className="text-green-400">OK</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Loading Asset Data...</span>
+                    <span className="text-green-400">Done (120ms)</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Syncing Inventory...</span>
+                    <span className="text-green-400">Synced</span>
+                  </div>
+                  <div className="h-px bg-slate-800 my-4" />
+                  <div className="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center">
+                        <FaDatabase className="text-slate-400" />
+                      </div>
+                      <div>
+                        <div className="text-white font-bold">
+                          Updating Stock...
+                        </div>
+                        <div className="text-cyan-400 animate-pulse">
+                          Processing...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Access Portal (The "Anti-mainstream" part) */}
+      <section id="akses" className="py-24 relative z-10 scroll-mt-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
+            <div>
+              <h2
+                className={`text-4xl font-bold mb-4 ${
+                  isLight ? "text-slate-900" : "text-white"
+                }`}
+              >
+                Portal Akses
+              </h2>
+              <p
+                className={`max-w-md ${
+                  isLight ? "text-slate-600" : "text-slate-400"
+                }`}
+              >
+                Pilih gerbang masuk sesuai dengan peran Anda dalam ekosistem
+                sekolah.
+              </p>
+            </div>
+            <div className="h-1 w-full md:w-1/3 bg-linear-to-r from-cyan-500/50 to-transparent rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: "Administrator",
+                role: "System Control",
+                href: "/login",
+                icon: <FaUserShield />,
+                gradient: "from-blue-600 to-blue-900",
+                accent: "border-blue-500/30",
+              },
+              {
+                title: "Waka Sarana",
+                role: "Student Monitor",
+                href: "/login",
+                icon: <FaUserTie />,
+                gradient: "from-violet-600 to-violet-900",
+                accent: "border-violet-500/30",
+              },
+              {
+                title: "Kepala Sekolah",
+                role: "Executive View",
+                href: "/login",
+                icon: <FaChalkboardTeacher />,
+                gradient: "from-emerald-600 to-emerald-900",
+                accent: "border-emerald-500/30",
+              },
+              {
+                title: "Kepala Bengkel",
+                role: "AI Terminal",
+                href: "/login",
+                icon: <FaCamera />,
+                gradient: "from-rose-600 to-rose-900",
+                accent: "border-rose-500/30",
+              },
+            ].map((item, idx) => (
+              <Link
+                key={idx}
+                href={item.href}
+                className={`group relative h-80 rounded-3xl overflow-hidden border transition-all duration-500 hover:shadow-2xl hover:shadow-${
+                  item.gradient.split("-")[1]
+                }-500/20 ${
+                  isLight ? "border-slate-200 shadow-lg" : item.accent
+                }`}
+              >
+                {/* Card Background with Gradient */}
+                <div
+                  className={`absolute inset-0 bg-linear-to-b ${
+                    item.gradient
+                  } ${
+                    isLight
+                      ? "opacity-10 group-hover:opacity-20"
+                      : "opacity-20 group-hover:opacity-40"
+                  } transition-opacity duration-500`}
+                />
+                <div
+                  className={`absolute inset-0 transition-colors duration-500 ${
+                    isLight
+                      ? "bg-white/80 group-hover:bg-white/60"
+                      : "bg-slate-950/80 group-hover:bg-slate-950/60"
+                  }`}
+                />
+
+                {/* Content */}
+                <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
+                  <div className="flex justify-between items-start">
+                    <div
+                      className={`p-3 rounded-2xl backdrop-blur-md text-2xl group-hover:scale-110 transition-transform duration-300 ${
+                        isLight
+                          ? "bg-white shadow-sm text-slate-700"
+                          : "bg-white/10 text-white"
+                      }`}
+                    >
+                      {item.icon}
+                    </div>
+                    <div
+                      className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+                        isLight
+                          ? "border-slate-300 group-hover:bg-slate-900 group-hover:text-white"
+                          : "border-white/20 group-hover:bg-white group-hover:text-slate-900"
+                      }`}
+                    >
+                      <FaArrowRight className="-rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <p
+                      className={`text-xs font-bold tracking-widest uppercase mb-2 ${
+                        isLight ? "text-slate-500" : "text-white/50"
+                      }`}
+                    >
+                      {item.role}
+                    </p>
+                    <h3
+                      className={`text-2xl font-bold group-hover:translate-x-2 transition-transform duration-300 ${
+                        isLight ? "text-slate-900" : "text-white"
+                      }`}
+                    >
+                      {item.title}
+                    </h3>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Minimal Footer */}
+      <Footer />
     </div>
   );
 }

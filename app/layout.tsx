@@ -36,6 +36,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,8 +56,10 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#377DFF" />
       </head>
       <body className="antialiased font-sans">
-        {children}
-        <ServiceWorkerRegistration />
+        <ThemeProvider>
+          {children}
+          <ServiceWorkerRegistration />
+        </ThemeProvider>
       </body>
     </html>
   );
