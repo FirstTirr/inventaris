@@ -14,6 +14,12 @@ function getAuthHeaders(): Record<string, string> {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
+
+    // Send all cookies in a custom header to bypass Cross-Origin limitations
+    // when backend is on a different IP/domain and standard cookies aren't sent.
+    if (document.cookie) {
+      headers["x-user-cookies"] = document.cookie;
+    }
   }
 
   return headers;
@@ -48,12 +54,12 @@ export async function createUser({
         headers: getAuthHeaders(),
         body: JSON.stringify(body),
         credentials: "include", // <-- WAJIB AGAR COOKIE TERKIRIM
-      }
+      },
     );
     if (!res.ok) {
       const error = await res.json().catch(() => ({ detail: "Unknown error" }));
       throw new Error(
-        error.detail || `Gagal menambah user (status ${res.status})`
+        error.detail || `Gagal menambah user (status ${res.status})`,
       );
     }
     return res.json();

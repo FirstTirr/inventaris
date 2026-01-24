@@ -9,7 +9,7 @@ export default function TabelKelas() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const paginatedData = data.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
   const totalPages = Math.ceil(data.length / itemsPerPage);
 
@@ -19,7 +19,7 @@ export default function TabelKelas() {
       setError("");
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`,
         );
         const json = await res.json();
         if (res.ok && json.data) {
@@ -48,7 +48,7 @@ export default function TabelKelas() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nama_kelas }),
-        }
+        },
       );
       const json = await res.json();
       if (res.ok) {
@@ -123,7 +123,7 @@ export default function TabelKelas() {
                 paginatedData.map((row, idx) => (
                   <tr
                     key={row.kelas + "-" + idx}
-                    className="border-b last:border-b-0 hover:bg-blue-50 transition"
+                    className="border-b last:border-b-0 hover:bg-blue-50 transition text-gray-900"
                   >
                     <td className="px-4 py-2">{row.kelas}</td>
                     <td className="px-4 py-2 text-center">

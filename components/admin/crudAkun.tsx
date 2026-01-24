@@ -23,8 +23,23 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
   >([]);
   const [users, setUsers] = useState<User[]>([]);
   const fetchUsers = () => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (typeof window !== "undefined") {
+      const token =
+        localStorage.getItem("token") ||
+        document.cookie
+          .split("; ")
+          .find((c) => c.trim().startsWith("token="))
+          ?.split("=")[1];
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (document.cookie) headers["x-user-cookies"] = document.cookie;
+    }
+
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`, {
       method: "GET",
+      headers,
       credentials: "include",
     })
       .then((res) => res.json())
@@ -33,8 +48,8 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
         const list: User[] = Array.isArray((data as { data?: unknown })?.data)
           ? ((data as { data?: unknown }).data as User[])
           : Array.isArray(data)
-          ? (data as User[])
-          : [];
+            ? (data as User[])
+            : [];
         if (Array.isArray(list)) setUsers(list);
       })
       .catch((e) => console.error("fetchUsers error:", e));
@@ -51,8 +66,8 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
       const list: unknown[] = Array.isArray(maybeData)
         ? maybeData
         : Array.isArray(res)
-        ? (res as unknown[])
-        : [];
+          ? (res as unknown[])
+          : [];
 
       const getLabel = (j: unknown, idx: number) => {
         if (j && typeof j === "object") {
@@ -63,7 +78,7 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
               obj.name ??
               obj.label ??
               obj.nama ??
-              `Jurusan ${idx + 1}`
+              `Jurusan ${idx + 1}`,
           );
         }
         return `Jurusan ${idx + 1}`;
@@ -156,13 +171,15 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
             </button>
           )}
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-            <h2 className="text-2xl font-bold mb-2">CRUD AKUN</h2>
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">CRUD AKUN</h2>
             <div className="flex flex-col gap-2">
-              <label className="text-base font-medium">NAMA :</label>
+              <label className="text-base font-medium text-gray-800">
+                NAMA :
+              </label>
               <input
                 type="text"
                 placeholder="NAMA"
-                className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900"
                 value={nama}
                 onChange={handleNamaChange}
                 pattern="[a-zA-Z0-9]*"
@@ -170,12 +187,14 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-base font-medium">PASSWORD:</label>
+              <label className="text-base font-medium text-gray-800">
+                PASSWORD:
+              </label>
               <div className="relative flex items-center">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Masukkan Password"
-                  className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full pr-10"
+                  className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full pr-10 text-gray-900"
                   value={password}
                   onChange={handlePasswordChange}
                   pattern="[a-zA-Z0-9]*"
@@ -233,25 +252,37 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-base font-medium">ROLE:</label>
+              <label className="text-base font-medium text-gray-800">
+                ROLE:
+              </label>
               <select
-                className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900"
                 value={role}
                 onChange={handleRoleChange}
                 required
               >
-                <option value="" disabled>
+                <option value="" disabled className="text-gray-500">
                   Pilih Role
                 </option>
-                <option value="0">KABENG/KAPROG</option>
-                <option value="1">GURU</option>
-                <option value="2">WAKA SARANA</option>
-                <option value="3">KEPALA SEKOLAH</option>
+                <option value="0" className="text-black">
+                  KABENG/KAPROG
+                </option>
+                <option value="1" className="text-black">
+                  GURU
+                </option>
+                <option value="2" className="text-black">
+                  WAKA SARANA
+                </option>
+                <option value="3" className="text-black">
+                  KEPALA SEKOLAH
+                </option>
               </select>
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <label className="text-base font-medium">JURUSAN:</label>
+                <label className="text-base font-medium text-gray-800">
+                  JURUSAN:
+                </label>
                 <button
                   type="button"
                   onClick={() => fetchJurusan()}
@@ -261,12 +292,12 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
                 </button>
               </div>
               <select
-                className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="border border-gray-300 rounded px-3 py-2 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900"
                 value={jurusan}
                 onChange={(e) => setJurusan(e.target.value)}
                 required
               >
-                <option value="" disabled>
+                <option value="" disabled className="text-gray-500">
                   Pilih Jurusan
                 </option>
                 {jurusanList.length === 0 ? (
@@ -276,7 +307,11 @@ export default function AdminPage({ onCancel }: { onCancel?: () => void }) {
                 ) : (
                   jurusanList.map((j, idx) => (
                     // use the jurusan name as the option value so backend receives `nama_jurusan`
-                    <option key={`jur-${idx}`} value={j.label}>
+                    <option
+                      key={`jur-${idx}`}
+                      value={j.label}
+                      className="text-black"
+                    >
                       {j.label}
                     </option>
                   ))

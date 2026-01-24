@@ -104,7 +104,7 @@ export default function TabelKategory() {
               {paginatedKategori.map((row) => (
                 <tr
                   key={row.kategori}
-                  className="border-b last:border-b-0 hover:bg-blue-50 transition"
+                  className="border-b last:border-b-0 hover:bg-blue-50 transition text-gray-900"
                 >
                   <td className="px-4 py-2">{row.kategori}</td>
                   <td className="px-4 py-2 text-center">

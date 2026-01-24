@@ -69,11 +69,27 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
       setLoading(true);
       setError("");
       try {
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (typeof window !== "undefined") {
+          // Ambil token dari localStorage jika ada, atau fallback ke cookie
+          const token =
+            localStorage.getItem("token") ||
+            document.cookie
+              .split("; ")
+              .find((c) => c.trim().startsWith("token="))
+              ?.split("=")[1];
+
+          if (token) headers["Authorization"] = `Bearer ${token}`;
+          if (document.cookie) headers["x-user-cookies"] = document.cookie;
+        }
+
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`,
           {
             method: "GET",
-            headers: { "Content-Type": "application/json" },
+            headers,
             credentials: "include",
           },
         );
@@ -255,7 +271,7 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
                   </td>
                   <td className="py-4 sm:py-8 px-2 sm:px-6 text-left border-b border-gray-300 align-middle">
                     <button
-                      className="hover:text-red-600"
+                      className="text-red-500 hover:text-red-700"
                       onClick={() => handleDeleteUser(user.id_user)}
                       aria-label={`Hapus akun ${user.nama}`}
                       type="button"

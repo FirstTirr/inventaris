@@ -14,6 +14,11 @@ function getAuthHeaders(): Record<string, string> {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
+
+    // Send all cookies in a custom header
+    if (document.cookie) {
+      headers["x-user-cookies"] = document.cookie;
+    }
   }
 
   return headers;
@@ -37,7 +42,7 @@ export async function postProduct(data: ProductData) {
         headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify(data),
-      }
+      },
     );
     if (!res.ok) {
       throw new Error("Gagal mengirim data produk");

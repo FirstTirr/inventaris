@@ -105,7 +105,7 @@ export default function TabelLabor() {
                 {paginatedLabor.map((row) => (
                   <tr
                     key={row.nama_labor}
-                    className="border-b last:border-b-0 hover:bg-blue-50 transition"
+                    className="border-b last:border-b-0 hover:bg-blue-50 transition text-gray-900"
                   >
                     <td className="px-4 py-2">{row.nama_labor}</td>
                     <td className="px-4 py-2 text-center">

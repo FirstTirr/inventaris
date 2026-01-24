@@ -1989,7 +1989,7 @@ const Product = ({
                       setSelectedPrintMonth((prev) => `${prev}${filtered}`);
                     }}
                     placeholder="Masukkan nama sekolah (angka, huruf, spasi)"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -2018,7 +2018,7 @@ const Product = ({
                     setSelectedPrintCity((prev) => `${prev}${filtered}`);
                   }}
                   placeholder="Masukkan nama kota (contoh: Payakumbuh)"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div className="mb-4">
@@ -2047,7 +2047,7 @@ const Product = ({
                       setSelectedAcademicYear((prev) => `${prev}${filtered}`);
                     }}
                     placeholder="Masukkan tahun ajaran, contoh: 2024/2025"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -2059,11 +2059,13 @@ const Product = ({
                 <select
                   value={selectedPrintLabor}
                   onChange={(e) => setSelectedPrintLabor(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">-- Pilih Labor --</option>
+                  <option value="" className="text-gray-500">
+                    -- Pilih Labor --
+                  </option>
                   {printLaborList.map((labor) => (
-                    <option key={labor} value={labor}>
+                    <option key={labor} value={labor} className="text-black">
                       {labor}
                     </option>
                   ))}
@@ -2093,7 +2095,7 @@ const Product = ({
                     setPrintReporterNip((prev) => `${prev}${filtered}`);
                   }}
                   placeholder="Masukkan NIP (contoh: 19870501.200501.1)"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div className="mb-4">
@@ -2122,7 +2124,7 @@ const Product = ({
                     setPrintReporterName((prev) => `${prev}${filtered}`);
                   }}
                   placeholder="Masukkan Nama Anda (hanya huruf, angka, dan spasi)"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -2154,7 +2156,7 @@ const Product = ({
                       setSelectedPrintPassword((prev) => `${prev}${filtered}`);
                     }}
                     placeholder="Masukkan password Kabeng"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-20 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
 
                   <button

@@ -14,6 +14,11 @@ function getAuthHeaders(): Record<string, string> {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
+
+    // Send all cookies in a custom header
+    if (document.cookie) {
+      headers["x-user-cookies"] = document.cookie;
+    }
   }
 
   return headers;
@@ -40,7 +45,7 @@ export async function deleteRemoteUser(id_user: number) {
         headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify({ id_user }),
-      }
+      },
     );
 
     if (!res.ok) {
@@ -65,7 +70,7 @@ export async function getRemoteUsers() {
         method: "GET",
         headers: getAuthHeaders(),
         credentials: "include",
-      }
+      },
     );
 
     if (!res.ok) {
@@ -95,7 +100,7 @@ export async function deleteRemoteProduct(id_perangkat: number) {
         headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify({ id_perangkat }),
-      }
+      },
     );
 
     if (!res.ok) {
@@ -121,7 +126,7 @@ export async function getRemoteProducts() {
         method: "GET",
         headers: getAuthHeaders(),
         credentials: "include",
-      }
+      },
     );
 
     if (!res.ok) {
@@ -163,7 +168,7 @@ export async function getRemoteProducts() {
 export async function getRemoteJurusan() {
   console.log(
     "🌐 Calling API:",
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
   );
 
   try {
@@ -173,7 +178,7 @@ export async function getRemoteJurusan() {
         method: "GET",
         headers: getAuthHeaders(),
         credentials: "include",
-      }
+      },
     );
 
     console.log("📡 API Response status:", res.status, res.statusText);
@@ -197,7 +202,7 @@ export async function getRemoteJurusan() {
       // If format not expected, warn and return empty
       console.warn(
         "getRemoteJurusan: unexpected JSON shape, returning empty. JSON:",
-        json
+        json,
       );
       return { data: [] };
     } catch {
@@ -207,7 +212,7 @@ export async function getRemoteJurusan() {
         console.warn("getRemoteJurusan: failed to parse JSON, raw text:", txt);
         // Example raw formats observed: "{@{jurusan=TKJ}, @{jurusan=RPL}}" or plain lines
         const matches = Array.from(
-          txt.matchAll(/jurusan\s*=\s*([^},\s]+)/gi)
+          txt.matchAll(/jurusan\s*=\s*([^},\s]+)/gi),
         ).map((m) => m[1]);
         if (matches.length > 0) {
           const data = matches.map((label) => ({ jurusan: label }));

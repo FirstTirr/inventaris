@@ -181,7 +181,7 @@ export default function CrudLabor() {
   }, [kategoriOpen, kategori]);
 
   return (
-    <div className="min-h-screen bg-[#f7f7f9] dark:bg-gray-900">
+    <div className="min-h-screen bg-[#f7f7f9]">
       <div className="flex justify-end p-4"></div>
       <div className="w-full mx-auto px-6 lg:px-12">
         {/* Info Cards */}
@@ -292,12 +292,12 @@ export default function CrudLabor() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
           {/* <TabelJurusan /> bisa langsung dirender jika ingin tampil selalu, atau hapus jika tidak perlu */}
           {/* Tambahkan Labor */}
-          <div className="bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-100 hover:text-red-700 dark:hover:text-red-400 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
+          <div className="bg-white text-gray-700 hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
             <button
               type="button"
               aria-expanded={laborOpen}
               onClick={() => setLaborOpen((s) => !s)}
-              className="text-gray-900 dark:text-gray-100 rounded-full w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
+              className="text-gray-900 rounded-full w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
             >
               Tambahkan Labor
             </button>

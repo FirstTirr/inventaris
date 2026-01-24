@@ -32,12 +32,23 @@ export default function Login() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Login gagal");
 
-      // Jangan simpan token di cookie. Simpan hanya nama user sebagai cookie untuk UI.
+      // Simpan token ke cookie agar bisa diakses oleh helper getAuthHeaders (lib/api/*.ts)
       try {
         const maxAge = 60 * 60; // 1 jam
-        // Set cookie 'user' pada origin frontend (tidak mengirim token ke backend)
+
+        // Simpan access_token jika ada
+        const token = data.access_token || data.token;
+        if (token) {
+          // PENTING: Simpan token di localStorage (dengan nama 'token' agar tidak menimpa username 'user')
+          localStorage.setItem("token", token);
+
+          // Send to backend via Authorization header implies we store it for JS to read
+          document.cookie = `token=${token}; path=/; max-age=${maxAge}; samesite=Lax`;
+        }
+
+        // Set cookie 'user' pada origin frontend
         document.cookie = `user=${encodeURIComponent(
-          nama_user
+          nama_user,
         )}; path=/; max-age=${maxAge}; samesite=lax`;
         // Simpan juga nama user di localStorage/sessionStorage untuk keperluan UI saja
         try {
