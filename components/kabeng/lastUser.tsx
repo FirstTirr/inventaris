@@ -46,9 +46,9 @@ export default function LastUser() {
       arr = arr.filter((item) =>
         Boolean(
           (item.nama_labor && item.nama_labor.toLowerCase().includes(j)) ||
-            (item.nama_perangkat &&
-              item.nama_perangkat.toLowerCase().includes(j))
-        )
+          (item.nama_perangkat &&
+            item.nama_perangkat.toLowerCase().includes(j)),
+        ),
       );
     }
     if (!debouncedSearch) return arr;
@@ -56,7 +56,7 @@ export default function LastUser() {
     return arr.filter(
       (item) =>
         (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
-        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
+        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s)),
     );
   }, [data, debouncedSearch]);
 
@@ -94,7 +94,7 @@ export default function LastUser() {
       setError("");
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan`,
         );
         if (!res.ok) throw new Error("Gagal mengambil data penggunaan");
         const result = await res.json();
@@ -114,7 +114,7 @@ export default function LastUser() {
           {
             method: "GET",
             credentials: "include",
-          }
+          },
         );
         if (!res.ok) throw new Error("Gagal mengambil jurusan");
         const j = await res.json();
@@ -142,21 +142,22 @@ export default function LastUser() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id_penggunaan }),
-          }
+          },
         );
         if (!res.ok) throw new Error("Gagal menghapus penggunaan");
         // Hapus dari state jika sukses
         setData((prev) =>
-          prev.filter((item) => item.id_penggunaan !== id_penggunaan)
+          prev.filter((item) => item.id_penggunaan !== id_penggunaan),
         );
       } catch {
         alert("Gagal menghapus penggunaan");
       }
     },
-    [isOnline]
+    [isOnline],
   );
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (loading)
+    return <div className="text-center py-8 text-black">Loading...</div>;
   if (error)
     return <div className="text-red-600 text-center py-8">{error}</div>;
   if (!isOnline)
@@ -170,7 +171,9 @@ export default function LastUser() {
     <div className="min-h-screen bg-[#f7f7f8] py-8">
       <div className="w-full mx-auto px-6 lg:px-12">
         <div className="mb-2">
-          <h2 className="text-3xl font-bold mb-0">Monitoring User</h2>
+          <h2 className="text-3xl font-bold mb-0 text-black">
+            Monitoring User
+          </h2>
           <div className="text-gray-500 text-base font-normal">
             view last users
           </div>

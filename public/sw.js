@@ -6,20 +6,32 @@ self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
       return cache.addAll(urlsToCache);
-    })
+    }),
   );
 });
 
 // Fetch event
 self.addEventListener("fetch", function (event) {
   event.respondWith(
-    caches.match(event.request).then(function (response) {
-      // Return cached version or fetch from network
-      if (response) {
+    fetch(event.request)
+      .then(function (response) {
+        // If successful response, clone it, cache it, and return it
+        if (!response || response.status !== 200 || response.type !== "basic") {
+          return response;
+        }
+
+        var responseToCache = response.clone();
+
+        caches.open(CACHE_NAME).then(function (cache) {
+          cache.put(event.request, responseToCache);
+        });
+
         return response;
-      }
-      return fetch(event.request);
-    })
+      })
+      .catch(function () {
+        // If fetch fails (offline), try to return from cache
+        return caches.match(event.request);
+      }),
   );
 });
 
@@ -32,8 +44,8 @@ self.addEventListener("activate", function (event) {
           if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
-        })
+        }),
       );
-    })
+    }),
   );
 });

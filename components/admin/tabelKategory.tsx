@@ -8,14 +8,14 @@ export default function TabelKategory() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const paginatedKategori = kategoriList.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
   const totalPages = Math.ceil(kategoriList.length / itemsPerPage);
   useEffect(() => {
     const fetchKategori = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`,
         );
         const data = await res.json();
         if (res.ok && data.data) setKategoriList(data.data);
@@ -34,7 +34,7 @@ export default function TabelKategory() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ kategori }),
-        }
+        },
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Gagal menghapus kategori");
@@ -51,11 +51,11 @@ export default function TabelKategory() {
 
   return (
     <div className="w-full bg-white rounded-2xl shadow-sm p-4 md:p-8 overflow-x-auto">
-      <h3 className="text-lg md:text-2xl font-bold text-gray-700 mb-4">
+      <h3 className="text-lg md:text-2xl font-bold text-black mb-4">
         Tabel Kategori
       </h3>
       {loading ? (
-        <div>Loading...</div>
+        <div className="text-black">Loading...</div>
       ) : (
         <>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">

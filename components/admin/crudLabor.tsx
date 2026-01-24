@@ -14,7 +14,7 @@ export default function CrudLabor() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nama_labor: labor }),
-        }
+        },
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Gagal menambah labor");
@@ -39,7 +39,7 @@ export default function CrudLabor() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nama_kelas: kelas }),
-        }
+        },
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Gagal menambah kelas");
@@ -82,7 +82,7 @@ export default function CrudLabor() {
     const fetchJumlahKelas = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`,
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -95,7 +95,7 @@ export default function CrudLabor() {
     const fetchJumlahLabor = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -108,7 +108,7 @@ export default function CrudLabor() {
     const fetchJumlahJurusan = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -121,7 +121,7 @@ export default function CrudLabor() {
     const fetchJumlahKategori = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`,
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -181,7 +181,7 @@ export default function CrudLabor() {
   }, [kategoriOpen, kategori]);
 
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-[#f7f7f9] dark:bg-gray-900">
       <div className="flex justify-end p-4"></div>
       <div className="w-full mx-auto px-6 lg:px-12">
         {/* Info Cards */}
@@ -292,12 +292,12 @@ export default function CrudLabor() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
           {/* <TabelJurusan /> bisa langsung dirender jika ingin tampil selalu, atau hapus jika tidak perlu */}
           {/* Tambahkan Labor */}
-          <div className="bg-white hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
+          <div className="bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-100 hover:text-red-700 dark:hover:text-red-400 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
             <button
               type="button"
               aria-expanded={laborOpen}
               onClick={() => setLaborOpen((s) => !s)}
-              className=" rounded-full w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
+              className="text-gray-900 dark:text-gray-100 rounded-full w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
             >
               Tambahkan Labor
             </button>
@@ -348,12 +348,12 @@ export default function CrudLabor() {
           </div>
 
           {/* Tambahkan Jurusan */}
-          <div className="bg-white hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
+          <div className="bg-white text-black hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
             <button
               type="button"
               aria-expanded={jurusanOpen}
               onClick={() => setJurusanOpen((s) => !s)}
-              className="rounded-full w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
+              className="text-black rounded-full w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
             >
               Tambahkan Jurusan
             </button>
@@ -410,7 +410,7 @@ export default function CrudLabor() {
                               jurusan: jurusanTrim,
                               nama_jurusan: jurusanTrim,
                             }),
-                          }
+                          },
                         );
                         let data: { detail?: string } = {};
                         try {
@@ -425,11 +425,11 @@ export default function CrudLabor() {
                           console.error(
                             "Create jurusan failed",
                             res.status,
-                            data
+                            data,
                           );
                           throw new Error(
                             (data.detail as string) ||
-                              `Gagal menambah jurusan (status ${res.status})`
+                              `Gagal menambah jurusan (status ${res.status})`,
                           );
                         }
                         alert("Jurusan berhasil ditambahkan!");
@@ -452,12 +452,12 @@ export default function CrudLabor() {
           </div>
 
           {/* Tambahkan Kelas */}
-          <div className="bg-white hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
+          <div className="bg-white text-black hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
             <button
               type="button"
               aria-expanded={kelasOpen}
               onClick={() => setKelasOpen((s) => !s)}
-              className="w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
+              className="text-black w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
             >
               Tambahkan Kelas
             </button>
@@ -508,12 +508,12 @@ export default function CrudLabor() {
           </div>
 
           {/* Tambahkan Category */}
-          <div className="bg-white hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
+          <div className="bg-white text-black hover:text-red-700 rounded-3xl shadow-lg p-4 sm:p-8 md:p-12 w-full flex flex-col items-center self-start">
             <button
               type="button"
               aria-expanded={kategoriOpen}
               onClick={() => setKategoriOpen((s) => !s)}
-              className="w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
+              className="text-black w-full text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-center focus:outline-none"
             >
               Tambahkan Category
             </button>
@@ -564,12 +564,12 @@ export default function CrudLabor() {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ kategori }),
-                          }
+                          },
                         );
                         const data = await res.json();
                         if (!res.ok)
                           throw new Error(
-                            data.detail || "Gagal menambah kategori"
+                            data.detail || "Gagal menambah kategori",
                           );
                         alert("Kategori berhasil ditambahkan!");
                         setKategori("");

@@ -23,16 +23,6 @@ const nextConfig: NextConfig & { turbo?: any } = {
     optimizePackageImports: ["lucide-react", "react", "react-dom"],
   },
 
-  // Turbopack configuration (stable)
-  turbo: {
-    rules: {
-      "*.svg": {
-        loaders: ["@svgr/webpack"],
-        as: "*.js",
-      },
-    },
-  },
-
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",

@@ -9,11 +9,15 @@ import Wm from "../wm";
 
 // Lazy load ALL heavy components
 const Product = dynamic(() => import("./product"), {
-  loading: () => <div className="text-center py-8">Loading produk...</div>,
+  loading: () => (
+    <div className="text-center py-8 text-black">Loading produk...</div>
+  ),
   ssr: false,
 });
 const TerimaLaporan = dynamic(() => import("./terimaLaporan"), {
-  loading: () => <div className="text-center py-8">Loading laporan...</div>,
+  loading: () => (
+    <div className="text-center py-8 text-black">Loading laporan...</div>
+  ),
   ssr: false,
 });
 
@@ -45,7 +49,7 @@ const Navbar = memo(() => {
           const [k] = c.split("=");
           if (k) {
             document.cookie = `${encodeURIComponent(
-              k
+              k,
             )}=; path=/; max-age=0; samesite=lax`;
           }
         }
@@ -338,7 +342,9 @@ const Navbar = memo(() => {
           {active === "dashboard" && (
             <Suspense
               fallback={
-                <div className="text-center py-8">Loading dashboard...</div>
+                <div className="text-center py-8 text-black">
+                  Loading dashboard...
+                </div>
               }
             >
               <DashboardKabeng />
@@ -347,7 +353,9 @@ const Navbar = memo(() => {
           {active === "product" && (
             <Suspense
               fallback={
-                <div className="text-center py-8">Loading produk...</div>
+                <div className="text-center py-8 text-black">
+                  Loading produk...
+                </div>
               }
             >
               <Product />
@@ -356,7 +364,9 @@ const Navbar = memo(() => {
           {active === "user" && (
             <Suspense
               fallback={
-                <div className="text-center py-8">Loading user data...</div>
+                <div className="text-center py-8 text-black">
+                  Loading user data...
+                </div>
               }
             >
               <LastUser />
@@ -365,7 +375,9 @@ const Navbar = memo(() => {
           {active === "laporan" && (
             <Suspense
               fallback={
-                <div className="text-center py-8">Loading laporan...</div>
+                <div className="text-center py-8 text-black">
+                  Loading laporan...
+                </div>
               }
             >
               <TerimaLaporan />

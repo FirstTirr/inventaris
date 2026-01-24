@@ -94,7 +94,7 @@ const Product = ({
       text: string,
       x: number,
       y: number,
-      opts?: Record<string, unknown>
+      opts?: Record<string, unknown>,
     ) => void;
     save: (name: string) => void;
     setLineWidth: (n: number) => void;
@@ -111,13 +111,15 @@ const Product = ({
 
   const [usersForPrint, setUsersForPrint] = useState<UserMinimal[]>([]);
   const [kabengForJurusan, setKabengForJurusan] = useState<UserMinimal | null>(
-    null
+    null,
   );
   const [selectedPrintPassword, setSelectedPrintPassword] = useState("");
   const [printReporterName, setPrintReporterName] = useState("");
   const [printReporterNip, setPrintReporterNip] = useState("");
   const [printLocationCity, setPrintLocationCity] = useState<string>(
-    typeof window !== "undefined" ? localStorage.getItem("printCity") || "" : ""
+    typeof window !== "undefined"
+      ? localStorage.getItem("printCity") || ""
+      : "",
   );
   const [showPrintPassword, setShowPrintPassword] = useState(false);
   const [statsJurusanList, setStatsJurusanList] = useState<
@@ -139,7 +141,7 @@ const Product = ({
       ? decodeURIComponent(loggedUsernameRaw)
       : "";
   const loggedUserRecord = usersForPrint.find(
-    (u) => String(u.nama) === String(loggedUsername)
+    (u) => String(u.nama) === String(loggedUsername),
   );
 
   // Data structure: [id_perangkat, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]
@@ -226,7 +228,7 @@ const Product = ({
             (j: { jurusan: string; warna?: string }, index: number) => ({
               ...j,
               warna: j.warna || colors[index % colors.length], // Use warna from API or fallback to predefined colors
-            })
+            }),
           );
           console.log("🎨 Setting statsJurusanList:", jurusanWithColors);
           setStatsJurusanList(jurusanWithColors);
@@ -262,7 +264,7 @@ const Product = ({
               console.log(
                 "📡 Direct fetch response:",
                 res.status,
-                res.statusText
+                res.statusText,
               );
               return res.json();
             })
@@ -286,11 +288,11 @@ const Product = ({
                   (j: { jurusan: string; warna?: string }, index: number) => ({
                     ...j,
                     warna: j.warna || colors[index % colors.length],
-                  })
+                  }),
                 );
                 console.log(
                   "🎨 Direct fetch success, setting statsJurusanList:",
-                  jurusanWithColors
+                  jurusanWithColors,
                 );
                 setStatsJurusanList(jurusanWithColors);
               } else {
@@ -341,13 +343,13 @@ const Product = ({
         {
           headers: getAuthHeaders(),
           credentials: "include",
-        }
+        },
       );
 
       const jurusanData = await jurusanResponse.json();
       if (Array.isArray(jurusanData.data)) {
         setPrintJurusanList(
-          jurusanData.data.map((j: { jurusan: string }) => j.jurusan)
+          jurusanData.data.map((j: { jurusan: string }) => j.jurusan),
         );
       }
 
@@ -357,13 +359,13 @@ const Product = ({
         {
           headers: getAuthHeaders(),
           credentials: "include",
-        }
+        },
       );
 
       const laborData = await laborResponse.json();
       if (Array.isArray(laborData.data)) {
         setPrintLaborList(
-          laborData.data.map((l: { nama_labor: string }) => l.nama_labor)
+          laborData.data.map((l: { nama_labor: string }) => l.nama_labor),
         );
       }
 
@@ -388,7 +390,7 @@ const Product = ({
               : "";
 
           const found = uArr.find(
-            (uu: UserMinimal) => String(uu.nama) === String(loggedUsername)
+            (uu: UserMinimal) => String(uu.nama) === String(loggedUsername),
           );
           const userJurusan =
             found?.jurusan ??
@@ -478,7 +480,7 @@ const Product = ({
               string,
               string,
               number,
-              string
+              string,
             ][] = arr.map(
               (item: {
                 id_perangkat?: number;
@@ -500,7 +502,7 @@ const Product = ({
                   : "-",
                 Number(item.jumlah ?? 0),
                 String(item.status ?? ""),
-              ]
+              ],
             );
             localStorage.setItem("product-cache", JSON.stringify(mappedData));
             localStorage.setItem("product-cache-time", Date.now().toString());
@@ -537,12 +539,12 @@ const Product = ({
             String(jumlah).includes(q) ||
             status.toLowerCase().includes(q)
           );
-        }
+        },
       );
     }
     if (selectedJurusan) {
       filtered = filtered.filter(
-        ([, , , jurusan]) => jurusan === selectedJurusan
+        ([, , , jurusan]) => jurusan === selectedJurusan,
       );
     }
     const startIndex = (page - 1) * itemsPerPage;
@@ -570,7 +572,7 @@ const Product = ({
           string,
           string,
           number,
-          string
+          string,
         ][] = arr.map(
           (item: {
             id_perangkat?: number;
@@ -592,7 +594,7 @@ const Product = ({
               : "-",
             Number(item.jumlah ?? 0),
             String(item.status ?? ""),
-          ]
+          ],
         );
         localStorage.setItem("product-cache", JSON.stringify(mappedData));
         localStorage.setItem("product-cache-time", Date.now().toString());
@@ -665,13 +667,13 @@ const Product = ({
       try {
         const res = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
-            latitude
+            latitude,
           )}&lon=${encodeURIComponent(longitude)}`,
           {
             headers: {
               "User-Agent": "inventaris-app/1.0 (mailto:you@example.com)",
             },
-          }
+          },
         );
         if (!res.ok) return;
         const j = await res.json();
@@ -725,7 +727,7 @@ const Product = ({
     // Validate kabeng password for the selected jurusan
     if (!kabengForJurusan) {
       alert(
-        "Tidak dapat menemukan akun Kabeng yang cocok untuk jurusan ini. Cek konfigurasi akun admin."
+        "Tidak dapat menemukan akun Kabeng yang cocok untuk jurusan ini. Cek konfigurasi akun admin.",
       );
       return;
     }
@@ -747,7 +749,7 @@ const Product = ({
         : "";
 
     const loggedUser = usersForPrint.find(
-      (u) => String(u.nama) === String(loggedUsername)
+      (u) => String(u.nama) === String(loggedUsername),
     );
 
     const loginPassword =
@@ -819,7 +821,7 @@ const Product = ({
                   .toLowerCase() ===
                   String(selectedPrintLabor ?? "")
                     .trim()
-                    .toLowerCase()
+                    .toLowerCase(),
             );
         }
 
@@ -896,7 +898,7 @@ const Product = ({
             // Don't throw immediately — we'll try CDN fallback below
             console.warn(
               "Local jspdf imports failed, will try CDN fallback",
-              e3 || e2 || e1
+              e3 || e2 || e1,
             );
             jsPDFModule = null;
           }
@@ -946,11 +948,11 @@ const Product = ({
         try {
           // Load jspdf UMD from CDN
           await loadScript(
-            "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"
+            "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js",
           );
           // Load autotable plugin
           await loadScript(
-            "https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.js"
+            "https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.js",
           );
           // Try to get jsPDF from globals (umd exposes window.jspdf.jsPDF)
           const win = window as unknown as Record<string, unknown>;
@@ -986,7 +988,7 @@ const Product = ({
       const pageWidth = doc.internal.pageSize.getWidth();
 
       const title = `DAFTAR INVENTARIS LABOR JURUSAN ${String(
-        selectedPrintJurusan || ""
+        selectedPrintJurusan || "",
       ).toUpperCase()}`;
       doc.setFontSize(14);
       doc.text(title, pageWidth / 2, 40, { align: "center" });
@@ -1083,7 +1085,7 @@ const Product = ({
           // If icon rendering fails, fall back to vector lines (handled in didDrawCell fallback)
           console.warn(
             "Failed to render check icon PNG, will fallback to vector drawing:",
-            err
+            err,
           );
           checkPngDataUrl = null;
         }
@@ -1159,7 +1161,7 @@ const Product = ({
                     imgX,
                     imgY,
                     imgSize,
-                    imgSize
+                    imgSize,
                   );
                 } catch (imgErr) {
                   // fallback to vector drawing if addImage fails
@@ -1302,7 +1304,7 @@ const Product = ({
                   sigNameYLeft + 14,
                   {
                     align: "left",
-                  }
+                  },
                 );
                 // restore font size
                 doc.setFontSize(10);
@@ -1316,7 +1318,7 @@ const Product = ({
         } catch (dateErr) {
           console.warn(
             "Failed to draw printed date or signature blocks:",
-            dateErr
+            dateErr,
           );
         }
       } catch (sigErr) {
@@ -1336,7 +1338,7 @@ const Product = ({
     } catch (pdfErr) {
       console.error(
         "PDF generation failed, falling back to print window:",
-        pdfErr
+        pdfErr,
       );
 
       // Fallback: open printable HTML in new window (original behavior)
@@ -1347,7 +1349,7 @@ const Product = ({
         academicYear: string,
         productsList: ExportProduct[],
         signatureName: string,
-        signatureNip: string
+        signatureNip: string,
       ) => {
         const now = new Date();
         const monthNames = [
@@ -1374,13 +1376,13 @@ const Product = ({
         }${escapeHtml(monthNames[now.getMonth()])} ${now.getFullYear()}`;
 
         const header = `<div style="position:relative;margin-bottom:12px;line-height:1.1"><div style="text-align:center"><h3 style="margin:0;padding:0;">DAFTAR INVENTARIS LABOR JURUSAN ${escapeHtml(
-          jurusanTitle.toUpperCase()
+          jurusanTitle.toUpperCase(),
         )}</h3><div style="font-weight:700">${escapeHtml(
-          (monthLabel && monthLabel.toString().trim()) || ""
+          (monthLabel && monthLabel.toString().trim()) || "",
         )}</div><div style="margin-top:4px">${escapeHtml(
-          laborLabel || ""
+          laborLabel || "",
         )}</div><div style="margin-top:2px;font-size:12px">${escapeHtml(
-          academicYear || ""
+          academicYear || "",
         )}</div></div></div>`;
 
         const tableRows = productsList
@@ -1393,7 +1395,7 @@ const Product = ({
                 idx + 1
               }</td>
               <td style="border:1px solid #444;padding:6px;">${escapeHtml(
-                p.nama
+                p.nama,
               )}</td>
               <td style="border:1px solid #444;padding:6px;text-align:center;">${
                 p.jumlah ?? ""
@@ -1405,7 +1407,7 @@ const Product = ({
                 isRusak ? "✓" : ""
               }</td>
               <td style="border:1px solid #444;padding:6px;text-align:left;">${escapeHtml(
-                p.keterangan ?? ""
+                p.keterangan ?? "",
               )}</td>
             </tr>`;
           })
@@ -1432,21 +1434,21 @@ const Product = ({
           ? `
             <div style="position:fixed;left:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;">
               <div style="margin-bottom:6px;">${escapeHtml(
-                printedDateHtml
+                printedDateHtml,
               )}</div>
               <div style="margin-bottom:6px;">${escapeHtml(
                 (jurusanTitle || "").toString().trim()
                   ? `Mengetahui Kabeng ${escapeHtml(
-                      (jurusanTitle || "").toString().toUpperCase()
+                      (jurusanTitle || "").toString().toUpperCase(),
                     )}`
-                  : `Mengetahui Kabeng`
+                  : `Mengetahui Kabeng`,
               )}</div>
               <div style="width:220px;border-bottom:1px solid #000;margin-bottom:8px;margin-top:18px;"></div>
               <div><strong>${escapeHtml(signatureName)}</strong></div>
               ${
                 signatureNip
                   ? `<div style="margin-top:4px;">NIP. ${escapeHtml(
-                      signatureNip
+                      signatureNip,
                     )}</div>`
                   : ""
               }
@@ -1455,7 +1457,7 @@ const Product = ({
           : `<div style="position:fixed;left:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;">${printedDateHtml}</div>`;
 
         return `<!doctype html><html><head><meta charset="utf-8"><title>Report ${escapeHtml(
-          jurusanTitle
+          jurusanTitle,
         )}</title></head><body style="margin:20px;">${header}${table}${signatureHtml}</body></html>`;
       };
 
@@ -1479,7 +1481,7 @@ const Product = ({
           selectedAcademicYear || "",
           products,
           signatureName,
-          signatureNip
+          signatureNip,
         );
         const w = window.open("", "_blank", "width=900,height=700");
         if (!w) {
@@ -1513,7 +1515,7 @@ const Product = ({
     <div className="min-h-screen bg-[#f7f7f8] py-8">
       <div className="w-full mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold">Product Management</h2>
+          <h2 className="text-3xl font-bold text-black">Product Management</h2>
         </div>
 
         {/* Dashboard Statistic Cards - Responsive */}
@@ -1585,7 +1587,7 @@ const Product = ({
               <select
                 value={selectedJurusan}
                 onChange={(e) => setSelectedJurusan(e.target.value)}
-                className="border rounded-lg px-4 py-2 text-base font-medium bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border rounded-lg px-4 py-2 text-base font-medium bg-white text-black shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                 style={{ minWidth: 180 }}
                 aria-label="Filter by jurusan"
               >
@@ -1715,7 +1717,7 @@ const Product = ({
                       >
                         {p}
                       </button>
-                    )
+                    ),
                   )}
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
@@ -1752,7 +1754,7 @@ const Product = ({
                       jumlah,
                       status,
                     ]: [number, string, string, string, string, number, string],
-                    idx: number
+                    idx: number,
                   ) => (
                     <tr
                       key={idx}
@@ -1776,7 +1778,7 @@ const Product = ({
                             console.log(
                               "Mau hapus ID:",
                               id_perangkat,
-                              typeof id_perangkat
+                              typeof id_perangkat,
                             );
                             try {
                               await deleteRemoteProduct(id_perangkat);
@@ -1793,7 +1795,7 @@ const Product = ({
                                   string,
                                   string,
                                   number,
-                                  string
+                                  string,
                                 ][] = arr.map(
                                   (item: {
                                     id_perangkat?: number;
@@ -1815,15 +1817,15 @@ const Product = ({
                                       : "-",
                                     Number(item.jumlah ?? 0),
                                     String(item.status ?? ""),
-                                  ]
+                                  ],
                                 );
                                 localStorage.setItem(
                                   "product-cache",
-                                  JSON.stringify(mappedData)
+                                  JSON.stringify(mappedData),
                                 );
                                 localStorage.setItem(
                                   "product-cache-time",
-                                  Date.now().toString()
+                                  Date.now().toString(),
                                 );
                                 setData(mappedData);
                               } else {
@@ -1879,7 +1881,7 @@ const Product = ({
                         </button>
                       </td>
                     </tr>
-                  )
+                  ),
                 )}
               </tbody>
             </table>
@@ -1974,7 +1976,7 @@ const Product = ({
                       // allow only letters, numbers and spaces
                       const filtered = e.target.value.replace(
                         /[^A-Za-z0-9 ]/g,
-                        ""
+                        "",
                       );
                       setSelectedPrintMonth(filtered);
                     }}
@@ -2003,7 +2005,7 @@ const Product = ({
                     // allow letters, numbers, spaces, dot and hyphen
                     const filtered = e.target.value.replace(
                       /[^A-Za-z0-9 .-]/g,
-                      ""
+                      "",
                     );
                     setSelectedPrintCity(filtered);
                   }}
@@ -2032,7 +2034,7 @@ const Product = ({
                       // allow only digits, spaces and slash (/)
                       const filtered = e.target.value.replace(
                         /[^A-Za-z0-9,.\/ ]/g,
-                        ""
+                        "",
                       );
                       setSelectedAcademicYear(filtered);
                     }}
@@ -2107,7 +2109,7 @@ const Product = ({
                     // allow letters, numbers and spaces
                     const filtered = e.target.value.replace(
                       /[^A-Za-z0-9,. ]/g,
-                      ""
+                      "",
                     );
                     setPrintReporterName(filtered);
                   }}
@@ -2137,7 +2139,7 @@ const Product = ({
                       // allow only alphanumeric characters
                       const filtered = e.target.value.replace(
                         /[^A-Za-z0-9]/g,
-                        ""
+                        "",
                       );
                       setSelectedPrintPassword(filtered);
                     }}

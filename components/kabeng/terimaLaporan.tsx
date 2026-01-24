@@ -27,9 +27,9 @@ export default function TerimaLaporan() {
       arr = arr.filter((item) =>
         Boolean(
           (item.nama_labor && item.nama_labor.toLowerCase().includes(j)) ||
-            (item.nama_perangkat &&
-              item.nama_perangkat.toLowerCase().includes(j))
-        )
+          (item.nama_perangkat &&
+            item.nama_perangkat.toLowerCase().includes(j)),
+        ),
       );
     }
     if (!search) return arr;
@@ -37,12 +37,12 @@ export default function TerimaLaporan() {
     return arr.filter(
       (item: LaporanItem) =>
         (item.nama_labor && item.nama_labor.toLowerCase().includes(s)) ||
-        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s))
+        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(s)),
     );
   }, [laporan, search, selectedJurusan]);
   const paginatedLaporan = filteredLaporan.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
   const totalPages = Math.ceil(filteredLaporan.length / itemsPerPage);
 
@@ -69,7 +69,7 @@ export default function TerimaLaporan() {
 
     if (
       !window.confirm(
-        "Yakin ingin menyetujui laporan ini? jika sudah setuju, mohon edit jumlah dan status barang di tabel product"
+        "Yakin ingin menyetujui laporan ini? jika sudah setuju, mohon edit jumlah dan status barang di tabel product",
       )
     )
       return;
@@ -80,11 +80,11 @@ export default function TerimaLaporan() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id_laporan }),
-        }
+        },
       );
       if (!res.ok) throw new Error("Gagal menghapus laporan");
       setLaporan((prev) =>
-        prev.filter((item) => item.id_laporan !== id_laporan)
+        prev.filter((item) => item.id_laporan !== id_laporan),
       );
     } catch {
       alert("Gagal menghapus laporan");
@@ -104,7 +104,7 @@ export default function TerimaLaporan() {
       setError("");
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`,
         );
         if (!res.ok) throw new Error("Gagal mengambil data laporan");
         const data = await res.json();
@@ -124,7 +124,7 @@ export default function TerimaLaporan() {
           {
             method: "GET",
             credentials: "include",
-          }
+          },
         );
         if (!res.ok) throw new Error("Gagal mengambil jurusan");
         const j = await res.json();
@@ -136,7 +136,8 @@ export default function TerimaLaporan() {
     })();
   }, [isOnline]);
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (loading)
+    return <div className="text-center py-8 text-black">Loading...</div>;
   if (error)
     return (
       <div className="text-center py-8 text-red-600">
@@ -233,7 +234,7 @@ export default function TerimaLaporan() {
                   setError("");
                   try {
                     const res = await fetch(
-                      `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`
+                      `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`,
                     );
                     if (!res.ok)
                       throw new Error("Gagal mengambil data laporan");

@@ -61,7 +61,7 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
         alert(err instanceof Error ? err.message : "Gagal menghapus akun");
       }
     },
-    [isOnline]
+    [isOnline],
   );
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-          }
+          },
         );
         if (!res.ok) throw new Error("Gagal mengambil data user dari remote");
         const data = await res.json();
@@ -94,11 +94,11 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const paginatedUsers = users.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
   const totalPages = Math.ceil(users.length / itemsPerPage);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="text-black">Loading...</div>;
   if (error) return <div style={{ color: "red" }}>{error}z</div>;
 
   return (
@@ -106,7 +106,7 @@ const MemantauAkun = React.memo(({ onAddAkun }: MemantauAkunProps) => {
       <div className="w-full mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between mb-1 -mt-4">
           <h1
-            className="text-2xl sm:text-3xl font-bold text-left font-[Montserrat,sans-serif]"
+            className="text-2xl sm:text-3xl font-bold text-left font-[Montserrat,sans-serif] text-black"
             id="monitoring-user-heading"
           >
             Monitoring User

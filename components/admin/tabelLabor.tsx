@@ -8,14 +8,14 @@ export default function TabelLabor() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const paginatedLabor = laborList.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
   const totalPages = Math.ceil(laborList.length / itemsPerPage);
   const fetchLabor = async () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
       );
       const data = await res.json();
       if (res.ok && data.data) setLaborList(data.data);
@@ -35,7 +35,7 @@ export default function TabelLabor() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nama_labor }),
-        }
+        },
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Gagal menghapus labor");
@@ -52,7 +52,7 @@ export default function TabelLabor() {
   return (
     <div className="w-full bg-white rounded-2xl shadow-sm p-4 md:p-8 overflow-x-auto">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg md:text-2xl font-bold text-gray-700">
+        <h3 className="text-lg md:text-2xl font-bold text-black">
           Tabel Labor
         </h3>
       </div>
@@ -87,7 +87,7 @@ export default function TabelLabor() {
       </div>
       <div className="overflow-x-auto">
         {loading ? (
-          <div>Loading...</div>
+          <div className="text-black">Loading...</div>
         ) : (
           <>
             <table className="min-w-full text-sm md:text-base">
@@ -143,7 +143,7 @@ export default function TabelLabor() {
                     >
                       {p}
                     </button>
-                  )
+                  ),
                 )}
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}

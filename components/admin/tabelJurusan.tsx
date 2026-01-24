@@ -9,7 +9,7 @@ const TabelJurusan = React.memo(() => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const paginatedJurusan = jurusanList.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
   const totalPages = Math.ceil(jurusanList.length / itemsPerPage);
 
@@ -37,7 +37,7 @@ const TabelJurusan = React.memo(() => {
       setLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -69,7 +69,7 @@ const TabelJurusan = React.memo(() => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ jurusan }),
-          }
+          },
         );
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Gagal menghapus jurusan");
@@ -79,16 +79,16 @@ const TabelJurusan = React.memo(() => {
         alert("Gagal menghapus jurusan");
       }
     },
-    [isOnline]
+    [isOnline],
   );
 
   if (loading) {
     return (
       <div className="w-full bg-white rounded-2xl shadow-sm p-4 md:p-8 overflow-x-auto">
-        <h3 className="text-lg md:text-2xl font-bold text-gray-700 mb-4">
+        <h3 className="text-lg md:text-2xl font-bold text-black mb-4">
           Tabel Jurusan
         </h3>
-        <div className="text-center py-8">Loading...</div>
+        <div className="text-center py-8 text-black">Loading...</div>
       </div>
     );
   }
@@ -96,7 +96,7 @@ const TabelJurusan = React.memo(() => {
   if (!isOnline) {
     return (
       <div className="w-full bg-white rounded-2xl shadow-sm p-4 md:p-8 overflow-x-auto">
-        <h3 className="text-lg md:text-2xl font-bold text-gray-700 mb-4">
+        <h3 className="text-lg md:text-2xl font-bold text-black mb-4">
           Tabel Jurusan
         </h3>
         <div className="text-center py-8 text-gray-500">
@@ -108,7 +108,7 @@ const TabelJurusan = React.memo(() => {
 
   return (
     <div className="w-full bg-white rounded-2xl shadow-sm p-4 md:p-8 overflow-x-auto">
-      <h3 className="text-lg md:text-2xl font-bold text-gray-700 mb-4">
+      <h3 className="text-lg md:text-2xl font-bold text-black mb-4">
         Tabel Jurusan
       </h3>
       {jurusanList.length === 0 ? (
