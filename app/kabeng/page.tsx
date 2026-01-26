@@ -6,9 +6,9 @@ import NoInspect from "@/components/NoInspect";
 
 export default function Home() {
   return (
-    <AuthGuard>
-      <NoInspect />
+    // <AuthGuard>
+    //   <NoInspect />
       <NavKabeng />
-    </AuthGuard>
+    // </AuthGuard>
   );
 }

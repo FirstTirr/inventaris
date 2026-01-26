@@ -7,13 +7,12 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { postProduct } from "@/lib/api/productApi";
 import { editRemoteProduct } from "@/lib/api/editRemoteProduct";
+import { ProductData } from "@/types/product";
 
 interface AddProductProps {
-  onAddProduct: (
-    data: [string, string, string, string, string, number, string]
-  ) => void;
+  onAddProduct: (data: ProductData) => void;
   onCancel: () => void;
-  defaultValue?: [string, string, string, string, string, number, string];
+  defaultValue?: ProductData;
 }
 
 export default function AddProduct({
@@ -61,7 +60,7 @@ export default function AddProduct({
           {
             headers: getAuthHeaders(),
             credentials: "include",
-          }
+          },
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -75,7 +74,7 @@ export default function AddProduct({
           {
             headers: getAuthHeaders(),
             credentials: "include",
-          }
+          },
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -89,7 +88,7 @@ export default function AddProduct({
           {
             headers: getAuthHeaders(),
             credentials: "include",
-          }
+          },
         );
         const data = await res.json();
         if (res.ok && data.data)
@@ -102,7 +101,7 @@ export default function AddProduct({
   }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };

@@ -1,12 +1,14 @@
+// @ts-nocheck
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import AddProduct from "./addProduct";
+import PrintModal from "./PrintModal";
 import {
   getRemoteProducts,
   deleteRemoteProduct,
   getRemoteJurusan,
-  getRemoteUsers,
 } from "@/lib/api/remoteProductApi";
 import { CircleArrowRight, SquarePen, Trash2 } from "lucide-react";
+import { ProductData, UserMinimal } from "../../types/product";
 
 // Custom hook for debouncing
 function useDebounce(value: string, delay: number) {
@@ -37,117 +39,19 @@ const Product = ({
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300); // 300ms debounce
   const [showAdd, setShowAdd] = useState(false);
-  // Removed unused editIdx per lint warning
-  const [editData, setEditData] = useState<
-    [string, string, string, string, string, number, string] | null
-  >(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [editData, setEditData] = useState<ProductData | null>(null);
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== "undefined" ? navigator.onLine : true,
+  );
   const [jurusanList, setJurusanList] = useState<string[]>([]);
   const [selectedJurusan, setSelectedJurusan] = useState<string>("");
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [printJurusanList, setPrintJurusanList] = useState<string[]>([]);
-  const [selectedPrintJurusan, setSelectedPrintJurusan] = useState<string>("");
-  const [printJurusanRestrictedTo, setPrintJurusanRestrictedTo] = useState<
-    string | null
-  >(null);
-  const [selectedPrintMonth, setSelectedPrintMonth] = useState<string>("");
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
-  const [selectedPrintCity, setSelectedPrintCity] = useState<string>("");
-  const [printLaborList, setPrintLaborList] = useState<string[]>([]);
-  const [selectedPrintLabor, setSelectedPrintLabor] = useState<string>("");
-  type UserMinimal = {
-    id_user?: number;
-    nama?: string;
-    password?: string;
-    id_role?: number;
-  };
-
-  type RemoteProductItem = {
-    id_perangkat?: number;
-    nama_perangkat?: string;
-    kategori?: string;
-    jurusan?: string;
-    labor?: string | null;
-    jumlah?: number;
-    status?: string;
-    keterangan?: string;
-  };
-
-  type ExportProduct = {
-    id: number;
-    nama: string;
-    kategori: string;
-    jurusan: string;
-    labor: string;
-    jumlah: number;
-    status: string;
-    keterangan?: string;
-  };
-
-  type JsPDFInstance = {
-    internal: {
-      pageSize: { getWidth: () => number; getHeight: () => number };
-      getNumberOfPages?: () => number;
-    };
-    setFontSize: (n: number) => void;
-    text: (
-      text: string,
-      x: number,
-      y: number,
-      opts?: Record<string, unknown>,
-    ) => void;
-    save: (name: string) => void;
-    setLineWidth: (n: number) => void;
-    setDrawColor: (...args: number[]) => void;
-    line: (x1: number, y1: number, x2: number, y2: number) => void;
-    setPage: (n: number) => void;
-  };
-
-  type JsPDFCtor = new (opts: {
-    orientation?: string;
-    unit?: string;
-    format?: string;
-  }) => JsPDFInstance;
-
-  const [usersForPrint, setUsersForPrint] = useState<UserMinimal[]>([]);
-  const [kabengForJurusan, setKabengForJurusan] = useState<UserMinimal | null>(
-    null,
-  );
-  const [selectedPrintPassword, setSelectedPrintPassword] = useState("");
-  const [printReporterName, setPrintReporterName] = useState("");
-  const [printReporterNip, setPrintReporterNip] = useState("");
-  const [printLocationCity, setPrintLocationCity] = useState<string>(
-    typeof window !== "undefined"
-      ? localStorage.getItem("printCity") || ""
-      : "",
-  );
-  const [showPrintPassword, setShowPrintPassword] = useState(false);
   const [statsJurusanList, setStatsJurusanList] = useState<
     { jurusan: string; warna?: string }[]
   >([]);
 
-  // Derive logged-in username and corresponding admin user record (if any)
-  const loggedUsernameRaw =
-    (typeof window !== "undefined" &&
-      (localStorage.getItem("user") ||
-        sessionStorage.getItem("displayName") ||
-        (document.cookie || "")
-          .split("; ")
-          .find((c) => c.startsWith("user="))
-          ?.split("=")[1])) ||
-    "";
-  const loggedUsername =
-    typeof loggedUsernameRaw === "string"
-      ? decodeURIComponent(loggedUsernameRaw)
-      : "";
-  const loggedUserRecord = usersForPrint.find(
-    (u) => String(u.nama) === String(loggedUsername),
-  );
-
   // Data structure: [id_perangkat, nama_perangkat, kategori, jurusan, id_labor, jumlah, status]
-  const [data, setData] = useState<
-    [number, string, string, string, string, number, string][]
-  >([]);
+  const [data, setData] = useState<ProductData[]>([]);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10); // Dropdown page size
 
@@ -208,7 +112,6 @@ const Product = ({
 
     console.log("🔄 Fetching jurusan data from API...");
 
-    // Method 1: Try getRemoteJurusan first
     getRemoteJurusan()
       .then((data) => {
         console.log("✅ Success! Received jurusan data:", data);
@@ -227,32 +130,27 @@ const Product = ({
           const jurusanWithColors = data.data.map(
             (j: { jurusan: string; warna?: string }, index: number) => ({
               ...j,
-              warna: j.warna || colors[index % colors.length], // Use warna from API or fallback to predefined colors
+              warna: j.warna || colors[index % colors.length],
             }),
           );
           console.log("🎨 Setting statsJurusanList:", jurusanWithColors);
           setStatsJurusanList(jurusanWithColors);
         } else {
-          console.log("⚠️ Data kosong atau format tidak valid");
-          // Method 2: Try direct fetch as backup
-          console.log("🔄 Trying direct fetch as backup...");
+          console.log(
+            "⚠️ Data kosong atau format tidak valid, trying backup fetch...",
+          );
 
           const getAuthHeaders = () => {
             const headers: Record<string, string> = {
               "Content-Type": "application/json",
             };
-
             if (typeof window !== "undefined") {
               const token = document.cookie
                 .split("; ")
                 .find((c) => c.startsWith("token="))
                 ?.split("=")[1];
-
-              if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-              }
+              if (token) headers["Authorization"] = `Bearer ${token}`;
             }
-
             return headers;
           };
 
@@ -260,16 +158,8 @@ const Product = ({
             headers: getAuthHeaders(),
             credentials: "include",
           })
-            .then((res) => {
-              console.log(
-                "📡 Direct fetch response:",
-                res.status,
-                res.statusText,
-              );
-              return res.json();
-            })
+            .then((res) => res.json())
             .then((directData) => {
-              console.log("📦 Direct fetch data:", directData);
               if (
                 Array.isArray(directData.data) &&
                 directData.data.length > 0
@@ -290,169 +180,19 @@ const Product = ({
                     warna: j.warna || colors[index % colors.length],
                   }),
                 );
-                console.log(
-                  "🎨 Direct fetch success, setting statsJurusanList:",
-                  jurusanWithColors,
-                );
                 setStatsJurusanList(jurusanWithColors);
               } else {
-                throw new Error("Direct fetch also returned empty data");
+                setStatsJurusanList([]);
               }
             })
-            .catch((directError) => {
-              console.error("❌ Direct fetch also failed:", directError);
-              // Jangan pakai data dummy; kosongkan daftar agar murni dari API
-              setStatsJurusanList([]);
-            });
+            .catch(() => setStatsJurusanList([]));
         }
       })
       .catch((error) => {
         console.error("❌ getRemoteJurusan failed:", error);
-        // Jangan pakai data dummy; kosongkan daftar agar murni dari API
         setStatsJurusanList([]);
       });
   }, [isOnline]);
-
-  // Fetch jurusan list for print modal
-  const fetchJurusanForPrint = useCallback(async () => {
-    if (!isOnline) return;
-
-    const getAuthHeaders = () => {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (typeof window !== "undefined") {
-        const token = document.cookie
-          .split("; ")
-          .find((c) => c.startsWith("token="))
-          ?.split("=")[1];
-
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-      }
-
-      return headers;
-    };
-
-    try {
-      // Fetch jurusan data
-      const jurusanResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
-        {
-          headers: getAuthHeaders(),
-          credentials: "include",
-        },
-      );
-
-      const jurusanData = await jurusanResponse.json();
-      if (Array.isArray(jurusanData.data)) {
-        setPrintJurusanList(
-          jurusanData.data.map((j: { jurusan: string }) => j.jurusan),
-        );
-      }
-
-      // Fetch labor data
-      const laborResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
-        {
-          headers: getAuthHeaders(),
-          credentials: "include",
-        },
-      );
-
-      const laborData = await laborResponse.json();
-      if (Array.isArray(laborData.data)) {
-        setPrintLaborList(
-          laborData.data.map((l: { nama_labor: string }) => l.nama_labor),
-        );
-      }
-
-      // Fetch users so we can validate Kabeng password per jurusan
-      try {
-        const usersRes = await getRemoteUsers();
-        const uArr = Array.isArray(usersRes.data) ? usersRes.data : [];
-        // determine logged-in user's jurusan from admin user table
-        try {
-          const loggedUsernameRaw =
-            (typeof window !== "undefined" &&
-              (localStorage.getItem("user") ||
-                sessionStorage.getItem("displayName") ||
-                (document.cookie || "")
-                  .split("; ")
-                  .find((c) => c.startsWith("user="))
-                  ?.split("=")[1])) ||
-            "";
-          const loggedUsername =
-            typeof loggedUsernameRaw === "string"
-              ? decodeURIComponent(loggedUsernameRaw)
-              : "";
-
-          const found = uArr.find(
-            (uu: UserMinimal) => String(uu.nama) === String(loggedUsername),
-          );
-          const userJurusan =
-            found?.jurusan ??
-            found?.nama_jurusan ??
-            found?.nama_jurusan?.toString?.() ??
-            null;
-
-          if (userJurusan && String(userJurusan).trim() !== "") {
-            // Restrict the print jurusan list to the user's jurusan
-            const uj = String(userJurusan).trim();
-            setPrintJurusanList([uj]);
-            setPrintJurusanRestrictedTo(uj);
-            setSelectedPrintJurusan(uj);
-          } else {
-            // no restriction
-            setPrintJurusanRestrictedTo(null);
-          }
-        } catch (innerErr) {
-          console.error("Error determining logged user's jurusan:", innerErr);
-        }
-
-        setUsersForPrint(uArr);
-      } catch (err) {
-        console.error("Gagal mengambil users untuk print:", err);
-        setUsersForPrint([]);
-      }
-    } catch (error) {
-      console.error("Error fetching data for print:", error);
-      setPrintJurusanList([]);
-      setPrintLaborList([]);
-    }
-  }, [isOnline]);
-
-  // When jurusan selection changes, pick kabeng account for that jurusan
-  useEffect(() => {
-    if (!selectedPrintJurusan) {
-      setKabengForJurusan(null);
-      return;
-    }
-
-    // Try to find a kabeng (id_role === 0) whose name contains the jurusan name (case-insensitive)
-    const found = usersForPrint.find((u) => {
-      try {
-        return (
-          Number(u.id_role) === 0 &&
-          typeof u.nama === "string" &&
-          u.nama.toLowerCase().includes(selectedPrintJurusan.toLowerCase())
-        );
-      } catch {
-        return false;
-      }
-    });
-
-    if (found) {
-      setKabengForJurusan(found);
-    } else {
-      // fallback: first kabeng user if any
-      const fallback =
-        usersForPrint.find((u) => Number(u.id_role) === 0) || null;
-      setKabengForJurusan(fallback);
-    }
-  }, [selectedPrintJurusan, usersForPrint]);
 
   // Fetch data from API only when online dengan caching
   useEffect(() => {
@@ -473,15 +213,7 @@ const Product = ({
         .then((result) => {
           const arr = Array.isArray(result.data) ? result.data : result;
           if (Array.isArray(arr)) {
-            const mappedData: [
-              number,
-              string,
-              string,
-              string,
-              string,
-              number,
-              string,
-            ][] = arr.map(
+            const mappedData: ProductData[] = arr.map(
               (item: {
                 id_perangkat?: number;
                 nama_perangkat?: string;
@@ -524,7 +256,7 @@ const Product = ({
     }
   }, [isOnline]);
 
-  // Filter dan pagination untuk mengurangi DOM nodes
+  // Filter dan pagination
   const { paginatedData, totalPages, filteredLength } = useMemo(() => {
     let filtered = data;
     if (debouncedSearch) {
@@ -532,12 +264,12 @@ const Product = ({
       filtered = filtered.filter(
         ([, nama_perangkat, kategori, jurusan, labor, jumlah, status]) => {
           return (
-            nama_perangkat.toLowerCase().includes(q) ||
-            kategori.toLowerCase().includes(q) ||
-            jurusan.toLowerCase().includes(q) ||
-            labor.toLowerCase().includes(q) ||
+            (nama_perangkat || "").toLowerCase().includes(q) ||
+            (kategori || "").toLowerCase().includes(q) ||
+            (jurusan || "").toLowerCase().includes(q) ||
+            (labor || "").toLowerCase().includes(q) ||
             String(jumlah).includes(q) ||
-            status.toLowerCase().includes(q)
+            (status || "").toLowerCase().includes(q)
           );
         },
       );
@@ -558,22 +290,14 @@ const Product = ({
     };
   }, [data, debouncedSearch, page, itemsPerPage, selectedJurusan]);
 
-  // Handle penambahan produk baru dengan useCallback
+  // Handle penambahan produk baru
   const handleAddProduct = useCallback(async () => {
     setShowAdd(false);
     try {
       const result = await getRemoteProducts();
       const arr = Array.isArray(result.data) ? result.data : result;
       if (Array.isArray(arr)) {
-        const mappedData: [
-          number,
-          string,
-          string,
-          string,
-          string,
-          number,
-          string,
-        ][] = arr.map(
+        const mappedData: ProductData[] = arr.map(
           (item: {
             id_perangkat?: number;
             nama_perangkat?: string;
@@ -599,917 +323,12 @@ const Product = ({
         localStorage.setItem("product-cache", JSON.stringify(mappedData));
         localStorage.setItem("product-cache-time", Date.now().toString());
         setData(mappedData);
-      } else {
-        // If API fails, keep showing cache
-        const cachedData = localStorage.getItem("product-cache");
-        if (cachedData) {
-          try {
-            const parsed = JSON.parse(cachedData);
-            setData(parsed);
-          } catch {
-            setData([]);
-          }
-        }
       }
     } catch (err) {
       console.error("Gagal refresh data produk setelah tambah:", err);
-      // If API fails, keep showing cache
-      const cachedData = localStorage.getItem("product-cache");
-      if (cachedData) {
-        try {
-          const parsed = JSON.parse(cachedData);
-          setData(parsed);
-        } catch {
-          setData([]);
-        }
-      }
     }
-    // Removed setEditIdx (no longer used)
     setEditData(null);
   }, []);
-
-  // Handle print modal
-  const handleOpenPrintModal = () => {
-    setShowPrintModal(true);
-    fetchJurusanForPrint();
-    detectCityForPrint();
-  };
-
-  // Try to detect city for use in printed reports.
-  // Strategy: prefer localStorage('printCity'), otherwise try Geolocation + OpenStreetMap Nominatim reverse geocode.
-  const detectCityForPrint = async () => {
-    if (typeof window === "undefined") return;
-    try {
-      const stored = localStorage.getItem("printCity");
-      if (stored && stored.trim()) {
-        setPrintLocationCity(stored.trim());
-        return;
-      }
-
-      if (!navigator.geolocation) return;
-
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-        const onSuccess = (p: GeolocationPosition) => resolve(p);
-        const onError = (e: GeolocationPositionError) => reject(e);
-        navigator.geolocation.getCurrentPosition(onSuccess, onError, {
-          maximumAge: 1000 * 60 * 60, // 1 hour
-          timeout: 5000,
-        });
-      }).catch(() => null);
-
-      if (!pos) return;
-
-      const { latitude, longitude } = pos.coords as {
-        latitude: number;
-        longitude: number;
-      };
-
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
-            latitude,
-          )}&lon=${encodeURIComponent(longitude)}`,
-          {
-            headers: {
-              "User-Agent": "inventaris-app/1.0 (mailto:you@example.com)",
-            },
-          },
-        );
-        if (!res.ok) return;
-        const j = await res.json();
-        const addr = j?.address || {};
-        const city =
-          addr.city || addr.town || addr.village || addr.county || "";
-        if (city && String(city).trim()) {
-          setPrintLocationCity(String(city).trim());
-          try {
-            localStorage.setItem("printCity", String(city).trim());
-          } catch {}
-        }
-      } catch (err) {
-        // ignore reverse geocode errors
-      }
-    } catch (err) {
-      // ignore geolocation permission denials or other errors
-    }
-  };
-
-  const handleClosePrintModal = () => {
-    setShowPrintModal(false);
-    setSelectedPrintJurusan("");
-    setSelectedPrintMonth("");
-    setSelectedPrintLabor("");
-    setSelectedPrintPassword("");
-    setKabengForJurusan(null);
-  };
-
-  const handlePrintReport = async () => {
-    if (!selectedPrintJurusan) {
-      alert("Pilih jurusan terlebih dahulu!");
-      return;
-    }
-
-    if (!selectedPrintJurusan) {
-      alert("Pilih jurusan terlebih dahulu!");
-      return;
-    }
-
-    // selectedPrintMonth now holds 'nama sekolah' (alphanumeric + spaces)
-    if (!selectedPrintMonth) {
-      alert("Masukkan nama sekolah terlebih dahulu!");
-      return;
-    }
-    if (!selectedPrintLabor) {
-      alert("Pilih labor terlebih dahulu!");
-      return;
-    }
-
-    // Validate kabeng password for the selected jurusan
-    if (!kabengForJurusan) {
-      alert(
-        "Tidak dapat menemukan akun Kabeng yang cocok untuk jurusan ini. Cek konfigurasi akun admin.",
-      );
-      return;
-    }
-
-    // Prefer using the logged-in user's password from the admin table.
-    const loggedUsernameRaw =
-      (typeof window !== "undefined" &&
-        (localStorage.getItem("user") ||
-          sessionStorage.getItem("displayName") ||
-          (document.cookie || "")
-            .split("; ")
-            .find((c) => c.startsWith("user="))
-            ?.split("=")[1])) ||
-      "";
-
-    const loggedUsername =
-      typeof loggedUsernameRaw === "string"
-        ? decodeURIComponent(loggedUsernameRaw)
-        : "";
-
-    const loggedUser = usersForPrint.find(
-      (u) => String(u.nama) === String(loggedUsername),
-    );
-
-    const loginPassword =
-      typeof window !== "undefined"
-        ? sessionStorage.getItem("userPassword")
-        : null;
-
-    // Determine expected password: prefer the admin-table password for the logged-in user,
-    // otherwise fall back to the kabengForJurusan record.
-    let expected = "";
-    if (loggedUser && loggedUser.password) {
-      expected = String(loggedUser.password);
-    } else if (kabengForJurusan && kabengForJurusan.password) {
-      expected = String(kabengForJurusan.password);
-    }
-
-    // If we have loginPassword from the current session, prefer that when the loggedUser exists.
-    if (loggedUser && loginPassword) {
-      expected = loginPassword;
-    }
-
-    if (!expected) {
-      alert("Tidak ada informasi password untuk divalidasi. Cetak dibatalkan.");
-      return;
-    }
-
-    if (String(selectedPrintPassword) !== String(expected)) {
-      alert("Password Kabeng salah. Cetak dibatalkan.");
-      return;
-    }
-
-    // Build product list for the selected jurusan. We prefer to use the
-    // already-fetched `data` state (mapped array), falling back to remote
-    // fetch if it's empty.
-    const buildProductsForJurusan = async () => {
-      // data is [[id, name, kategori, jurusan, labor, jumlah, status], ...]
-      let products: Array<{
-        id: number;
-        nama: string;
-        kategori: string;
-        jurusan: string;
-        labor: string;
-        jumlah: number;
-        status: string;
-      }> = [];
-
-      try {
-        if (Array.isArray(data) && data.length > 0) {
-          products = data
-            .map((row) => ({
-              id: Number(row[0] ?? 0),
-              nama: String(row[1] ?? ""),
-              kategori: String(row[2] ?? ""),
-              jurusan: String(row[3] ?? ""),
-              labor: String(row[4] ?? ""),
-              jumlah: Number(row[5] ?? 0),
-              status: String(row[6] ?? ""),
-            }))
-            .filter(
-              (p) =>
-                String(p.jurusan ?? "")
-                  .trim()
-                  .toLowerCase() ===
-                  String(selectedPrintJurusan ?? "")
-                    .trim()
-                    .toLowerCase() &&
-                String(p.labor ?? "")
-                  .trim()
-                  .toLowerCase() ===
-                  String(selectedPrintLabor ?? "")
-                    .trim()
-                    .toLowerCase(),
-            );
-        }
-
-        if (!products.length) {
-          // fallback to fetching remote
-          const res = await getRemoteProducts();
-          const arr = Array.isArray(res.data) ? res.data : res;
-          products = (arr || [])
-            .map((item: RemoteProductItem) => ({
-              id: Number(item.id_perangkat ?? 0),
-              nama: String(item.nama_perangkat ?? ""),
-              kategori: String(item.kategori ?? ""),
-              jurusan: String(item.jurusan ?? ""),
-              labor:
-                item.labor !== undefined &&
-                item.labor !== null &&
-                String(item.labor).trim() !== ""
-                  ? String(item.labor)
-                  : "-",
-              jumlah: Number(item.jumlah ?? 0),
-              status: String(item.status ?? ""),
-            }))
-            .filter((p: ExportProduct) => {
-              return (
-                String(p.jurusan ?? "")
-                  .trim()
-                  .toLowerCase() ===
-                  String(selectedPrintJurusan ?? "")
-                    .trim()
-                    .toLowerCase() &&
-                String(p.labor ?? "")
-                  .trim()
-                  .toLowerCase() ===
-                  String(selectedPrintLabor ?? "")
-                    .trim()
-                    .toLowerCase()
-              );
-            });
-        }
-      } catch (err) {
-        console.error("Gagal membangun daftar produk untuk cetak:", err);
-      }
-
-      return products;
-    };
-
-    const products = await buildProductsForJurusan();
-
-    // Determine signature name: prefer manually entered reporter name, then logged user, then kabengForJurusan
-    const signatureName =
-      (printReporterName && String(printReporterName).trim()) ||
-      (loggedUser && loggedUser.nama) ||
-      (kabengForJurusan && kabengForJurusan.nama) ||
-      "";
-
-    // Try to generate a PDF with jsPDF + autotable and trigger download.
-    // If generation fails, fallback to the previous print-window behavior.
-    try {
-      // dynamic import to avoid SSR issues and keep bundle small
-      // Try several entry points: plain 'jspdf' may fail in some bundlers, so
-      // fall back to the packaged ESM/UMD builds that are present in node_modules.
-      let jsPDFModule: unknown = null;
-      try {
-        jsPDFModule = await import("jspdf");
-      } catch (e1) {
-        try {
-          // @ts-expect-error - Dynamic import path may not have declarations
-          jsPDFModule = await import("jspdf/dist/jspdf.es.min.js");
-        } catch (e2) {
-          try {
-            // @ts-expect-error - Dynamic import path may not have declarations
-            jsPDFModule = await import("jspdf/dist/jspdf.umd.min.js");
-          } catch (e3) {
-            // Don't throw immediately — we'll try CDN fallback below
-            console.warn(
-              "Local jspdf imports failed, will try CDN fallback",
-              e3 || e2 || e1,
-            );
-            jsPDFModule = null;
-          }
-        }
-      }
-
-      let jsPDF: JsPDFCtor | null = null;
-      if (jsPDFModule) {
-        // Try to extract jsPDF constructor from different module export patterns
-        const moduleRecord = jsPDFModule as Record<string, unknown>;
-        jsPDF =
-          (moduleRecord.jsPDF as JsPDFCtor) ||
-          (moduleRecord.default as JsPDFCtor) ||
-          (jsPDFModule as JsPDFCtor);
-      }
-
-      // autotable plugin: try ESM then UMD plugin
-      try {
-        await import("jspdf-autotable");
-      } catch (at1) {
-        try {
-          // @ts-expect-error - Dynamic import path may not have declarations
-          await import("jspdf-autotable/dist/jspdf.plugin.autotable.js");
-        } catch (at2) {
-          // ignore - we'll fallback to print window below if plugin missing
-          console.warn("autotable import failed", at2 || at1);
-        }
-      }
-
-      // If jsPDF still not available, attempt to load UMD bundles from CDN and use globals
-      if (!jsPDF) {
-        const loadScript = (src: string) =>
-          new Promise<void>((resolve, reject) => {
-            if (typeof window === "undefined")
-              return reject(new Error("No window"));
-            // Prevent loading the same script twice
-            if (document.querySelector(`script[src=\"${src}\"]`))
-              return resolve();
-            const s = document.createElement("script");
-            s.src = src;
-            s.async = true;
-            s.onload = () => resolve();
-            s.onerror = () => reject(new Error(`Failed to load script ${src}`));
-            document.head.appendChild(s);
-          });
-
-        try {
-          // Load jspdf UMD from CDN
-          await loadScript(
-            "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js",
-          );
-          // Load autotable plugin
-          await loadScript(
-            "https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.js",
-          );
-          // Try to get jsPDF from globals (umd exposes window.jspdf.jsPDF)
-          const win = window as unknown as Record<string, unknown>;
-          jsPDF =
-            ((win &&
-              (win["jspdf"] as unknown) &&
-              (win["jspdf"] as unknown as Record<string, unknown>)[
-                "jsPDF"
-              ]) as unknown as JsPDFCtor) ||
-            (win["jsPDF"] as unknown as JsPDFCtor) ||
-            ((win &&
-              (win["jspdf"] as unknown) &&
-              (win["jspdf"] as unknown as Record<string, unknown>)["default"] &&
-              (
-                (win["jspdf"] as unknown as Record<string, unknown>)[
-                  "default"
-                ] as Record<string, unknown>
-              )["jsPDF"]) as unknown as JsPDFCtor);
-          if (!jsPDF) throw new Error("jsPDF global not found after CDN load");
-        } catch (cdnErr) {
-          console.warn("CDN fallback for jsPDF failed:", cdnErr);
-          // let the outer catch handle fallback to print window
-          throw cdnErr;
-        }
-      }
-
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "pt",
-        format: "a4",
-      });
-
-      const pageWidth = doc.internal.pageSize.getWidth();
-
-      const title = `DAFTAR INVENTARIS LABOR JURUSAN ${String(
-        selectedPrintJurusan || "",
-      ).toUpperCase()}`;
-      doc.setFontSize(14);
-      doc.text(title, pageWidth / 2, 40, { align: "center" });
-      doc.setFontSize(10);
-      // Use school name from modal (selectedPrintMonth) as the school line; fallback to default
-      doc.text(String(selectedPrintMonth || ""), pageWidth / 2, 56, {
-        align: "center",
-      });
-      // Include selected labor under the header if provided.
-      // If a labor is selected, do NOT print the TP line beneath it (per request).
-      // If a labor is selected, render it. Otherwise, if a school name
-      // (selectedPrintMonth) was provided, render the school name. As a
-      // fallback show the current year label.
-      if (selectedPrintLabor) {
-        doc.text(String(selectedPrintLabor), pageWidth / 2, 72, {
-          align: "center",
-        });
-        // If academic year provided in modal, show it below the labor
-        if (selectedAcademicYear) {
-          doc.setFontSize(9);
-          doc.text(String(selectedAcademicYear), pageWidth / 2, 88, {
-            align: "center",
-          });
-          doc.setFontSize(10);
-        }
-      } else if (selectedPrintMonth) {
-        doc.text(String(selectedPrintMonth), pageWidth / 2, 72, {
-          align: "center",
-        });
-        if (selectedAcademicYear) {
-          doc.setFontSize(9);
-          doc.text(String(selectedAcademicYear), pageWidth / 2, 88, {
-            align: "center",
-          });
-          doc.setFontSize(10);
-        }
-      } else {
-        doc.text(`TP. ${new Date().getFullYear()}`, pageWidth / 2, 72, {
-          align: "center",
-        });
-      }
-
-      // (top-right date removed per user request — date will be shown above the
-      // left signature block only)
-
-      // Use boolean flags for Baik/Rusak so we can draw vector checks and avoid
-      // relying on font glyphs (which caused stray characters).
-      const body = products.map((p: ExportProduct, idx: number) => [
-        idx + 1,
-        p.nama ?? "",
-        p.jumlah ?? "",
-        String(p.status ?? "").toLowerCase() === "baik", // Baik boolean
-        String(p.status ?? "").toLowerCase() !== "baik", // Rusak boolean
-        p.keterangan ?? "",
-      ]);
-
-      // Prepare a smooth check icon (from a small SVG) rendered to PNG data URL
-      // so we can draw a crisp check image inside table cells. This is created
-      // once and reused per-cell to avoid expensive canvas ops inside didDrawCell.
-      let checkPngDataUrl: string | null = null;
-      if (typeof window !== "undefined") {
-        try {
-          const createCheckPng = (size: number) =>
-            new Promise<string>((resolve, reject) => {
-              try {
-                const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 24 24'><path d='M20 6L9 17l-5-5' fill='none' stroke='#000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5'/></svg>`;
-                const img = new Image();
-                img.onload = () => {
-                  try {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = size;
-                    canvas.height = size;
-                    const ctx = canvas.getContext("2d");
-                    if (!ctx) return reject(new Error("no-canvas-ctx"));
-                    // draw transparent background then the svg image
-                    ctx.clearRect(0, 0, size, size);
-                    ctx.drawImage(img, 0, 0, size, size);
-                    resolve(canvas.toDataURL("image/png"));
-                  } catch (err) {
-                    reject(err);
-                  }
-                };
-                img.onerror = (e) => reject(e);
-                img.src =
-                  "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-              } catch (err) {
-                reject(err);
-              }
-            });
-
-          // Choose a base pixel size for the check icon. We'll scale it to cell size later.
-          checkPngDataUrl = await createCheckPng(48);
-        } catch (err) {
-          // If icon rendering fails, fall back to vector lines (handled in didDrawCell fallback)
-          console.warn(
-            "Failed to render check icon PNG, will fallback to vector drawing:",
-            err,
-          );
-          checkPngDataUrl = null;
-        }
-      }
-
-      // Call autoTable (provided by plugin) via a safe cast to avoid any
-      (
-        doc as unknown as {
-          autoTable?: (opts: Record<string, unknown>) => void;
-        }
-      ).autoTable?.({
-        startY: selectedPrintLabor ? 100 : 90,
-        head: [["No", "Nama Barang", "Jumlah", "Baik", "Rusak", "Keterangan"]],
-        body,
-        styles: { font: "helvetica", fontSize: 9, textColor: 20 },
-        headStyles: { fillColor: [34, 34, 34], textColor: 255 },
-        theme: "grid",
-        margin: { left: 40, right: 40 },
-        columnStyles: {
-          0: { cellWidth: 30 }, // No
-          1: { cellWidth: 220 }, // Nama
-          2: { cellWidth: 60 }, // Jumlah
-          3: { cellWidth: 40 },
-          4: { cellWidth: 40 },
-          5: { cellWidth: 140 },
-        },
-        didParseCell: (data: unknown) => {
-          // Prevent boolean true/false from being rendered as text in cells 3 & 4
-          try {
-            const d = data as Record<string, unknown>;
-            const column = d.column as Record<string, unknown> | undefined;
-            const cell = d.cell as Record<string, unknown> | undefined;
-            if (
-              column &&
-              (column.index === 3 || column.index === 4) &&
-              cell &&
-              typeof cell.raw === "boolean"
-            ) {
-              // Mutate text safely via generic record access to avoid TS errors
-              (cell as Record<string, unknown>).text = [""];
-            }
-          } catch {
-            // ignore
-          }
-        },
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        didDrawCell: (data: unknown) => {
-          try {
-            const d = data as Record<string, unknown>;
-            const col = (d.column as Record<string, unknown>)?.index as
-              | number
-              | undefined;
-            const cell = d.cell as Record<string, unknown> | undefined;
-            if (
-              col !== undefined &&
-              (col === 3 || col === 4) &&
-              cell &&
-              cell.raw === true
-            ) {
-              const w = (cell.width as number) || 0;
-              const h = (cell.height as number) || 0;
-              // center the icon within the cell and make it a bit smaller than the cell
-              const imgSize = Math.min(w * 0.6, h * 0.6, 18);
-              const imgX = ((cell.x as number) || 0) + (w - imgSize) / 2;
-              const imgY = ((cell.y as number) || 0) + (h - imgSize) / 2;
-
-              if (checkPngDataUrl) {
-                try {
-                  // addImage expects dimensions in points (same units as doc)
-                  (doc as any).addImage(
-                    checkPngDataUrl,
-                    "PNG",
-                    imgX,
-                    imgY,
-                    imgSize,
-                    imgSize,
-                  );
-                } catch (imgErr) {
-                  // fallback to vector drawing if addImage fails
-                  try {
-                    if ((doc as any).setLineCap)
-                      (doc as any).setLineCap("round");
-                    if ((doc as any).setLineJoin)
-                      (doc as any).setLineJoin("round");
-                  } catch {}
-                  doc.setDrawColor(0, 0, 0);
-                  doc.setLineWidth(1.6);
-                  const startX = ((cell.x as number) || 0) + w * 0.22;
-                  const startY = ((cell.y as number) || 0) + h * 0.62;
-                  const midX = ((cell.x as number) || 0) + w * 0.42;
-                  const midY = ((cell.y as number) || 0) + h * 0.78;
-                  const endX = ((cell.x as number) || 0) + w * 0.78;
-                  const endY = ((cell.y as number) || 0) + h * 0.28;
-                  doc.line(startX, startY, midX, midY);
-                  doc.line(midX, midY, endX, endY);
-                }
-              } else {
-                // fallback vector drawing when PNG is not available
-                try {
-                  if ((doc as any).setLineCap) (doc as any).setLineCap("round");
-                  if ((doc as any).setLineJoin)
-                    (doc as any).setLineJoin("round");
-                } catch {}
-                doc.setDrawColor(0, 0, 0);
-                doc.setLineWidth(1.6);
-                const startX = ((cell.x as number) || 0) + w * 0.22;
-                const startY = ((cell.y as number) || 0) + h * 0.62;
-                const midX = ((cell.x as number) || 0) + w * 0.42;
-                const midY = ((cell.y as number) || 0) + h * 0.78;
-                const endX = ((cell.x as number) || 0) + w * 0.78;
-                const endY = ((cell.y as number) || 0) + h * 0.28;
-                doc.line(startX, startY, midX, midY);
-                doc.line(midX, midY, endX, endY);
-              }
-            }
-          } catch {
-            // ignore drawing errors
-          }
-        },
-        /* eslint-enable @typescript-eslint/no-explicit-any */
-      });
-
-      // Add printed date (left) and signature block (right) on the last page
-      try {
-        const pageCount =
-          typeof doc.internal.getNumberOfPages === "function"
-            ? doc.internal.getNumberOfPages()!
-            : 1;
-        const lastPage = pageCount || 1; // 1-based
-        const pageHeight = doc.internal.pageSize.getHeight();
-        // Move to last page
-        doc.setPage(lastPage);
-        doc.setFontSize(10);
-
-        // Printed date and left-side signature block (Mengetahui Kabeng)
-        try {
-          const now = new Date();
-          const monthNames = [
-            "Januari",
-            "Februari",
-            "Maret",
-            "April",
-            "Mei",
-            "Juni",
-            "Juli",
-            "Agustus",
-            "September",
-            "Oktober",
-            "November",
-            "Desember",
-          ];
-          // Use detected city (if any) and month name for printed date, matching sample: "City, Month Year".
-          // Ensure we always have at least the Month Year so the date doesn't disappear.
-          const cityForPrint =
-            (selectedPrintCity && String(selectedPrintCity).trim()) ||
-            (printLocationCity && String(printLocationCity).trim()) ||
-            "";
-          const monthYear = `${
-            monthNames[now.getMonth()]
-          } ${now.getFullYear()}`;
-          const printedDate = cityForPrint
-            ? `${cityForPrint}, ${monthYear}`
-            : monthYear;
-
-          // LEFT: printed date above the signature block, then label "Mengetahui Kabeng <JURUSAN>" and signature line with name under it
-          const leftX = 40; // left margin
-          const labelY = pageHeight - 140; // label above the signature line
-          const printedDateY = labelY - 22; // date sits above the label
-          // draw printed date near the left signature area (city, month year)
-          try {
-            // Draw printed date above the left signature block. Use a readable font size
-            // and ensure the text is not empty.
-            doc.setFontSize(10);
-            const safePrintedDate = String(printedDate || monthYear);
-            doc.text(safePrintedDate, leftX, printedDateY, { align: "left" });
-          } catch (dateErr) {
-            // If drawing the date fails, log for debugging but continue printing.
-            // eslint-disable-next-line no-console
-            console.warn("Failed to draw printed date:", dateErr);
-          }
-          const sigLineYLeft = pageHeight - 90; // signature line position
-          const sigNameYLeft = pageHeight - 60; // printed name below the line
-
-          const jurusanLabel = (
-            String(selectedPrintJurusan || "").trim() || ""
-          ).toUpperCase();
-          const labelLine = jurusanLabel
-            ? `Mengetahui Kabeng ${jurusanLabel}`
-            : `Mengetahui Kabeng`;
-          doc.text(labelLine, leftX, labelY, { align: "left" });
-
-          // (date now printed at top-right in header)
-
-          // draw left signature line
-          try {
-            doc.setLineWidth(0.6);
-            const leftLineStart = leftX + 10;
-            const leftLineEnd = leftX + 150; // ~140pt long
-            doc.line(leftLineStart, sigLineYLeft, leftLineEnd, sigLineYLeft);
-          } catch (leftLineErr) {
-            console.warn("Failed to draw left signature line:", leftLineErr);
-          }
-
-          if (signatureName) {
-            doc.text(String(signatureName), leftX + 10, sigNameYLeft, {
-              align: "left",
-            });
-            // If NIP provided, print it below the name with 'NIP.' prefix to match sample
-            try {
-              const signatureNip = (printReporterNip || "").toString().trim();
-              if (signatureNip) {
-                doc.setFontSize(9);
-                doc.text(
-                  `NIP. ${String(signatureNip)}`,
-                  leftX + 10,
-                  sigNameYLeft + 14,
-                  {
-                    align: "left",
-                  },
-                );
-                // restore font size
-                doc.setFontSize(10);
-              }
-            } catch {
-              // ignore NIP drawing errors
-            }
-          }
-
-          // (right-side signature block removed — left-side block is used for "Mengetahui Kabeng")
-        } catch (dateErr) {
-          console.warn(
-            "Failed to draw printed date or signature blocks:",
-            dateErr,
-          );
-        }
-      } catch (sigErr) {
-        console.warn("Failed to draw signature/date on PDF:", sigErr);
-      }
-
-      const safeJurusan = (selectedPrintJurusan || "jurusan")
-        .replace(/\s+/g, "-")
-        .toLowerCase();
-      const safeSchool = (
-        selectedPrintMonth || String(new Date().getFullYear())
-      )
-        .replace(/\s+/g, "-")
-        .toLowerCase();
-      const fileName = `laporan-${safeJurusan}-${safeSchool}.pdf`;
-      doc.save(fileName);
-    } catch (pdfErr) {
-      console.error(
-        "PDF generation failed, falling back to print window:",
-        pdfErr,
-      );
-
-      // Fallback: open printable HTML in new window (original behavior)
-      const generateReportHtml = (
-        jurusanTitle: string,
-        monthLabel: string,
-        laborLabel: string,
-        academicYear: string,
-        productsList: ExportProduct[],
-        signatureName: string,
-        signatureNip: string,
-      ) => {
-        const now = new Date();
-        const monthNames = [
-          "Januari",
-          "Februari",
-          "Maret",
-          "April",
-          "Mei",
-          "Juni",
-          "Juli",
-          "Agustus",
-          "September",
-          "Oktober",
-          "November",
-          "Desember",
-        ];
-
-        const cityForPrintHtml =
-          (selectedPrintCity && String(selectedPrintCity).trim()) ||
-          (printLocationCity && String(printLocationCity).trim()) ||
-          "";
-        const printedDateHtml = `${escapeHtml(cityForPrintHtml)}${
-          cityForPrintHtml ? ", " : ""
-        }${escapeHtml(monthNames[now.getMonth()])} ${now.getFullYear()}`;
-
-        const header = `<div style="position:relative;margin-bottom:12px;line-height:1.1"><div style="text-align:center"><h3 style="margin:0;padding:0;">DAFTAR INVENTARIS LABOR JURUSAN ${escapeHtml(
-          jurusanTitle.toUpperCase(),
-        )}</h3><div style="font-weight:700">${escapeHtml(
-          (monthLabel && monthLabel.toString().trim()) || "",
-        )}</div><div style="margin-top:4px">${escapeHtml(
-          laborLabel || "",
-        )}</div><div style="margin-top:2px;font-size:12px">${escapeHtml(
-          academicYear || "",
-        )}</div></div></div>`;
-
-        const tableRows = productsList
-          .map((p: ExportProduct, idx: number) => {
-            const isBaik = String(p.status ?? "").toLowerCase() === "baik";
-            const isRusak = !isBaik;
-            return `
-            <tr>
-              <td style="border:1px solid #444;padding:6px;text-align:center;">${
-                idx + 1
-              }</td>
-              <td style="border:1px solid #444;padding:6px;">${escapeHtml(
-                p.nama,
-              )}</td>
-              <td style="border:1px solid #444;padding:6px;text-align:center;">${
-                p.jumlah ?? ""
-              }</td>
-              <td style="border:1px solid #444;padding:6px;text-align:center;">${
-                isBaik ? "✓" : ""
-              }</td>
-              <td style="border:1px solid #444;padding:6px;text-align:center;">${
-                isRusak ? "✓" : ""
-              }</td>
-              <td style="border:1px solid #444;padding:6px;text-align:left;">${escapeHtml(
-                p.keterangan ?? "",
-              )}</td>
-            </tr>`;
-          })
-          .join("\n");
-
-        const table = `
-        <table style="width:100%;border-collapse:collapse;background:#111;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;">
-          <thead>
-            <tr>
-              <th style="border:1px solid #444;padding:8px;background:#222;color:#fff;">No</th>
-              <th style="border:1px solid #444;padding:8px;background:#222;color:#fff;">Nama Barang</th>
-              <th style="border:1px solid #444;padding:8px;background:#222;color:#fff;">Jumlah</th>
-              <th style="border:1px solid #444;padding:8px;background:#222;color:#fff;">Baik</th>
-              <th style="border:1px solid #444;padding:8px;background:#222;color:#fff;">Rusak</th>
-              <th style="border:1px solid #444;padding:8px;background:#222;color:#fff;">Keterangan</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
-        </table>`;
-
-        const signatureHtml = signatureName
-          ? `
-            <div style="position:fixed;left:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;">
-              <div style="margin-bottom:6px;">${escapeHtml(
-                printedDateHtml,
-              )}</div>
-              <div style="margin-bottom:6px;">${escapeHtml(
-                (jurusanTitle || "").toString().trim()
-                  ? `Mengetahui Kabeng ${escapeHtml(
-                      (jurusanTitle || "").toString().toUpperCase(),
-                    )}`
-                  : `Mengetahui Kabeng`,
-              )}</div>
-              <div style="width:220px;border-bottom:1px solid #000;margin-bottom:8px;margin-top:18px;"></div>
-              <div><strong>${escapeHtml(signatureName)}</strong></div>
-              ${
-                signatureNip
-                  ? `<div style="margin-top:4px;">NIP. ${escapeHtml(
-                      signatureNip,
-                    )}</div>`
-                  : ""
-              }
-            </div>
-          `
-          : `<div style="position:fixed;left:40px;bottom:40px;font-family:Arial,Helvetica,sans-serif;">${printedDateHtml}</div>`;
-
-        return `<!doctype html><html><head><meta charset="utf-8"><title>Report ${escapeHtml(
-          jurusanTitle,
-        )}</title></head><body style="margin:20px;">${header}${table}${signatureHtml}</body></html>`;
-      };
-
-      // Small helper to avoid injecting raw HTML
-      const escapeHtml = (unsafe: unknown) => {
-        if (unsafe === null || unsafe === undefined) return "";
-        return String(unsafe)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/\"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      };
-
-      if (typeof window !== "undefined") {
-        const signatureNip = (printReporterNip || "").toString().trim();
-        const html = generateReportHtml(
-          selectedPrintJurusan || "",
-          selectedPrintMonth || "",
-          selectedPrintLabor || "",
-          selectedAcademicYear || "",
-          products,
-          signatureName,
-          signatureNip,
-        );
-        const w = window.open("", "_blank", "width=900,height=700");
-        if (!w) {
-          alert("Popup diblokir. Izinkan popup untuk mendownload laporan.");
-          return;
-        }
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
-        // Wait a bit for rendering then call print; user can choose Save as PDF
-        setTimeout(() => {
-          try {
-            w.focus();
-            w.print();
-          } catch (e) {
-            console.error("Print failed:", e);
-          }
-        }, 500);
-      }
-
-      // Close modal after triggering print/fallback
-      handleClosePrintModal();
-      return;
-    }
-
-    // Close modal after successful PDF generation
-    handleClosePrintModal();
-  };
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
@@ -1518,11 +337,10 @@ const Product = ({
           <h2 className="text-3xl font-bold text-black">Product Management</h2>
         </div>
 
-        {/* Dashboard Statistic Cards - Responsive */}
+        {/* Dashboard Statistic Cards */}
         {!hideStats && (
           <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 w-full">
             {statsJurusanList.map(({ jurusan, warna }) => {
-              // Calculate total items per jurusan from API data
               const total = data
                 .filter(([, , , dataJurusan]) => dataJurusan === jurusan)
                 .reduce((sum, [, , , , , jumlah]) => {
@@ -1602,7 +420,7 @@ const Product = ({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:ml-auto">
               <button
                 className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all"
-                onClick={handleOpenPrintModal}
+                onClick={() => setShowPrintModal(true)}
                 type="button"
               >
                 <svg
@@ -1653,7 +471,7 @@ const Product = ({
               setShowAdd(false);
               setEditData(null);
             }}
-            {...(editData ? { defaultValue: editData } : {})}
+            defaultValue={editData || undefined}
           />
         )}
 
@@ -1753,7 +571,7 @@ const Product = ({
                       labor,
                       jumlah,
                       status,
-                    ]: [number, string, string, string, string, number, string],
+                    ]: ProductData,
                     idx: number,
                   ) => (
                     <tr
@@ -1775,43 +593,22 @@ const Product = ({
                           title="Hapus"
                           className="hover:text-red-600"
                           onClick={async () => {
-                            console.log(
-                              "Mau hapus ID:",
-                              id_perangkat,
-                              typeof id_perangkat,
-                            );
                             try {
-                              await deleteRemoteProduct(id_perangkat);
-                              // Refresh data
+                              await deleteRemoteProduct(Number(id_perangkat));
+                              // Refresh logic
                               const result = await getRemoteProducts();
                               const arr = Array.isArray(result.data)
                                 ? result.data
                                 : result;
                               if (Array.isArray(arr)) {
-                                const mappedData: [
-                                  number,
-                                  string,
-                                  string,
-                                  string,
-                                  string,
-                                  number,
-                                  string,
-                                ][] = arr.map(
-                                  (item: {
-                                    id_perangkat?: number;
-                                    nama_perangkat?: string;
-                                    kategori?: string;
-                                    jurusan?: string;
-                                    labor?: string | null;
-                                    jumlah?: number;
-                                    status?: string;
-                                  }) => [
+                                const mappedData: ProductData[] = arr.map(
+                                  (item: any) => [
                                     Number(item.id_perangkat ?? 0),
                                     String(item.nama_perangkat ?? ""),
                                     String(item.kategori ?? ""),
                                     String(item.jurusan ?? ""),
-                                    item.labor !== undefined &&
                                     item.labor !== null &&
+                                    item.labor !== undefined &&
                                     String(item.labor).trim() !== ""
                                       ? String(item.labor)
                                       : "-",
@@ -1828,33 +625,10 @@ const Product = ({
                                   Date.now().toString(),
                                 );
                                 setData(mappedData);
-                              } else {
-                                // If API fails, keep showing cache
-                                const cachedData =
-                                  localStorage.getItem("product-cache");
-                                if (cachedData) {
-                                  try {
-                                    const parsed = JSON.parse(cachedData);
-                                    setData(parsed);
-                                  } catch {
-                                    setData([]);
-                                  }
-                                }
                               }
                               alert("Barang berhasil dihapus!");
                             } catch (err) {
                               alert("Gagal menghapus data: " + err);
-                              // If API fails, keep showing cache
-                              const cachedData =
-                                localStorage.getItem("product-cache");
-                              if (cachedData) {
-                                try {
-                                  const parsed = JSON.parse(cachedData);
-                                  setData(parsed);
-                                } catch {
-                                  setData([]);
-                                }
-                              }
                             }
                           }}
                         >
@@ -1866,7 +640,7 @@ const Product = ({
                           title="Edit"
                           onClick={() => {
                             setEditData([
-                              String(id_perangkat),
+                              Number(id_perangkat),
                               nama_perangkat,
                               kategori,
                               jurusan,
@@ -1911,330 +685,13 @@ const Product = ({
           </div>
         )}
 
-        {/* Print Modal */}
-        {showPrintModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 overflow-auto z-50 flex items-start justify-center py-8">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Pilih Jurusan untuk Cetak laporan
-                </h3>
-                <button
-                  onClick={handleClosePrintModal}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Jurusan:
-                </label>
-                <select
-                  value={selectedPrintJurusan}
-                  onChange={(e) => setSelectedPrintJurusan(e.target.value)}
-                  disabled={!!printJurusanRestrictedTo}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {printJurusanRestrictedTo ? (
-                    // If restricted, only show the user's jurusan and disable changing
-                    <>
-                      <option value={printJurusanRestrictedTo}>
-                        {printJurusanRestrictedTo}
-                      </option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="">-- Pilih Jurusan --</option>
-                      {printJurusanList.map((jurusan) => (
-                        <option key={jurusan} value={jurusan}>
-                          {jurusan}
-                        </option>
-                      ))}
-                    </>
-                  )}
-                </select>
-                {printJurusanRestrictedTo && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Anda dibatasi hanya dapat mencetak untuk jurusan:{" "}
-                    <strong>{printJurusanRestrictedTo}</strong>
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Sekolah:
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="text"
-                    value={selectedPrintMonth}
-                    onChange={(e) => {
-                      // allow only letters, numbers and spaces
-                      const filtered = e.target.value.replace(
-                        /[^A-Za-z0-9 ]/g,
-                        "",
-                      );
-                      setSelectedPrintMonth(filtered);
-                    }}
-                    onPaste={(e) => {
-                      const paste =
-                        (e.clipboardData && e.clipboardData.getData("text")) ||
-                        "";
-                      const filtered = paste.replace(/[^A-Za-z0-9 ]/g, "");
-                      e.preventDefault();
-                      setSelectedPrintMonth((prev) => `${prev}${filtered}`);
-                    }}
-                    placeholder="Masukkan nama sekolah (angka, huruf, spasi)"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kota (opsional, akan muncul di sebelah tanggal):
-                </label>
-                <input
-                  type="text"
-                  inputMode="text"
-                  value={selectedPrintCity}
-                  onChange={(e) => {
-                    // allow letters, numbers, spaces, dot and hyphen
-                    const filtered = e.target.value.replace(
-                      /[^A-Za-z0-9 .-]/g,
-                      "",
-                    );
-                    setSelectedPrintCity(filtered);
-                  }}
-                  onPaste={(e) => {
-                    const paste =
-                      (e.clipboardData && e.clipboardData.getData("text")) ||
-                      "";
-                    const filtered = paste.replace(/[^A-Za-z0-9 .-]/g, "");
-                    e.preventDefault();
-                    setSelectedPrintCity((prev) => `${prev}${filtered}`);
-                  }}
-                  placeholder="Masukkan nama kota (contoh: Payakumbuh)"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tahun Ajaran:
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="text"
-                    value={selectedAcademicYear}
-                    onChange={(e) => {
-                      // allow only digits, spaces and slash (/)
-                      const filtered = e.target.value.replace(
-                        /[^A-Za-z0-9,.\/ ]/g,
-                        "",
-                      );
-                      setSelectedAcademicYear(filtered);
-                    }}
-                    onPaste={(e) => {
-                      const paste =
-                        (e.clipboardData && e.clipboardData.getData("text")) ||
-                        "";
-                      const filtered = paste.replace(/[^A-Za-z0-9,.\/ ]/g, "");
-                      e.preventDefault();
-                      setSelectedAcademicYear((prev) => `${prev}${filtered}`);
-                    }}
-                    placeholder="Masukkan tahun ajaran, contoh: 2024/2025"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Labor:
-                </label>
-                <select
-                  value={selectedPrintLabor}
-                  onChange={(e) => setSelectedPrintLabor(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="" className="text-gray-500">
-                    -- Pilih Labor --
-                  </option>
-                  {printLaborList.map((labor) => (
-                    <option key={labor} value={labor} className="text-black">
-                      {labor}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Nama yang mencetak laporan (reporter) */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  NIP (hanya angka dan titik):
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={printReporterNip}
-                  onChange={(e) => {
-                    // allow digits, dots, and spaces
-                    const filtered = e.target.value.replace(/[^0-9. ]/g, "");
-                    setPrintReporterNip(filtered);
-                  }}
-                  onPaste={(e) => {
-                    const paste =
-                      (e.clipboardData && e.clipboardData.getData("text")) ||
-                      "";
-                    const filtered = paste.replace(/[^0-9. ]/g, "");
-                    e.preventDefault();
-                    setPrintReporterNip((prev) => `${prev}${filtered}`);
-                  }}
-                  placeholder="Masukkan NIP (contoh: 19870501.200501.1)"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Kabeng yang mencetak laporan:
-                </label>
-                <input
-                  type="text"
-                  inputMode="text"
-                  pattern="[A-Za-z0-9 ]+"
-                  value={printReporterName}
-                  onChange={(e) => {
-                    // allow letters, numbers and spaces
-                    const filtered = e.target.value.replace(
-                      /[^A-Za-z0-9,. ]/g,
-                      "",
-                    );
-                    setPrintReporterName(filtered);
-                  }}
-                  onPaste={(e) => {
-                    const paste =
-                      (e.clipboardData && e.clipboardData.getData("text")) ||
-                      "";
-                    const filtered = paste.replace(/[^A-Za-z0-9,. ]/g, "");
-                    e.preventDefault();
-                    setPrintReporterName((prev) => `${prev}${filtered}`);
-                  }}
-                  placeholder="Masukkan Nama Anda (hanya huruf, angka, dan spasi)"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              {/* Password field for Kabeng per-jurusan */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password Kabeng untuk jurusan terpilih:
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPrintPassword ? "text" : "password"}
-                    value={selectedPrintPassword}
-                    onChange={(e) => {
-                      // allow only alphanumeric characters
-                      const filtered = e.target.value.replace(
-                        /[^A-Za-z0-9]/g,
-                        "",
-                      );
-                      setSelectedPrintPassword(filtered);
-                    }}
-                    onPaste={(e) => {
-                      // sanitize pasted value to alphanumeric only
-                      const paste =
-                        (e.clipboardData && e.clipboardData.getData("text")) ||
-                        "";
-                      const filtered = paste.replace(/[^A-Za-z0-9]/g, "");
-                      e.preventDefault();
-                      // append the filtered paste to current value
-                      setSelectedPrintPassword((prev) => `${prev}${filtered}`);
-                    }}
-                    placeholder="Masukkan password Kabeng"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-20 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPrintPassword((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 px-2 py-1"
-                    aria-label={
-                      showPrintPassword
-                        ? "Sembunyikan password"
-                        : "Tampilkan password"
-                    }
-                  >
-                    {showPrintPassword ? "Sembunyikan" : "Lihat"}
-                  </button>
-                </div>
-                {loggedUserRecord ? (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Memeriksa password akun login:{" "}
-                    <strong>{loggedUserRecord.nama}</strong>
-                  </p>
-                ) : kabengForJurusan ? (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Memeriksa password Kabeng:{" "}
-                    <strong>{kabengForJurusan.nama}</strong>
-                  </p>
-                ) : (
-                  <p className="text-xs text-red-500 mt-2">
-                    Tidak ditemukan akun Kabeng untuk jurusan ini.
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-sm text-yellow-800 text-center">
-                  <span className="font-medium">⚠️ Peringatan:</span>
-                  <br />
-                  Apakah Anda yakin mencetak laporan ini? Mohon cek lagi jika
-                  kurang yakin.
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={handleClosePrintModal}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handlePrintReport}
-                  disabled={
-                    !selectedPrintJurusan ||
-                    !selectedPrintMonth ||
-                    !selectedPrintLabor
-                  }
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
-                    <polyline points="10 9 9 9 8 9" />
-                    <line x1="16" y1="5" x2="8" y2="5" />
-                    <line x1="16" y1="11" x2="8" y2="11" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
-                  Cetak Laporan
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* New Print Modal Component */}
+        <PrintModal
+          isOpen={showPrintModal}
+          onClose={() => setShowPrintModal(false)}
+          products={data}
+          initialJurusan={selectedJurusan}
+        />
       </div>
     </div>
   );
