@@ -28,6 +28,7 @@ export default function PrintModal({
   const [printReporterNip, setPrintReporterNip] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [laborList, setLaborList] = useState<string[]>([]);
+  const [jurusanList, setJurusanList] = useState<string[]>([]);
 
   useEffect(() => {
     // Get auth headers
@@ -67,8 +68,24 @@ export default function PrintModal({
       } catch {}
     };
 
+    const fetchJurusan = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
+          {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          },
+        );
+        const data = await res.json();
+        if (res.ok && data.data)
+          setJurusanList(data.data.map((j: { jurusan: string }) => j.jurusan));
+      } catch {}
+    };
+
     if (isOpen) {
       fetchLabor();
+      fetchJurusan();
       if (initialJurusan) {
         setSelectedPrintJurusan(initialJurusan);
       }
@@ -283,10 +300,11 @@ export default function PrintModal({
                   className="w-full rounded-lg border border-[#444] bg-[#2a2a2a] p-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
                 >
                   <option value="">-- Pilih Jurusan --</option>
-                  <option value="RPL">RPL</option>
-                  <option value="TKJ">TKJ</option>
-                  <option value="DKV">DKV</option>
-                  <option value="BC">BC</option>
+                  {jurusanList.map((jurusan) => (
+                    <option key={jurusan} value={jurusan}>
+                      {jurusan}
+                    </option>
+                  ))}
                 </select>
               </div>
 

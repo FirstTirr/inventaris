@@ -6,9 +6,9 @@ import NavAdmin from "@/components/admin/navAdmin";
 
 export default function Home() {
   return (
-    <AuthGuard>
-      <NoInspect />
+    // <AuthGuard>
+    //   <NoInspect />
       <NavAdmin />
-    </AuthGuard>
+    // </AuthGuard>
   );
 }
