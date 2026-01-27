@@ -313,7 +313,7 @@ const InputKelas = React.memo(() => {
             </div>
           )}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Kelas :</label>
+            <label className="text-sm font-medium text-black">Kelas :</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
@@ -337,7 +337,7 @@ const InputKelas = React.memo(() => {
                 id="Kelas"
                 value={kelas}
                 onChange={(e) => setKelas(e.target.value)}
-                className="border border-gray-300 rounded pl-10 pr-3 py-2 text-sm bg-gray-50 w-full focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="border border-gray-300 rounded pl-10 pr-3 py-2 text-sm bg-gray-50 w-full focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               >
                 {kelasList.length === 0 ? (
                   <option value="">(tidak ada data kelas)</option>
@@ -353,7 +353,7 @@ const InputKelas = React.memo(() => {
           </div>
           {/* Input Labor */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Labor :</label>
+            <label className="text-sm font-medium text-black">Labor :</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
@@ -384,7 +384,7 @@ const InputKelas = React.memo(() => {
                 id="id_labor"
                 value={labor}
                 onChange={(e) => setLabor(e.target.value)}
-                className="border border-gray-300 rounded pl-10 pr-3 py-2 text-sm bg-gray-50 w-full focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="border border-gray-300 rounded pl-10 pr-3 py-2 text-sm bg-gray-50 w-full focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               >
                 <option value="">Pilih Labor</option>
                 {laborList.length === 0 ? (
@@ -400,7 +400,7 @@ const InputKelas = React.memo(() => {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">
+            <label className="text-sm font-medium text-black">
               Barang Yang Digunakan :
             </label>
             <div className="relative">
@@ -433,7 +433,7 @@ const InputKelas = React.memo(() => {
                 id="nama_perangkat"
                 value={barang}
                 onChange={handleBarangSelect}
-                className="border border-gray-300 rounded pl-10 pr-3 py-2 text-sm bg-gray-50 w-full focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="border border-gray-300 rounded pl-10 pr-3 py-2 text-sm bg-gray-50 w-full focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
                 required
               >
                 {productsList.length === 0 ? (
@@ -472,13 +472,13 @@ const InputKelas = React.memo(() => {
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">
+            <label className="text-sm font-medium text-black">
               jumlah Yang Digunakan :
             </label>
             <input
               type="text"
               placeholder="Masukkan Jumlah"
-              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               value={jumlah}
               onChange={handleJumlahChange}
               pattern="[a-zA-Z0-9 ]*"

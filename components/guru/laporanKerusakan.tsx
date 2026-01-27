@@ -61,7 +61,7 @@ const LaporanKerusakanBarang = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -92,7 +92,7 @@ const LaporanKerusakanBarang = React.memo(() => {
         const data = JSON.parse(cachedData);
         setProductsRaw(data);
         const good = data.filter(
-          (p: Product) => String(p.status).toUpperCase() === "BAIK"
+          (p: Product) => String(p.status).toUpperCase() === "BAIK",
         );
         const goodNames = good.map((p: Product) => p.nama_perangkat);
         setProductsList(goodNames);
@@ -100,10 +100,10 @@ const LaporanKerusakanBarang = React.memo(() => {
           setBarang(goodNames[0]);
           // set jumlah from the first product
           const first = good.find(
-            (p: Product) => p.nama_perangkat === goodNames[0]
+            (p: Product) => p.nama_perangkat === goodNames[0],
           );
           setJumlah(
-            first && first.jumlah !== undefined ? String(first.jumlah) : ""
+            first && first.jumlah !== undefined ? String(first.jumlah) : "",
           );
         }
         return;
@@ -114,7 +114,7 @@ const LaporanKerusakanBarang = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`,
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -123,17 +123,17 @@ const LaporanKerusakanBarang = React.memo(() => {
 
         setProductsRaw(data.data);
         const good = data.data.filter(
-          (p: Product) => String(p.status).toUpperCase() === "BAIK"
+          (p: Product) => String(p.status).toUpperCase() === "BAIK",
         );
         const goodNames = good.map((p: Product) => p.nama_perangkat);
         setProductsList(goodNames);
         if (goodNames.length > 0) {
           setBarang(goodNames[0]);
           const first = good.find(
-            (p: Product) => p.nama_perangkat === goodNames[0]
+            (p: Product) => p.nama_perangkat === goodNames[0],
           );
           setJumlah(
-            first && first.jumlah !== undefined ? String(first.jumlah) : ""
+            first && first.jumlah !== undefined ? String(first.jumlah) : "",
           );
         }
       }
@@ -186,10 +186,10 @@ const LaporanKerusakanBarang = React.memo(() => {
     // set jumlah based on selected first item after labor filter
     if (names.length > 0) {
       const first = filtered.find(
-        (p: Product) => p.nama_perangkat === names[0]
+        (p: Product) => p.nama_perangkat === names[0],
       );
       setJumlah(
-        first && first.jumlah !== undefined ? String(first.jumlah) : ""
+        first && first.jumlah !== undefined ? String(first.jumlah) : "",
       );
     } else {
       setJumlah("");
@@ -202,7 +202,8 @@ const LaporanKerusakanBarang = React.memo(() => {
     // Prefer product record with status BAIK when populating jumlah
     const prod = productsRaw.find(
       (p) =>
-        p.nama_perangkat === barang && String(p.status).toUpperCase() === "BAIK"
+        p.nama_perangkat === barang &&
+        String(p.status).toUpperCase() === "BAIK",
     );
     if (prod && prod.jumlah !== undefined) {
       setJumlah(String(prod.jumlah));
@@ -228,7 +229,7 @@ const LaporanKerusakanBarang = React.memo(() => {
             jumlah: jumlah,
             jenis_kerusakan: kerusakan,
           }),
-        }
+        },
       );
       const data = await res.json();
       if (res.ok) {
@@ -296,7 +297,7 @@ const LaporanKerusakanBarang = React.memo(() => {
               </svg>
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-lg font-semibold text-black">
                 Laporan Kerusakan Barang
               </h2>
               <p className="text-sm text-gray-500 mt-1">
@@ -315,13 +316,13 @@ const LaporanKerusakanBarang = React.memo(() => {
             </div>
           )}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Labor :</label>
+            <label className="text-sm font-medium text-black">Labor :</label>
             <select
               name="labor"
               id="labor"
               value={labor}
               onChange={handleLaborChange}
-              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               required
             >
               <option value="">Pilih Labor</option>
@@ -337,13 +338,15 @@ const LaporanKerusakanBarang = React.memo(() => {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Barang Yang Rusak :</label>
+            <label className="text-sm font-medium text-black">
+              Barang Yang Rusak :
+            </label>
             <select
               name="nama_perangkat"
               id="nama_perangkat"
               value={barang}
               onChange={handleBarangSelect}
-              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               required
             >
               {productsList.length === 0 ? (
@@ -354,7 +357,7 @@ const LaporanKerusakanBarang = React.memo(() => {
                   const prod = productsRaw.find(
                     (r) =>
                       r.nama_perangkat === p &&
-                      String(r.status).toUpperCase() === "BAIK"
+                      String(r.status).toUpperCase() === "BAIK",
                   );
                   const qty =
                     prod && prod.jumlah !== undefined ? prod.jumlah : null;
@@ -368,22 +371,24 @@ const LaporanKerusakanBarang = React.memo(() => {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Jumlah</label>
+            <label className="text-sm font-medium text-black">Jumlah</label>
             <input
               type="number"
               min={0}
               placeholder="Masukkan Jumlah"
-              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               value={jumlah}
               onChange={handleJumlahChange}
               title="Hanya angka"
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Jenis Kerusakan</label>
+            <label className="text-sm font-medium text-black">
+              Jenis Kerusakan
+            </label>
             <textarea
               placeholder="Masukkan Jenis Kerusakan"
-              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 min-h-[60px] focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 min-h-[60px] focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               value={kerusakan}
               onChange={handleKerusakanChange}
               title="Hanya huruf dan angka"
