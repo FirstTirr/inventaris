@@ -61,7 +61,7 @@ const InputKelas = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`,
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -69,7 +69,7 @@ const InputKelas = React.memo(() => {
         localStorage.setItem(timeKey, now.toString());
 
         setKelasList(
-          data.data.map((k: { nama_kelas: string }) => k.nama_kelas)
+          data.data.map((k: { nama_kelas: string }) => k.nama_kelas),
         );
         if (data.data.length > 0) setKelas(data.data[0].nama_kelas);
       }
@@ -102,7 +102,7 @@ const InputKelas = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -110,7 +110,7 @@ const InputKelas = React.memo(() => {
         localStorage.setItem(timeKey, now.toString());
 
         setLaborList(
-          data.data.map((l: { nama_labor: string }) => l.nama_labor)
+          data.data.map((l: { nama_labor: string }) => l.nama_labor),
         );
         if (data.data.length > 0) setLabor(data.data[0].nama_labor);
       }
@@ -136,7 +136,7 @@ const InputKelas = React.memo(() => {
         setProductsRaw(data);
         // initial productsList: all good items
         const good = data.filter(
-          (p: ProductRaw) => String(p.status).toUpperCase() === "BAIK"
+          (p: ProductRaw) => String(p.status).toUpperCase() === "BAIK",
         );
         const goodNames = good.map((p: ProductRaw) => p.nama_perangkat ?? "");
         setProductsList(goodNames);
@@ -149,7 +149,7 @@ const InputKelas = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`,
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -159,7 +159,7 @@ const InputKelas = React.memo(() => {
         setProductsRaw(data.data);
         // initial productsList: all good items
         const good = data.data.filter(
-          (p: ProductRaw) => String(p.status).toUpperCase() === "BAIK"
+          (p: ProductRaw) => String(p.status).toUpperCase() === "BAIK",
         );
         const goodNames = good.map((p: ProductRaw) => p.nama_perangkat ?? "");
         setProductsList(goodNames);
@@ -235,7 +235,7 @@ const InputKelas = React.memo(() => {
             nama_perangkat: barang,
             jumlah_pakai: jumlah,
           }),
-        }
+        },
       );
       const data = await res.json();
       if (res.ok) {
@@ -443,7 +443,7 @@ const InputKelas = React.memo(() => {
                     const prod = productsRaw.find(
                       (r) =>
                         r.nama_perangkat === p &&
-                        String(r.status).toUpperCase() === "BAIK"
+                        String(r.status).toUpperCase() === "BAIK",
                     );
                     const qty = prod?.jumlah ?? null;
                     return (
@@ -461,7 +461,7 @@ const InputKelas = React.memo(() => {
                   const prod = productsRaw.find(
                     (r) =>
                       r.nama_perangkat === barang &&
-                      String(r.status).toUpperCase() === "BAIK"
+                      String(r.status).toUpperCase() === "BAIK",
                   );
                   const qty = prod?.jumlah ?? null;
                   return qty !== null
