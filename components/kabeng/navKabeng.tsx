@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, Suspense, memo, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { ShoppingCart, User, Flag } from "lucide-react";
+import { ShoppingCart, User, Flag, ClipboardList } from "lucide-react";
 import Logo from "../Logo";
 import DashboardKabeng from "./dashboardKabeng";
 import LastUser from "./lastUser";
@@ -17,6 +17,18 @@ const Product = dynamic(() => import("./product"), {
 const TerimaLaporan = dynamic(() => import("./terimaLaporan"), {
   loading: () => (
     <div className="text-center py-8 text-black">Loading laporan...</div>
+  ),
+  ssr: false,
+});
+const Peminjaman = dynamic(() => import("./peminjaman"), {
+  loading: () => (
+    <div className="text-center py-8 text-black">Loading peminjaman...</div>
+  ),
+  ssr: false,
+});
+const RiwayatPeminjaman = dynamic(() => import("./riwayatPeminjaman"), {
+  loading: () => (
+    <div className="text-center py-8 text-black">Loading riwayat...</div>
   ),
   ssr: false,
 });
@@ -129,6 +141,19 @@ const Navbar = memo(() => {
               >
                 <ShoppingCart size={20} />
                 Produk
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 text-left ${
+                  active === "peminjaman" || active === "riwayat"
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-[#232e3c] text-gray-200"
+                }`}
+                onClick={() => handleChangePage("peminjaman")}
+              >
+                <ClipboardList size={20} />
+                Peminjaman
               </button>
             </li>
             <li>
@@ -272,6 +297,19 @@ const Navbar = memo(() => {
                 <li>
                   <button
                     className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 text-left ${
+                      active === "peminjaman" || active === "riwayat"
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-[#232e3c] text-gray-200"
+                    }`}
+                    onClick={() => handleChangePage("peminjaman")}
+                  >
+                    <ClipboardList size={20} />
+                    Peminjaman
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 text-left ${
                       active === "user"
                         ? "bg-blue-600 text-white"
                         : "hover:bg-[#232e3c] text-gray-200"
@@ -334,6 +372,8 @@ const Navbar = memo(() => {
           <h1 className="text-2xl font-semibold tracking-wide text-left text-gray-800">
             {active === "dashboard" && ""}
             {active === "product" && ""}
+            {active === "peminjaman" && ""}
+            {active === "riwayat" && ""}
             {active === "user" && ""}
             {active === "laporan" && ""}
           </h1>
@@ -359,6 +399,28 @@ const Navbar = memo(() => {
               }
             >
               <Product />
+            </Suspense>
+          )}
+          {active === "peminjaman" && (
+            <Suspense
+              fallback={
+                <div className="text-center py-8 text-black">
+                  Loading peminjaman...
+                </div>
+              }
+            >
+              <Peminjaman navigateTo={handleChangePage} />
+            </Suspense>
+          )}
+          {active === "riwayat" && (
+            <Suspense
+              fallback={
+                <div className="text-center py-8 text-black">
+                  Loading riwayat...
+                </div>
+              }
+            >
+              <RiwayatPeminjaman navigateTo={handleChangePage} />
             </Suspense>
           )}
           {active === "user" && (

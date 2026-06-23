@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 const LaporanKerusakanBarang = React.memo(() => {
   const [barang, setBarang] = useState("");
@@ -62,6 +63,10 @@ const LaporanKerusakanBarang = React.memo(() => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
+        {
+          headers: getClientAuthHeaders(),
+          credentials: "include",
+        }
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -98,7 +103,6 @@ const LaporanKerusakanBarang = React.memo(() => {
         setProductsList(goodNames);
         if (goodNames.length > 0) {
           setBarang(goodNames[0]);
-          // set jumlah from the first product
           const first = good.find(
             (p: Product) => p.nama_perangkat === goodNames[0],
           );
@@ -114,7 +118,11 @@ const LaporanKerusakanBarang = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`,
+        {
+          headers: getClientAuthHeaders(),
+          credentials: "include",
+        }
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -161,7 +169,6 @@ const LaporanKerusakanBarang = React.memo(() => {
   };
 
   const handleJumlahChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // allow only digits
     const value = e.target.value.replace(/[^0-9]/g, "");
     setJumlah(value);
   };
@@ -174,7 +181,6 @@ const LaporanKerusakanBarang = React.memo(() => {
   useEffect(() => {
     if (!productsRaw || productsRaw.length === 0) return;
     const selectedLabor = String(labor || "").toLowerCase();
-    // Filter barang: status BAIK dan labor persis sama dengan labor yang dipilih
     const filtered = productsRaw.filter((p: Product) => {
       if (String(p.status).toUpperCase() !== "BAIK") return false;
       const prodLaborName = p.labor ? String(p.labor).toLowerCase() : "";
@@ -183,7 +189,6 @@ const LaporanKerusakanBarang = React.memo(() => {
     const names = filtered.map((p: Product) => p.nama_perangkat);
     setProductsList(names);
     if (names.length > 0) setBarang(names[0]);
-    // set jumlah based on selected first item after labor filter
     if (names.length > 0) {
       const first = filtered.find(
         (p: Product) => p.nama_perangkat === names[0],
@@ -199,7 +204,6 @@ const LaporanKerusakanBarang = React.memo(() => {
   // When barang selection changes, populate jumlah from productsRaw
   useEffect(() => {
     if (!barang) return;
-    // Prefer product record with status BAIK when populating jumlah
     const prod = productsRaw.find(
       (p) =>
         p.nama_perangkat === barang &&
@@ -222,7 +226,8 @@ const LaporanKerusakanBarang = React.memo(() => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/laporan`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({
             nama_labor: labor,
             nama_perangkat: barang,
@@ -234,7 +239,6 @@ const LaporanKerusakanBarang = React.memo(() => {
       const data = await res.json();
       if (res.ok) {
         setMessage("✅ Laporan berhasil ditambahkan");
-        // Invalidate and refresh product cache so UI reflects real-time stock/status
         try {
           localStorage.removeItem("laporan-products-cache");
           localStorage.removeItem("laporan-products-cache-time");
@@ -242,17 +246,13 @@ const LaporanKerusakanBarang = React.memo(() => {
           // ignore
         }
         try {
-          // refresh product list from server so reported item (now RUSAK) is removed from choices
           await fetchProducts();
         } catch (e) {
           console.error("Failed to refresh products after submit:", e);
         }
 
-        // Reset form fields (keep labor selected so user can continue reporting in same labor)
         setBarang("");
         setKerusakan("");
-        // Do not clear labor so teacher can keep reporting for same lab; if you prefer to clear, uncomment:
-        // setLabor("");
         setJumlah("");
       } else {
         setMessage(data.detail || "Gagal mengirim data");
@@ -353,7 +353,6 @@ const LaporanKerusakanBarang = React.memo(() => {
                 <option value="">(tidak ada data barang baik)</option>
               ) : (
                 productsList.map((p, idx) => {
-                  // Prefer the BAIK product record when showing quantity
                   const prod = productsRaw.find(
                     (r) =>
                       r.nama_perangkat === p &&
@@ -373,8 +372,7 @@ const LaporanKerusakanBarang = React.memo(() => {
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-black">Jumlah</label>
             <input
-              type="number"
-              min={0}
+              type="text"
               placeholder="Masukkan Jumlah"
               className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 text-black"
               value={jumlah}
@@ -397,7 +395,7 @@ const LaporanKerusakanBarang = React.memo(() => {
           </div>
           <button
             type="submit"
-            className="w-full bg-black text-white rounded py-2 font-medium text-base mt-2 hover:bg-gray-800 transition"
+            className="w-full bg-gradient-to-r from-red-600 to-rose-500 text-white rounded py-2 font-semibold text-base mt-2 hover:from-red-700 hover:to-rose-600 shadow-md transition"
             disabled={loading}
           >
             {loading ? "Mengirim..." : "Kirim ke kabeng/kaprog"}

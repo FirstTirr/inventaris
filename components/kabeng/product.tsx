@@ -1,5 +1,6 @@
 // @ts-nocheck
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import Link from "next/link";
 import AddProduct from "./addProduct";
 import PrintModal from "./PrintModal";
 import {
@@ -9,6 +10,8 @@ import {
 } from "@/lib/api/remoteProductApi";
 import { CircleArrowRight, SquarePen, Trash2 } from "lucide-react";
 import { ProductData, UserMinimal } from "../../types/product";
+import { parseProductCsv } from "@/lib/csv/productCsv";
+import { importProductsInBulk } from "@/lib/api/productBulkImportApi";
 
 // Custom hook for debouncing
 function useDebounce(value: string, delay: number) {
@@ -31,10 +34,12 @@ const Product = ({
   hideStats = false,
   onlyStats = false,
   showControls = true,
+  forcedJurusan = "",
 }: {
   hideStats?: boolean;
   onlyStats?: boolean;
   showControls?: boolean;
+  forcedJurusan?: string;
 }) => {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300); // 300ms debounce
@@ -54,6 +59,65 @@ const Product = ({
   const [data, setData] = useState<ProductData[]>([]);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10); // Dropdown page size
+  const csvInputRef = useRef<HTMLInputElement | null>(null);
+
+  const jurusanInsights = useMemo(() => {
+    if (!forcedJurusan) return null;
+
+    const keyJurusan = forcedJurusan.trim().toLowerCase();
+    const byJurusan = data.filter(
+      ([, , , jurusan]) => String(jurusan || "").trim().toLowerCase() === keyJurusan,
+    );
+
+    const totalStok = byJurusan.reduce((sum, [, , , , , jumlah]) => {
+      const num = typeof jumlah === "number" ? jumlah : Number(jumlah);
+      return sum + (Number.isNaN(num) ? 0 : num);
+    }, 0);
+
+    let baik = 0;
+    let rusak = 0;
+    const kategoriMap = new Map<string, number>();
+    const laborMap = new Map<string, number>();
+
+    byJurusan.forEach(([, , kategori, , labor, jumlah, status]) => {
+      const qty = typeof jumlah === "number" ? jumlah : Number(jumlah) || 0;
+      const st = String(status || "").toLowerCase();
+
+      if (st.includes("baik")) baik += qty;
+      if (st.includes("rusak")) rusak += qty;
+
+      const keyKategori = String(kategori || "-").toUpperCase();
+      kategoriMap.set(keyKategori, (kategoriMap.get(keyKategori) || 0) + qty);
+
+      const keyLabor = String(labor || "-").toUpperCase();
+      laborMap.set(keyLabor, (laborMap.get(keyLabor) || 0) + qty);
+    });
+
+    return {
+      totalStok,
+      totalBaris: byJurusan.length,
+      baik,
+      rusak,
+      persenBaik: totalStok ? Math.round((baik / totalStok) * 100) : 0,
+      persenRusak: totalStok ? Math.round((rusak / totalStok) * 100) : 0,
+      topKategori: Array.from(kategoriMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3),
+      topLabor: Array.from(laborMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3),
+      barangSpesifik: byJurusan
+        .map(([, nama, kategori, , labor, jumlah, status]) => ({
+          nama: String(nama || "-"),
+          kategori: String(kategori || "-").toUpperCase(),
+          labor: String(labor || "-").toUpperCase(),
+          jumlah: Number(jumlah || 0),
+          status: String(status || "-").toUpperCase(),
+        }))
+        .sort((a, b) => b.jumlah - a.jumlah)
+        .slice(0, 6),
+    };
+  }, [data, forcedJurusan]);
 
   // Check network status
   useEffect(() => {
@@ -69,11 +133,16 @@ const Product = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (forcedJurusan) {
+      setSelectedJurusan(forcedJurusan.toUpperCase());
+    }
+  }, [forcedJurusan]);
+
   // Fetch jurusan list from API
   useEffect(() => {
     if (!isOnline) return;
 
-    // Get auth headers
     const getAuthHeaders = () => {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -110,13 +179,9 @@ const Product = ({
   useEffect(() => {
     if (!isOnline) return;
 
-    console.log("🔄 Fetching jurusan data from API...");
-
     getRemoteJurusan()
       .then((data) => {
-        console.log("✅ Success! Received jurusan data:", data);
         if (Array.isArray(data.data) && data.data.length > 0) {
-          // Assign colors to jurusan dynamically
           const colors = [
             "bg-black",
             "bg-green-500",
@@ -133,13 +198,9 @@ const Product = ({
               warna: j.warna || colors[index % colors.length],
             }),
           );
-          console.log("🎨 Setting statsJurusanList:", jurusanWithColors);
+          
           setStatsJurusanList(jurusanWithColors);
         } else {
-          console.log(
-            "⚠️ Data kosong atau format tidak valid, trying backup fetch...",
-          );
-
           const getAuthHeaders = () => {
             const headers: Record<string, string> = {
               "Content-Type": "application/json",
@@ -180,6 +241,7 @@ const Product = ({
                     warna: j.warna || colors[index % colors.length],
                   }),
                 );
+                
                 setStatsJurusanList(jurusanWithColors);
               } else {
                 setStatsJurusanList([]);
@@ -194,9 +256,8 @@ const Product = ({
       });
   }, [isOnline]);
 
-  // Fetch data from API only when online dengan caching
+  // Fetch data from API with caching
   useEffect(() => {
-    // Always try to load from cache first
     const cachedData = localStorage.getItem("product-cache");
     let cacheLoaded = false;
     if (cachedData) {
@@ -243,7 +304,6 @@ const Product = ({
         })
         .catch((err) => {
           console.error("Gagal mengambil data produk remote:", err);
-          // If API fails, keep showing cache
           if (cachedData && !cacheLoaded) {
             try {
               const parsed = JSON.parse(cachedData);
@@ -256,9 +316,27 @@ const Product = ({
     }
   }, [isOnline]);
 
-  // Filter dan pagination
+  // Filter dan pagination (Kunci filter berdasarkan jurusan user jika ada)
   const { paginatedData, totalPages, filteredLength } = useMemo(() => {
     let filtered = data;
+    
+    // 1. Filter jurusan
+    if (forcedJurusan) {
+      filtered = filtered.filter(
+        ([, , , jurusan]) =>
+          String(jurusan || "").trim().toLowerCase() ===
+          forcedJurusan.trim().toLowerCase(),
+      );
+    } else if (selectedJurusan) {
+      // Jika admin global bebas memilih filter dropdown
+      filtered = filtered.filter(
+        ([, , , jurusan]) =>
+          String(jurusan || "").trim().toLowerCase() ===
+          selectedJurusan.trim().toLowerCase(),
+      );
+    }
+
+    // 2. Filter Search Debounce
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
       filtered = filtered.filter(
@@ -274,11 +352,7 @@ const Product = ({
         },
       );
     }
-    if (selectedJurusan) {
-      filtered = filtered.filter(
-        ([, , , jurusan]) => jurusan === selectedJurusan,
-      );
-    }
+
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginated = filtered.slice(startIndex, endIndex);
@@ -288,7 +362,14 @@ const Product = ({
       totalPages: pages,
       filteredLength: filtered.length,
     };
-  }, [data, debouncedSearch, page, itemsPerPage, selectedJurusan]);
+  }, [
+    data,
+    debouncedSearch,
+    page,
+    itemsPerPage,
+    selectedJurusan,
+    forcedJurusan,
+  ]);
 
   // Handle penambahan produk baru
   const handleAddProduct = useCallback(async () => {
@@ -330,12 +411,162 @@ const Product = ({
     setEditData(null);
   }, []);
 
+  const refreshProductTable = useCallback(async () => {
+    const result = await getRemoteProducts();
+    const arr = Array.isArray(result.data) ? result.data : result;
+    if (!Array.isArray(arr)) return;
+
+    const mappedData: ProductData[] = arr.map((item: any) => [
+      Number(item.id_perangkat ?? 0),
+      String(item.nama_perangkat ?? item.nama_barang ?? ""),
+      String(item.kategori ?? item.category ?? ""),
+      String(item.jurusan ?? ""),
+      item.labor !== undefined &&
+      item.labor !== null &&
+      String(item.labor).trim() !== ""
+        ? String(item.labor)
+        : "-",
+      Number(item.jumlah ?? 0),
+      String(item.status ?? item.kondisi ?? ""),
+    ]);
+
+    localStorage.setItem("product-cache", JSON.stringify(mappedData));
+    localStorage.setItem("product-cache-time", Date.now().toString());
+    setData(mappedData);
+  }, []);
+
+  const handleImportCsvClick = useCallback(() => {
+    csvInputRef.current?.click();
+  }, []);
+
+  const handleImportCsvFile = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const csvText = await file.text();
+        const parsed = parseProductCsv(csvText);
+
+        if (parsed.errors.length > 0) {
+          alert(
+            `CSV tidak valid.\n\n${parsed.errors.slice(0, 8).join("\n")}${
+              parsed.errors.length > 8 ? "\n..." : ""
+            }`,
+          );
+          return;
+        }
+
+        if (parsed.rows.length === 0) {
+          alert("CSV tidak punya data untuk diimport.");
+          return;
+        }
+
+        const result = await importProductsInBulk(parsed.rows);
+        await refreshProductTable();
+
+        if (result.failed > 0) {
+          alert(
+            `Import selesai dengan catatan.\nBerhasil: ${result.success}\nGagal: ${result.failed}\n\n${result.failDetails
+              .slice(0, 5)
+              .join("\n")}${result.failDetails.length > 5 ? "\n..." : ""}`,
+          );
+          return;
+        }
+
+        alert(`Import CSV berhasil. Total data masuk: ${result.success}`);
+      } catch (error) {
+        console.error("Import CSV error:", error);
+        alert("Terjadi kesalahan saat import CSV.");
+      } finally {
+        e.target.value = "";
+      }
+    },
+    [refreshProductTable],
+  );
+
   return (
     <div className="min-h-screen bg-[#f7f7f8] py-8">
       <div className="w-full mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-black">Product Management</h2>
+          <h2 className="text-3xl font-bold text-black">
+            Product Management {forcedJurusan ? `(${forcedJurusan})` : ""}
+          </h2>
         </div>
+
+        {forcedJurusan && jurusanInsights && (
+          <div className="mb-8 rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-cyan-900 to-blue-800 p-6 text-white shadow-xl">
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+              <div className="xl:col-span-2 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 p-5">
+                <p className="text-cyan-200 text-xs tracking-[0.2em]">JURUSAN</p>
+                <h3 className="text-4xl font-extrabold mt-2">{forcedJurusan}</h3>
+                <p className="text-cyan-100/90 text-sm mt-3">
+                  Data ini khusus jurusan {forcedJurusan}. Tidak tercampur jurusan lain.
+                </p>
+                <div className="grid grid-cols-2 gap-3 mt-5">
+                  <div className="rounded-xl bg-emerald-500/20 border border-emerald-300/30 p-3">
+                    <p className="text-xs text-emerald-100">Stok Baik</p>
+                    <p className="text-2xl font-bold">{jurusanInsights.baik}</p>
+                    <p className="text-xs text-emerald-100/80">{jurusanInsights.persenBaik}%</p>
+                  </div>
+                  <div className="rounded-xl bg-rose-500/20 border border-rose-300/30 p-3">
+                    <p className="text-xs text-rose-100">Stok Rusak</p>
+                    <p className="text-2xl font-bold">{jurusanInsights.rusak}</p>
+                    <p className="text-xs text-rose-100/80">{jurusanInsights.persenRusak}%</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="rounded-2xl bg-white/10 border border-white/20 p-4">
+                  <p className="text-xs text-cyan-100">Total Unit</p>
+                  <p className="text-3xl font-black mt-1">{jurusanInsights.totalStok}</p>
+                  <p className="text-xs text-cyan-100/80 mt-1">Akumulasi semua barang</p>
+                </div>
+                <div className="rounded-2xl bg-white/10 border border-white/20 p-4">
+                  <p className="text-xs text-cyan-100">Jenis Barang</p>
+                  <p className="text-3xl font-black mt-1">{jurusanInsights.totalBaris}</p>
+                  <p className="text-xs text-cyan-100/80 mt-1">Jumlah baris data jurusan</p>
+                </div>
+                <div className="rounded-2xl bg-white/10 border border-white/20 p-4">
+                  <p className="text-xs text-cyan-100">Labor Utama</p>
+                  <p className="text-xl font-black mt-2 truncate">
+                    {jurusanInsights.topLabor[0]?.[0] || "-"}
+                  </p>
+                  <p className="text-xs text-cyan-100/80 mt-1">
+                    {jurusanInsights.topLabor[0]?.[1] || 0} unit
+                  </p>
+                </div>
+
+                <div className="md:col-span-1 rounded-2xl bg-white/10 border border-white/20 p-4">
+                  <p className="text-sm font-semibold mb-2">Top Kategori</p>
+                  <div className="space-y-2">
+                    {jurusanInsights.topKategori.map(([namaKategori, total]) => (
+                      <div key={namaKategori} className="flex items-center justify-between text-xs">
+                        <span>{namaKategori}</span>
+                        <span className="font-bold">{total}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 rounded-2xl bg-white/10 border border-white/20 p-4">
+                  <p className="text-sm font-semibold mb-2">Barang Spesifik Jurusan</p>
+                  <div className="space-y-2 max-h-36 overflow-auto pr-1">
+                    {jurusanInsights.barangSpesifik.map((item) => (
+                      <div key={`${item.nama}-${item.kategori}-${item.labor}`} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="truncate">{item.nama}</span>
+                        <span className="whitespace-nowrap text-cyan-100/90">
+                          {item.kategori} | {item.labor} | {item.jumlah}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Dashboard Statistic Cards */}
         {!hideStats && (
@@ -360,15 +591,15 @@ const Product = ({
                     Barang {jurusan}
                   </div>
                   <div className="text-3xl font-bold">{total}</div>
-                  <a
-                    href={`/${jurusan.toLowerCase()}`}
+                  <Link
+                    href={`/admin/product/${encodeURIComponent(jurusan.toLowerCase())}`}
                     className="w-full flex justify-center mt-3"
                   >
-                    <button className="bg-white text-gray-700 text-xs font-semibold rounded-full px-4 py-1 shadow hover:bg-gray-100 transition flex items-center gap-2">
+                    <span className="bg-white text-gray-700 text-xs font-semibold rounded-full px-4 py-1 shadow hover:bg-gray-100 transition flex items-center gap-2">
                       <CircleArrowRight className="w-4 h-4" />
                       more info
-                    </button>
-                  </a>
+                    </span>
+                  </Link>
                 </div>
               );
             })}
@@ -401,23 +632,55 @@ const Product = ({
                 ×
               </button>
             </div>
-            <div className="flex items-center">
-              <select
-                value={selectedJurusan}
-                onChange={(e) => setSelectedJurusan(e.target.value)}
-                className="border rounded-lg px-4 py-2 text-base font-medium bg-white text-black shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-                style={{ minWidth: 180 }}
-                aria-label="Filter by jurusan"
-              >
-                <option value="">Jurusan</option>
-                {jurusanList.map((j) => (
-                  <option key={j} value={j}>
-                    {j}
-                  </option>
-                ))}
-              </select>
-            </div>
+
+            {!forcedJurusan && (
+              <div className="flex items-center">
+                <select
+                  value={selectedJurusan}
+                  onChange={(e) => setSelectedJurusan(e.target.value)}
+                  className="border rounded-lg px-4 py-2 text-base font-medium bg-white text-black shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ minWidth: 180 }}
+                  aria-label="Filter by jurusan"
+                >
+                  <option value="">All Jurusan</option>
+                  {jurusanList.map((j) => (
+                    <option key={j} value={j}>
+                      {j}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:ml-auto">
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleImportCsvFile}
+              />
+              <button
+                className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-medium px-5 py-2 rounded-md shadow transition-all"
+                onClick={handleImportCsvClick}
+                type="button"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="inline"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import CSV
+              </button>
               <button
                 className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition-all"
                 onClick={() => setShowPrintModal(true)}
@@ -478,7 +741,6 @@ const Product = ({
         {isOnline && (
           <div className="overflow-x-auto rounded-xl bg-white shadow font-sans w-full mt-2">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-4">
-              {/* Dropdown and info left */}
               <div className="flex items-center gap-2">
                 <label
                   htmlFor="itemsPerPage"
@@ -506,11 +768,9 @@ const Product = ({
                   entries
                 </span>
               </div>
-              {/* Info center */}
               <div className="text-gray-500 text-xs md:text-sm">
                 Showing {paginatedData.length} of {filteredLength} entries
               </div>
-              {/* Pagination right */}
               {totalPages > 1 && (
                 <div className="flex items-center gap-1">
                   <button
@@ -595,7 +855,6 @@ const Product = ({
                           onClick={async () => {
                             try {
                               await deleteRemoteProduct(Number(id_perangkat));
-                              // Refresh logic
                               const result = await getRemoteProducts();
                               const arr = Array.isArray(result.data)
                                 ? result.data
@@ -647,7 +906,7 @@ const Product = ({
                               labor ?? "",
                               Number(jumlah),
                               status,
-                            ]);
+                        ]);
                             setShowAdd(true);
                           }}
                         >
@@ -685,7 +944,7 @@ const Product = ({
           </div>
         )}
 
-        {/* New Print Modal Component */}
+        {/* Print Modal Component */}
         <PrintModal
           isOpen={showPrintModal}
           onClose={() => setShowPrintModal(false)}

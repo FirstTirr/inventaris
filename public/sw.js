@@ -1,4 +1,4 @@
-const CACHE_NAME = "inventaris-v1";
+const CACHE_NAME = "inventaris-v2";
 const urlsToCache = ["/", "/favicon.ico", "/manifest.json", "/tefa.jpg"];
 
 // Install service worker
@@ -12,8 +12,17 @@ self.addEventListener("install", function (event) {
 
 // Fetch event
 self.addEventListener("fetch", function (event) {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Jangan intersep request selain GET atau lintas-origin (API backend)
+  // agar tidak memicu respondWith(undefined) ketika CORS/network gagal.
+  if (req.method !== "GET" || url.origin !== self.location.origin) {
+    return;
+  }
+
   event.respondWith(
-    fetch(event.request)
+    fetch(req)
       .then(function (response) {
         // If successful response, clone it, cache it, and return it
         if (!response || response.status !== 200 || response.type !== "basic") {
@@ -23,14 +32,16 @@ self.addEventListener("fetch", function (event) {
         var responseToCache = response.clone();
 
         caches.open(CACHE_NAME).then(function (cache) {
-          cache.put(event.request, responseToCache);
+          cache.put(req, responseToCache);
         });
 
         return response;
       })
       .catch(function () {
         // If fetch fails (offline), try to return from cache
-        return caches.match(event.request);
+        return caches.match(req).then(function (cachedResponse) {
+          return cachedResponse || Response.error();
+        });
       }),
   );
 });

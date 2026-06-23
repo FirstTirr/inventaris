@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next"; // Tambahkan Viewport di sini
 import { Roboto } from "next/font/google";
 import "./globals.css";
 
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "Sistem Web Manajemen Fasilitas dan Inventaris Labor yang Modern dan Efisien",
   keywords: ["inventaris", "labor", "management", "fasilitas", "sekolah"],
   authors: [{ name: "Inventaris Team" }],
-  viewport: "width=device-width, initial-scale=1",
+  // ❌ viewport: "width=device-width, initial-scale=1", (SUDAH DIHAPUS DARI SINI)
   robots: "index, follow",
   openGraph: {
     title: "Inventaris Labor",
@@ -34,6 +34,13 @@ export const metadata: Metadata = {
     type: "website",
   },
   manifest: "/manifest.json",
+};
+
+// ✅ INI KODE BARUNYA: Pisahkan viewport dan themeColor ke export sendiri
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#377DFF",
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
@@ -52,7 +59,7 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin=""
         />
-        <meta name="theme-color" content="#377DFF" />
+        {/* meta theme-color sudah dipindah ke export viewport di atas agar lebih rapi */}
         <meta name="msapplication-TileColor" content="#377DFF" />
       </head>
       <body className="antialiased font-sans">

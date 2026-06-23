@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 export default function TabelLabor() {
   const [laborList, setLaborList] = useState<{ nama_labor: string }[]>([]);
@@ -16,6 +17,10 @@ export default function TabelLabor() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
+        {
+          headers: getClientAuthHeaders(),
+          credentials: "include",
+        },
       );
       const data = await res.json();
       if (res.ok && data.data) setLaborList(data.data);
@@ -33,7 +38,8 @@ export default function TabelLabor() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor/delete`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({ nama_labor }),
         },
       );

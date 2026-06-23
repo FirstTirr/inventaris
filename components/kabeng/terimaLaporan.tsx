@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { CheckCheck } from "lucide-react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 export default function TerimaLaporan() {
   interface LaporanItem {
@@ -78,7 +79,8 @@ export default function TerimaLaporan() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan/delete`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({ id_laporan }),
         },
       );
@@ -105,6 +107,10 @@ export default function TerimaLaporan() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         if (!res.ok) throw new Error("Gagal mengambil data laporan");
         const data = await res.json();
@@ -123,6 +129,7 @@ export default function TerimaLaporan() {
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
           {
             method: "GET",
+            headers: getClientAuthHeaders(),
             credentials: "include",
           },
         );
@@ -235,6 +242,10 @@ export default function TerimaLaporan() {
                   try {
                     const res = await fetch(
                       `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/laporan`,
+                      {
+                        headers: getClientAuthHeaders(),
+                        credentials: "include",
+                      },
                     );
                     if (!res.ok)
                       throw new Error("Gagal mengambil data laporan");

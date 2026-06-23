@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Trash2 } from "lucide-react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 const TabelJurusan = React.memo(() => {
   const [jurusanList, setJurusanList] = useState<{ jurusan: string }[]>([]);
@@ -38,6 +39,10 @@ const TabelJurusan = React.memo(() => {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -67,7 +72,8 @@ const TabelJurusan = React.memo(() => {
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan/delete`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+            credentials: "include",
             body: JSON.stringify({ jurusan }),
           },
         );

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 export default function TabelKelas() {
   const [data, setData] = useState<{ kelas: string }[]>([]);
@@ -20,6 +21,10 @@ export default function TabelKelas() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         const json = await res.json();
         if (res.ok && json.data) {
@@ -46,7 +51,8 @@ export default function TabelKelas() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas/delete`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({ nama_kelas }),
         },
       );

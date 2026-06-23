@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   CirclePlus,
   ChevronDown,
+  LayoutDashboard, // Tambahkan ikon untuk dashboard
   Table as TableIcon,
 } from "lucide-react";
 import TabelDropdownNav from "./TabelDropdownNav";
@@ -14,6 +15,7 @@ import { clearAllCookies } from "@/lib/utils";
 import Wm from "../wm";
 
 // Lazy load only when needed
+const DashboardAdmin = lazy(() => import("./dashboardAdmin")); // Sesuaikan path file dashboard kamu
 const CrudAKun = lazy(() => import("./crudAkun"));
 const MemantauAkun = lazy(() => import("./memantauAkun"));
 const Product = lazy(() => import("../kabeng/product"));
@@ -30,14 +32,17 @@ const LoadingFallback = () => (
     <span className="ml-2 text-gray-600">Loading...</span>
   </div>
 );
+
 export default function NavAdmin() {
-  // Default ke menu paling ringan
-  const [active, setActive] = useState("Memantau Akun");
+  // Set default active ke "Dashboard" agar saat masuk pertama kali langsung membuka dashboard
+  const [active, setActive] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tabelSelected, setTabelSelected] = useState("Tabel Labor");
   const [tabelDropdownOpen, setTabelDropdownOpen] = useState(false);
 
+  // Daftarkan item Dashboard di menuItems
   const menuItems = [
+    { key: "Dashboard", label: "Dashboard" },
     { key: "Memantau Akun", label: "Memantau Akun" },
     { key: "Product", label: "Product" },
     {
@@ -99,6 +104,10 @@ export default function NavAdmin() {
                   tabIndex={0}
                   role="menuitem"
                 >
+                  {/* Kondisional Ikon */}
+                  {item.key === "Dashboard" && (
+                    <LayoutDashboard className="w-5 h-5" />
+                  )}
                   {item.key === "Memantau Akun" && (
                     <Binoculars className="w-5 h-5" />
                   )}
@@ -133,7 +142,7 @@ export default function NavAdmin() {
             ))}
           </ul>
           <button
-            className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-500 transition-all w-full justify-center mt-[3rem]"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-black rounded-md hover:bg-gray-300 transition-all w-full justify-center mt-[3rem]"
             onClick={() => {
               try {
                 fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
@@ -232,6 +241,9 @@ export default function NavAdmin() {
                         setSidebarOpen(false);
                       }}
                     >
+                      {item.key === "Dashboard" && (
+                        <LayoutDashboard className="w-5 h-5" />
+                      )}
                       {item.key === "Memantau Akun" && (
                         <Binoculars className="w-5 h-5" />
                       )}
@@ -271,7 +283,7 @@ export default function NavAdmin() {
                     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logout`, {
                       method: "POST",
                       credentials: "include",
-                    }).catch(() => {});
+                }).catch(() => {});
                   } catch {}
                   try {
                     if (typeof document !== "undefined") {
@@ -323,9 +335,9 @@ export default function NavAdmin() {
 
       {/* Main Content */}
       <div className="flex-1 w-full md:pl-80">
-        {/* Responsive header: show on all screens, smaller padding on mobile */}
         <header className="w-full bg-white border-b border-gray-400/70 px-4 py-3 md:px-8 md:py-4">
           <h2 className="text-lg md:text-xl font-semibold tracking-wide text-left text-gray-800">
+            {active === "Dashboard" && "DASHBOARD"}
             {active === "Crud Akun" && "CRUD AKUN"}
             {active === "Memantau Akun" && "MEMANTAU AKUN"}
             {active === "Product" && "PRODUCT"}
@@ -334,6 +346,8 @@ export default function NavAdmin() {
         </header>
         <main className="p-2 md:p-8 overflow-x-auto">
           <Suspense fallback={<LoadingFallback />}>
+            {/* Render Komponen Dashboard */}
+            {active === "Dashboard" && <DashboardAdmin />}
             {active === "Product" && <Product />}
             {active === "Memantau Akun" && (
               <MemantauAkun onAddAkun={() => setActive("Crud Akun")} />

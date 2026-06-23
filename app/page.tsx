@@ -241,9 +241,9 @@ export default function Home() {
             }`}
           >
             {[
-              { label: "Akurasi Model", value: "99.9%" },
-              { label: "Kecepatan Scan", value: "< 1 Detik" },
-              { label: "Siswa Terdaftar", value: "1,200+" },
+              { label: "Kemudahan Navigasi", value: "100%" },
+              { label: "Kecepatan Input", value: "< 1 Detik" },
+              { label: "Barang Terdaftar", value: "1,200+" },
               { label: "Uptime Server", value: "24/7" },
             ].map((stat, idx) => (
               <div key={idx} className="text-center">
@@ -662,7 +662,7 @@ export default function Home() {
                 accent: "border-violet-500/30",
               },
               {
-                title: "Kepala Sekolah",
+                title: "Kepala Prodi1",
                 role: "Executive View",
                 href: "/login",
                 icon: <FaChalkboardTeacher />,

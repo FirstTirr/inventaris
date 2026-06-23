@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 const InputKelas = React.memo(() => {
   const [barang, setBarang] = useState("");
@@ -62,6 +63,10 @@ const InputKelas = React.memo(() => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`,
+        {
+          headers: getClientAuthHeaders(),
+          credentials: "include",
+        }
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -103,6 +108,10 @@ const InputKelas = React.memo(() => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
+        {
+          headers: getClientAuthHeaders(),
+          credentials: "include",
+        }
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -149,7 +158,11 @@ const InputKelas = React.memo(() => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/barang/read`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/barang/read`,
+        {
+          headers: getClientAuthHeaders(),
+          credentials: "include",
+        }
       );
       const data = await res.json();
       if (res.ok && data.data) {
@@ -228,7 +241,8 @@ const InputKelas = React.memo(() => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/guru/penggunaan`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({
             nama_kelas: kelas,
             nama_labor: labor,
@@ -249,8 +263,6 @@ const InputKelas = React.memo(() => {
         localStorage.removeItem("input-kelas-cache-time");
         localStorage.removeItem("input-labor-cache");
         localStorage.removeItem("input-labor-cache-time");
-        // Keep input-products cache so displayed stock doesn't immediately change on submit.
-        // (Backend may update stock, but frontend should continue showing 'baik' stock until a manual refresh.)
       } else {
         setMessage(data.detail || "Gagal mengirim data");
       }
@@ -294,7 +306,7 @@ const InputKelas = React.memo(() => {
               </svg>
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-lg font-semibold text-black">
                 Input Kelas Pengguna Labor
               </h2>
               <p className="text-sm text-gray-500 mt-1">

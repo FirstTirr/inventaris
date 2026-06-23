@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { CheckCheck } from "lucide-react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 // Custom hook for debouncing
 function useDebounce(value: string, delay: number) {
@@ -95,6 +96,10 @@ export default function LastUser() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         if (!res.ok) throw new Error("Gagal mengambil data penggunaan");
         const result = await res.json();
@@ -113,6 +118,7 @@ export default function LastUser() {
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
           {
             method: "GET",
+            headers: getClientAuthHeaders(),
             credentials: "include",
           },
         );
@@ -140,7 +146,8 @@ export default function LastUser() {
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/kabeng/penggunaan/delete`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+            credentials: "include",
             body: JSON.stringify({ id_penggunaan }),
           },
         );

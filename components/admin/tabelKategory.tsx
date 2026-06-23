@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
+import { getClientAuthHeaders } from "@/lib/utils";
 
 export default function TabelKategory() {
   const [kategoriList, setKategoriList] = useState<{ kategori: string }[]>([]);
@@ -16,6 +17,10 @@ export default function TabelKategory() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         const data = await res.json();
         if (res.ok && data.data) setKategoriList(data.data);
@@ -32,7 +37,8 @@ export default function TabelKategory() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori/delete`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({ kategori }),
         },
       );

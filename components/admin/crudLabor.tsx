@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { getClientAuthHeaders } from "@/lib/utils";
 // Trash2 import removed (unused)
 // import TabelJurusan from "./tabelJurusan";
 
@@ -12,7 +13,8 @@ export default function CrudLabor() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor/new`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({ nama_labor: labor }),
         },
       );
@@ -37,7 +39,8 @@ export default function CrudLabor() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas/new`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
           body: JSON.stringify({ nama_kelas: kelas }),
         },
       );
@@ -83,6 +86,10 @@ export default function CrudLabor() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kelas`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -96,6 +103,10 @@ export default function CrudLabor() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/labor`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -109,6 +120,10 @@ export default function CrudLabor() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -122,6 +137,10 @@ export default function CrudLabor() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori`,
+          {
+            headers: getClientAuthHeaders(),
+            credentials: "include",
+          },
         );
         const data = await res.json();
         if (res.ok && data.data) {
@@ -194,22 +213,6 @@ export default function CrudLabor() {
             <span className="text-3xl font-extrabold text-white mb-4">
               {jumlahLabor}
             </span>
-            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full font-medium text-sm shadow hover:bg-gray-100 transition">
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-arrow-right-circle"
-              >
-                <circle cx="9" cy="9" r="8" />
-                <polyline points="8 6 11 9 8 12" />
-              </svg>
-              more info
-            </button>
           </div>
           {/* Card: Kelas */}
           <div className="w-full bg-green-500 rounded-2xl shadow-lg p-6 flex flex-col items-center min-w-0">
@@ -219,22 +222,6 @@ export default function CrudLabor() {
             <span className="text-3xl font-extrabold text-white mb-4">
               {jumlahKelas}
             </span>
-            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full font-medium text-sm shadow hover:bg-gray-100 transition">
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-arrow-right-circle"
-              >
-                <circle cx="9" cy="9" r="8" />
-                <polyline points="8 6 11 9 8 12" />
-              </svg>
-              more info
-            </button>
           </div>
           {/* Card: Kategori */}
           <div className="w-full bg-gray-500 rounded-2xl shadow-lg p-6 flex flex-col items-center min-w-0">
@@ -244,22 +231,6 @@ export default function CrudLabor() {
             <span className="text-3xl font-extrabold text-white mb-4">
               {jumlahKategori}
             </span>
-            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full font-medium text-sm shadow hover:bg-gray-100 transition">
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-arrow-right-circle"
-              >
-                <circle cx="9" cy="9" r="8" />
-                <polyline points="8 6 11 9 8 12" />
-              </svg>
-              more info
-            </button>
           </div>
           {/* Card: Jurusan */}
           <div className="w-full bg-indigo-600 rounded-2xl shadow-lg p-6 flex flex-col items-center min-w-0">
@@ -269,22 +240,6 @@ export default function CrudLabor() {
             <span className="text-3xl font-extrabold text-white mb-4">
               {jumlahJurusan}
             </span>
-            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full font-medium text-sm shadow hover:bg-gray-100 transition">
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-arrow-right-circle"
-              >
-                <circle cx="9" cy="9" r="8" />
-                <polyline points="8 6 11 9 8 12" />
-              </svg>
-              more info
-            </button>
           </div>
         </div>
 
@@ -404,7 +359,8 @@ export default function CrudLabor() {
                           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/jurusan/new`,
                           {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
+                            headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+                            credentials: "include",
                             // send both keys to tolerate backend field name differences
                             body: JSON.stringify({
                               jurusan: jurusanTrim,
@@ -562,7 +518,8 @@ export default function CrudLabor() {
                           `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/kategori/new`,
                           {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
+                            headers: getClientAuthHeaders({ "Content-Type": "application/json" }),
+                            credentials: "include",
                             body: JSON.stringify({ kategori }),
                           },
                         );

@@ -90,3 +90,26 @@ export function clearAllCookies(options?: {
     }
   }
 }
+
+export function getClientAuthHeaders(
+  base: Record<string, string> = {},
+): Record<string, string> {
+  const headers: Record<string, string> = { ...base };
+
+  if (typeof document === "undefined") return headers;
+
+  const tokenFromCookie = document.cookie
+    .split("; ")
+    .find((c) => c.startsWith("token="))
+    ?.split("=")[1];
+
+  const tokenFromStorage =
+    typeof localStorage !== "undefined" ? localStorage.getItem("token") : null;
+
+  const token = tokenFromCookie || tokenFromStorage;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}

@@ -16,7 +16,7 @@ const nextConfig: NextConfig & { turbo?: any } = {
   compress: true,
 
   // Optimize output
-  output: "export",
+  // output: "export",
 
   // Enable experimental features for better performance
   experimental: {
